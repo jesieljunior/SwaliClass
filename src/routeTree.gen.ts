@@ -13,6 +13,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppChamadaRouteImport } from './routes/app.chamada'
+import { Route as AppAlunosRouteImport } from './routes/app.alunos'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -34,15 +35,22 @@ const AppChamadaRoute = AppChamadaRouteImport.update({
   path: '/chamada',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAlunosRoute = AppAlunosRouteImport.update({
+  id: '/alunos',
+  path: '/alunos',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/app/alunos': typeof AppAlunosRoute
   '/app/chamada': typeof AppChamadaRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app/alunos': typeof AppAlunosRoute
   '/app/chamada': typeof AppChamadaRoute
   '/app': typeof AppIndexRoute
 }
@@ -50,15 +58,16 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/app/alunos': typeof AppAlunosRoute
   '/app/chamada': typeof AppChamadaRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/app/chamada' | '/app/'
+  fullPaths: '/' | '/app' | '/app/alunos' | '/app/chamada' | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app/chamada' | '/app'
-  id: '__root__' | '/' | '/app' | '/app/chamada' | '/app/'
+  to: '/' | '/app/alunos' | '/app/chamada' | '/app'
+  id: '__root__' | '/' | '/app' | '/app/alunos' | '/app/chamada' | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -96,15 +105,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChamadaRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/alunos': {
+      id: '/app/alunos'
+      path: '/alunos'
+      fullPath: '/app/alunos'
+      preLoaderRoute: typeof AppAlunosRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAlunosRoute: typeof AppAlunosRoute
   AppChamadaRoute: typeof AppChamadaRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAlunosRoute: AppAlunosRoute,
   AppChamadaRoute: AppChamadaRoute,
   AppIndexRoute: AppIndexRoute,
 }
