@@ -46,7 +46,7 @@ export function AppSidebar() {
           return (
             <Link
               key={item.to}
-              to={item.to}
+              to={item.to as never}
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
                 active ? "bg-paper/10 text-paper font-semibold" : "text-paper/55 hover:text-paper hover:bg-paper/5"
               }`}
@@ -64,7 +64,7 @@ export function AppSidebar() {
           return (
             <Link
               key={item.to}
-              to={item.to}
+              to={item.to as never}
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
                 active ? "bg-paper/10 text-paper font-semibold" : "text-paper/55 hover:text-paper hover:bg-paper/5"
               }`}
