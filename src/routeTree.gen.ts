@@ -9,38 +9,144 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppTurmasRouteImport } from './routes/app.turmas'
+import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
+import { Route as AppCursosRouteImport } from './routes/app.cursos'
+import { Route as AppClientesRouteImport } from './routes/app.clientes'
+import { Route as AppChamadaRouteImport } from './routes/app.chamada'
+import { Route as AppAlunosRouteImport } from './routes/app.alunos'
 
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTurmasRoute = AppTurmasRouteImport.update({
+  id: '/turmas',
+  path: '/turmas',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCursosRoute = AppCursosRouteImport.update({
+  id: '/cursos',
+  path: '/cursos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientesRoute = AppClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChamadaRoute = AppChamadaRouteImport.update({
+  id: '/chamada',
+  path: '/chamada',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAlunosRoute = AppAlunosRouteImport.update({
+  id: '/alunos',
+  path: '/alunos',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/alunos': typeof AppAlunosRoute
+  '/app/chamada': typeof AppChamadaRoute
+  '/app/clientes': typeof AppClientesRoute
+  '/app/cursos': typeof AppCursosRoute
+  '/app/relatorios': typeof AppRelatoriosRoute
+  '/app/turmas': typeof AppTurmasRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app/alunos': typeof AppAlunosRoute
+  '/app/chamada': typeof AppChamadaRoute
+  '/app/clientes': typeof AppClientesRoute
+  '/app/cursos': typeof AppCursosRoute
+  '/app/relatorios': typeof AppRelatoriosRoute
+  '/app/turmas': typeof AppTurmasRoute
+  '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/alunos': typeof AppAlunosRoute
+  '/app/chamada': typeof AppChamadaRoute
+  '/app/clientes': typeof AppClientesRoute
+  '/app/cursos': typeof AppCursosRoute
+  '/app/relatorios': typeof AppRelatoriosRoute
+  '/app/turmas': typeof AppTurmasRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/app/alunos'
+    | '/app/chamada'
+    | '/app/clientes'
+    | '/app/cursos'
+    | '/app/relatorios'
+    | '/app/turmas'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/app/alunos'
+    | '/app/chamada'
+    | '/app/clientes'
+    | '/app/cursos'
+    | '/app/relatorios'
+    | '/app/turmas'
+    | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/app/alunos'
+    | '/app/chamada'
+    | '/app/clientes'
+    | '/app/cursos'
+    | '/app/relatorios'
+    | '/app/turmas'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +154,84 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/turmas': {
+      id: '/app/turmas'
+      path: '/turmas'
+      fullPath: '/app/turmas'
+      preLoaderRoute: typeof AppTurmasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/relatorios': {
+      id: '/app/relatorios'
+      path: '/relatorios'
+      fullPath: '/app/relatorios'
+      preLoaderRoute: typeof AppRelatoriosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cursos': {
+      id: '/app/cursos'
+      path: '/cursos'
+      fullPath: '/app/cursos'
+      preLoaderRoute: typeof AppCursosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/clientes': {
+      id: '/app/clientes'
+      path: '/clientes'
+      fullPath: '/app/clientes'
+      preLoaderRoute: typeof AppClientesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/chamada': {
+      id: '/app/chamada'
+      path: '/chamada'
+      fullPath: '/app/chamada'
+      preLoaderRoute: typeof AppChamadaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/alunos': {
+      id: '/app/alunos'
+      path: '/alunos'
+      fullPath: '/app/alunos'
+      preLoaderRoute: typeof AppAlunosRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAlunosRoute: typeof AppAlunosRoute
+  AppChamadaRoute: typeof AppChamadaRoute
+  AppClientesRoute: typeof AppClientesRoute
+  AppCursosRoute: typeof AppCursosRoute
+  AppRelatoriosRoute: typeof AppRelatoriosRoute
+  AppTurmasRoute: typeof AppTurmasRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAlunosRoute: AppAlunosRoute,
+  AppChamadaRoute: AppChamadaRoute,
+  AppClientesRoute: AppClientesRoute,
+  AppCursosRoute: AppCursosRoute,
+  AppRelatoriosRoute: AppRelatoriosRoute,
+  AppTurmasRoute: AppTurmasRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
