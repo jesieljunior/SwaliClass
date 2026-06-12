@@ -13,6 +13,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppTurmasRouteImport } from './routes/app.turmas'
+import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppCursosRouteImport } from './routes/app.cursos'
 import { Route as AppChamadaRouteImport } from './routes/app.chamada'
 import { Route as AppAlunosRouteImport } from './routes/app.alunos'
@@ -37,6 +38,11 @@ const AppTurmasRoute = AppTurmasRouteImport.update({
   path: '/turmas',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCursosRoute = AppCursosRouteImport.update({
   id: '/cursos',
   path: '/cursos',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/app/alunos': typeof AppAlunosRoute
   '/app/chamada': typeof AppChamadaRoute
   '/app/cursos': typeof AppCursosRoute
+  '/app/relatorios': typeof AppRelatoriosRoute
   '/app/turmas': typeof AppTurmasRoute
   '/app/': typeof AppIndexRoute
 }
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/app/alunos': typeof AppAlunosRoute
   '/app/chamada': typeof AppChamadaRoute
   '/app/cursos': typeof AppCursosRoute
+  '/app/relatorios': typeof AppRelatoriosRoute
   '/app/turmas': typeof AppTurmasRoute
   '/app': typeof AppIndexRoute
 }
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/app/alunos': typeof AppAlunosRoute
   '/app/chamada': typeof AppChamadaRoute
   '/app/cursos': typeof AppCursosRoute
+  '/app/relatorios': typeof AppRelatoriosRoute
   '/app/turmas': typeof AppTurmasRoute
   '/app/': typeof AppIndexRoute
 }
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/app/alunos'
     | '/app/chamada'
     | '/app/cursos'
+    | '/app/relatorios'
     | '/app/turmas'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/app/alunos'
     | '/app/chamada'
     | '/app/cursos'
+    | '/app/relatorios'
     | '/app/turmas'
     | '/app'
   id:
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/app/alunos'
     | '/app/chamada'
     | '/app/cursos'
+    | '/app/relatorios'
     | '/app/turmas'
     | '/app/'
   fileRoutesById: FileRoutesById
@@ -144,6 +156,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTurmasRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/relatorios': {
+      id: '/app/relatorios'
+      path: '/relatorios'
+      fullPath: '/app/relatorios'
+      preLoaderRoute: typeof AppRelatoriosRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/cursos': {
       id: '/app/cursos'
       path: '/cursos'
@@ -172,6 +191,7 @@ interface AppRouteChildren {
   AppAlunosRoute: typeof AppAlunosRoute
   AppChamadaRoute: typeof AppChamadaRoute
   AppCursosRoute: typeof AppCursosRoute
+  AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppTurmasRoute: typeof AppTurmasRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -180,6 +200,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAlunosRoute: AppAlunosRoute,
   AppChamadaRoute: AppChamadaRoute,
   AppCursosRoute: AppCursosRoute,
+  AppRelatoriosRoute: AppRelatoriosRoute,
   AppTurmasRoute: AppTurmasRoute,
   AppIndexRoute: AppIndexRoute,
 }
