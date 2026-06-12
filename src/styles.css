@@ -59,29 +59,44 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-navy-900: var(--navy-900);
+  --color-navy-800: var(--navy-800);
+  --color-navy-600: var(--navy-600);
+  --color-paper: var(--paper);
+  --color-border-subtle: var(--border-subtle);
+  --color-surface: var(--surface);
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --navy-900: #0f1b3d;
+  --navy-800: #1e3a5f;
+  --navy-600: #3b6fa0;
+  --paper: #e8edf3;
+  --surface: #f8fafc;
+  --border-subtle: rgba(15, 27, 61, 0.08);
+  --background: var(--paper);
+  --foreground: var(--navy-900);
+  --card: #ffffff;
+  --card-foreground: var(--navy-900);
+  --popover: #ffffff;
+  --popover-foreground: var(--navy-900);
+  --primary: var(--navy-900);
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper);
+  --secondary-foreground: var(--navy-900);
+  --muted: var(--surface);
+  --muted-foreground: oklch(0.45 0.04 257);
+  --accent: var(--navy-600);
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --border: rgba(15, 27, 61, 0.08);
+  --input: rgba(15, 27, 61, 0.12);
+  --ring: var(--navy-600);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -140,5 +155,10 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
   }
 }
