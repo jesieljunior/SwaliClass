@@ -95,10 +95,10 @@ function DashboardPreview() {
           <span className="text-[10px] font-mono uppercase tracking-widest text-navy-800/40 ml-3">bitrahub.app/dashboard</span>
         </div>
         <div className="grid grid-cols-12 gap-4 p-6 lg:p-8 bg-surface">
-          <Kpi span={3} label="Total alunos" value="1.248" />
-          <Kpi span={3} label="Turmas ativas" value="42" />
-          <Kpi span={3} label="Frequência média" value="94,2%" valueClass="text-emerald-600" />
-          <Kpi span={3} dark label="Alertas baixa freq." value="12" />
+          <Kpi label="Total alunos" value="1.248" />
+          <Kpi label="Turmas ativas" value="42" />
+          <Kpi label="Frequência média" value="94,2%" valueClass="text-emerald-600" />
+          <Kpi dark label="Alertas baixa freq." value="12" />
 
           <div className="col-span-12 md:col-span-8 bg-white p-6 border border-border-subtle rounded-lg">
             <div className="flex items-center justify-between mb-5">
@@ -141,12 +141,12 @@ function DashboardPreview() {
   );
 }
 
-function Kpi({ span, label, value, dark, valueClass }: { span: number; label: string; value: string; dark?: boolean; valueClass?: string }) {
+function Kpi({ label, value, dark, valueClass }: { label: string; value: string; dark?: boolean; valueClass?: string }) {
   const base = dark
     ? "bg-navy-900 border-navy-800 text-paper"
     : "bg-white border-border-subtle";
   return (
-    <div className={`col-span-12 md:col-span-${span} p-5 border rounded-lg flex flex-col justify-between gap-6 ${base}`}>
+    <div className={`col-span-12 md:col-span-3 p-5 border rounded-lg flex flex-col justify-between gap-6 ${base}`}>
       <span className={`text-[10px] font-mono font-bold uppercase tracking-widest ${dark ? "text-white/40" : "text-navy-600"}`}>{label}</span>
       <span className={`text-3xl font-display font-extrabold ${valueClass ?? ""}`}>{value}</span>
     </div>
