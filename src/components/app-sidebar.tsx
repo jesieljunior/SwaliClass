@@ -10,18 +10,18 @@ import {
   Settings,
 } from "lucide-react";
 
-const nav = [
+const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/app/chamada", label: "Chamada", icon: ClipboardCheck },
   { to: "/app/alunos", label: "Alunos", icon: Users },
   { to: "/app/turmas", label: "Turmas", icon: GraduationCap },
   { to: "/app/cursos", label: "Cursos", icon: BookOpen },
   { to: "/app/relatorios", label: "Relatórios", icon: BarChart3 },
-] as const;
+];
 
-const admin = [
+const admin: { to: string; label: string; icon: typeof LayoutDashboard }[] = [
   { to: "/app/clientes", label: "Clientes (SaaS)", icon: Building2 },
-] as const;
+];
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
