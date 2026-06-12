@@ -15,6 +15,7 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppTurmasRouteImport } from './routes/app.turmas'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppCursosRouteImport } from './routes/app.cursos'
+import { Route as AppClientesRouteImport } from './routes/app.clientes'
 import { Route as AppChamadaRouteImport } from './routes/app.chamada'
 import { Route as AppAlunosRouteImport } from './routes/app.alunos'
 
@@ -48,6 +49,11 @@ const AppCursosRoute = AppCursosRouteImport.update({
   path: '/cursos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppClientesRoute = AppClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppChamadaRoute = AppChamadaRouteImport.update({
   id: '/chamada',
   path: '/chamada',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/app/alunos': typeof AppAlunosRoute
   '/app/chamada': typeof AppChamadaRoute
+  '/app/clientes': typeof AppClientesRoute
   '/app/cursos': typeof AppCursosRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/turmas': typeof AppTurmasRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app/alunos': typeof AppAlunosRoute
   '/app/chamada': typeof AppChamadaRoute
+  '/app/clientes': typeof AppClientesRoute
   '/app/cursos': typeof AppCursosRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/turmas': typeof AppTurmasRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/app/alunos': typeof AppAlunosRoute
   '/app/chamada': typeof AppChamadaRoute
+  '/app/clientes': typeof AppClientesRoute
   '/app/cursos': typeof AppCursosRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/turmas': typeof AppTurmasRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/alunos'
     | '/app/chamada'
+    | '/app/clientes'
     | '/app/cursos'
     | '/app/relatorios'
     | '/app/turmas'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app/alunos'
     | '/app/chamada'
+    | '/app/clientes'
     | '/app/cursos'
     | '/app/relatorios'
     | '/app/turmas'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/alunos'
     | '/app/chamada'
+    | '/app/clientes'
     | '/app/cursos'
     | '/app/relatorios'
     | '/app/turmas'
@@ -170,6 +182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCursosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/clientes': {
+      id: '/app/clientes'
+      path: '/clientes'
+      fullPath: '/app/clientes'
+      preLoaderRoute: typeof AppClientesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/chamada': {
       id: '/app/chamada'
       path: '/chamada'
@@ -190,6 +209,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAlunosRoute: typeof AppAlunosRoute
   AppChamadaRoute: typeof AppChamadaRoute
+  AppClientesRoute: typeof AppClientesRoute
   AppCursosRoute: typeof AppCursosRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppTurmasRoute: typeof AppTurmasRoute
@@ -199,6 +219,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAlunosRoute: AppAlunosRoute,
   AppChamadaRoute: AppChamadaRoute,
+  AppClientesRoute: AppClientesRoute,
   AppCursosRoute: AppCursosRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
   AppTurmasRoute: AppTurmasRoute,
