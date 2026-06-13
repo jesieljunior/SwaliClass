@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { classes } from "@/lib/mock-data";
 import { Plus, Users, Clock, Calendar } from "lucide-react";
 
-export const Route = createFileRoute("/app/turmas")({
+export const Route = createFileRoute("/_authenticated/app/turmas")({
   component: TurmasPage,
 });
 

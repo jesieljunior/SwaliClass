@@ -9,19 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteImport } from './routes/app'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as AppTurmasRouteImport } from './routes/app.turmas'
-import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
-import { Route as AppCursosRouteImport } from './routes/app.cursos'
-import { Route as AppClientesRouteImport } from './routes/app.clientes'
-import { Route as AppChamadaRouteImport } from './routes/app.chamada'
-import { Route as AppAlunosRouteImport } from './routes/app.alunos'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated.app'
+import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated.app.index'
+import { Route as AuthenticatedAppTurmasRouteImport } from './routes/_authenticated.app.turmas'
+import { Route as AuthenticatedAppRelatoriosRouteImport } from './routes/_authenticated.app.relatorios'
+import { Route as AuthenticatedAppCursosRouteImport } from './routes/_authenticated.app.cursos'
+import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated.app.clientes'
+import { Route as AuthenticatedAppChamadaRouteImport } from './routes/_authenticated.app.chamada'
+import { Route as AuthenticatedAppAlunosRouteImport } from './routes/_authenticated.app.alunos'
 
-const AppRoute = AppRouteImport.update({
-  id: '/app',
-  path: '/app',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -29,79 +41,95 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppTurmasRoute = AppTurmasRouteImport.update({
+const AuthenticatedAppTurmasRoute = AuthenticatedAppTurmasRouteImport.update({
   id: '/turmas',
   path: '/turmas',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
-  id: '/relatorios',
-  path: '/relatorios',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCursosRoute = AppCursosRouteImport.update({
+const AuthenticatedAppRelatoriosRoute =
+  AuthenticatedAppRelatoriosRouteImport.update({
+    id: '/relatorios',
+    path: '/relatorios',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCursosRoute = AuthenticatedAppCursosRouteImport.update({
   id: '/cursos',
   path: '/cursos',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppClientesRoute = AppClientesRouteImport.update({
-  id: '/clientes',
-  path: '/clientes',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppChamadaRoute = AppChamadaRouteImport.update({
+const AuthenticatedAppClientesRoute =
+  AuthenticatedAppClientesRouteImport.update({
+    id: '/clientes',
+    path: '/clientes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppChamadaRoute = AuthenticatedAppChamadaRouteImport.update({
   id: '/chamada',
   path: '/chamada',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppAlunosRoute = AppAlunosRouteImport.update({
+const AuthenticatedAppAlunosRoute = AuthenticatedAppAlunosRouteImport.update({
   id: '/alunos',
   path: '/alunos',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
-  '/app/alunos': typeof AppAlunosRoute
-  '/app/chamada': typeof AppChamadaRoute
-  '/app/clientes': typeof AppClientesRoute
-  '/app/cursos': typeof AppCursosRoute
-  '/app/relatorios': typeof AppRelatoriosRoute
-  '/app/turmas': typeof AppTurmasRoute
-  '/app/': typeof AppIndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/app': typeof AuthenticatedAppRouteWithChildren
+  '/app/alunos': typeof AuthenticatedAppAlunosRoute
+  '/app/chamada': typeof AuthenticatedAppChamadaRoute
+  '/app/clientes': typeof AuthenticatedAppClientesRoute
+  '/app/cursos': typeof AuthenticatedAppCursosRoute
+  '/app/relatorios': typeof AuthenticatedAppRelatoriosRoute
+  '/app/turmas': typeof AuthenticatedAppTurmasRoute
+  '/app/': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app/alunos': typeof AppAlunosRoute
-  '/app/chamada': typeof AppChamadaRoute
-  '/app/clientes': typeof AppClientesRoute
-  '/app/cursos': typeof AppCursosRoute
-  '/app/relatorios': typeof AppRelatoriosRoute
-  '/app/turmas': typeof AppTurmasRoute
-  '/app': typeof AppIndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/app/alunos': typeof AuthenticatedAppAlunosRoute
+  '/app/chamada': typeof AuthenticatedAppChamadaRoute
+  '/app/clientes': typeof AuthenticatedAppClientesRoute
+  '/app/cursos': typeof AuthenticatedAppCursosRoute
+  '/app/relatorios': typeof AuthenticatedAppRelatoriosRoute
+  '/app/turmas': typeof AuthenticatedAppTurmasRoute
+  '/app': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
-  '/app/alunos': typeof AppAlunosRoute
-  '/app/chamada': typeof AppChamadaRoute
-  '/app/clientes': typeof AppClientesRoute
-  '/app/cursos': typeof AppCursosRoute
-  '/app/relatorios': typeof AppRelatoriosRoute
-  '/app/turmas': typeof AppTurmasRoute
-  '/app/': typeof AppIndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
+  '/_authenticated/app/alunos': typeof AuthenticatedAppAlunosRoute
+  '/_authenticated/app/chamada': typeof AuthenticatedAppChamadaRoute
+  '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
+  '/_authenticated/app/cursos': typeof AuthenticatedAppCursosRoute
+  '/_authenticated/app/relatorios': typeof AuthenticatedAppRelatoriosRoute
+  '/_authenticated/app/turmas': typeof AuthenticatedAppTurmasRoute
+  '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
+    | '/reset-password'
     | '/app'
     | '/app/alunos'
     | '/app/chamada'
@@ -113,6 +141,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
+    | '/reset-password'
     | '/app/alunos'
     | '/app/chamada'
     | '/app/clientes'
@@ -123,28 +153,47 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/app'
-    | '/app/alunos'
-    | '/app/chamada'
-    | '/app/clientes'
-    | '/app/cursos'
-    | '/app/relatorios'
-    | '/app/turmas'
-    | '/app/'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/app'
+    | '/_authenticated/app/alunos'
+    | '/_authenticated/app/chamada'
+    | '/_authenticated/app/clientes'
+    | '/_authenticated/app/cursos'
+    | '/_authenticated/app/relatorios'
+    | '/_authenticated/app/turmas'
+    | '/_authenticated/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRouteWithChildren
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -154,83 +203,105 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/': {
-      id: '/app/'
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/app/': {
+      id: '/_authenticated/app/'
       path: '/'
       fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/app/turmas': {
-      id: '/app/turmas'
+    '/_authenticated/app/turmas': {
+      id: '/_authenticated/app/turmas'
       path: '/turmas'
       fullPath: '/app/turmas'
-      preLoaderRoute: typeof AppTurmasRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppTurmasRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/app/relatorios': {
-      id: '/app/relatorios'
+    '/_authenticated/app/relatorios': {
+      id: '/_authenticated/app/relatorios'
       path: '/relatorios'
       fullPath: '/app/relatorios'
-      preLoaderRoute: typeof AppRelatoriosRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppRelatoriosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/app/cursos': {
-      id: '/app/cursos'
+    '/_authenticated/app/cursos': {
+      id: '/_authenticated/app/cursos'
       path: '/cursos'
       fullPath: '/app/cursos'
-      preLoaderRoute: typeof AppCursosRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppCursosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/app/clientes': {
-      id: '/app/clientes'
+    '/_authenticated/app/clientes': {
+      id: '/_authenticated/app/clientes'
       path: '/clientes'
       fullPath: '/app/clientes'
-      preLoaderRoute: typeof AppClientesRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppClientesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/app/chamada': {
-      id: '/app/chamada'
+    '/_authenticated/app/chamada': {
+      id: '/_authenticated/app/chamada'
       path: '/chamada'
       fullPath: '/app/chamada'
-      preLoaderRoute: typeof AppChamadaRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppChamadaRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/app/alunos': {
-      id: '/app/alunos'
+    '/_authenticated/app/alunos': {
+      id: '/_authenticated/app/alunos'
       path: '/alunos'
       fullPath: '/app/alunos'
-      preLoaderRoute: typeof AppAlunosRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppAlunosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
   }
 }
 
-interface AppRouteChildren {
-  AppAlunosRoute: typeof AppAlunosRoute
-  AppChamadaRoute: typeof AppChamadaRoute
-  AppClientesRoute: typeof AppClientesRoute
-  AppCursosRoute: typeof AppCursosRoute
-  AppRelatoriosRoute: typeof AppRelatoriosRoute
-  AppTurmasRoute: typeof AppTurmasRoute
-  AppIndexRoute: typeof AppIndexRoute
+interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppAlunosRoute: typeof AuthenticatedAppAlunosRoute
+  AuthenticatedAppChamadaRoute: typeof AuthenticatedAppChamadaRoute
+  AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
+  AuthenticatedAppCursosRoute: typeof AuthenticatedAppCursosRoute
+  AuthenticatedAppRelatoriosRoute: typeof AuthenticatedAppRelatoriosRoute
+  AuthenticatedAppTurmasRoute: typeof AuthenticatedAppTurmasRoute
+  AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
 }
 
-const AppRouteChildren: AppRouteChildren = {
-  AppAlunosRoute: AppAlunosRoute,
-  AppChamadaRoute: AppChamadaRoute,
-  AppClientesRoute: AppClientesRoute,
-  AppCursosRoute: AppCursosRoute,
-  AppRelatoriosRoute: AppRelatoriosRoute,
-  AppTurmasRoute: AppTurmasRoute,
-  AppIndexRoute: AppIndexRoute,
+const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppAlunosRoute: AuthenticatedAppAlunosRoute,
+  AuthenticatedAppChamadaRoute: AuthenticatedAppChamadaRoute,
+  AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
+  AuthenticatedAppCursosRoute: AuthenticatedAppCursosRoute,
+  AuthenticatedAppRelatoriosRoute: AuthenticatedAppRelatoriosRoute,
+  AuthenticatedAppTurmasRoute: AuthenticatedAppTurmasRoute,
+  AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
 }
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const AuthenticatedAppRouteWithChildren =
+  AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRouteWithChildren,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
