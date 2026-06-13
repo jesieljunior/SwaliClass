@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Users,
@@ -7,8 +7,10 @@ import {
   ClipboardCheck,
   BarChart3,
   Building2,
-  Settings,
+  LogOut,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -25,8 +27,16 @@ const admin: { to: string; label: string; icon: typeof LayoutDashboard }[] = [
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const navigate = useNavigate();
+  const { user, roles, fullName } = useAuth();
+  const isSuper = roles.includes("super_admin");
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  }
 
   return (
     <aside className="hidden lg:flex w-64 shrink-0 bg-navy-900 text-paper flex-col">
@@ -57,8 +67,10 @@ export function AppSidebar() {
           );
         })}
 
-        <p className="px-3 pt-6 pb-2 text-[10px] font-mono uppercase tracking-widest text-paper/30">Super Admin</p>
-        {admin.map((item) => {
+        {isSuper && (
+          <>
+            <p className="px-3 pt-6 pb-2 text-[10px] font-mono uppercase tracking-widest text-paper/30">Super Admin</p>
+            {admin.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.to);
           return (
@@ -73,15 +85,23 @@ export function AppSidebar() {
               <span className="truncate">{item.label}</span>
             </Link>
           );
-        })}
+            })}
+          </>
+        )}
       </nav>
 
       <div className="mt-auto p-4">
-        <div className="p-4 bg-navy-800 rounded-md border border-white/5">
-          <p className="text-[10px] text-paper/40 font-mono mb-2 uppercase tracking-wider">Suporte Premium</p>
-          <p className="text-xs text-paper">Fale com seu consultor Bitra</p>
-          <button className="mt-3 w-full text-[11px] font-bold bg-paper text-navy-900 py-1.5 rounded-sm flex items-center justify-center gap-1.5">
-            <Settings className="size-3" /> Configurações
+        <div className="p-3 bg-navy-800 rounded-md border border-white/5">
+          <p className="text-[10px] text-paper/40 font-mono uppercase tracking-wider truncate">
+            {isSuper ? "Super Admin" : "Conta"}
+          </p>
+          <p className="text-xs text-paper font-semibold truncate mt-1">{fullName || user?.email || "—"}</p>
+          <p className="text-[10px] text-paper/50 truncate">{user?.email}</p>
+          <button
+            onClick={handleLogout}
+            className="mt-3 w-full text-[11px] font-bold bg-paper text-navy-900 py-1.5 rounded-sm flex items-center justify-center gap-1.5 hover:bg-paper/90"
+          >
+            <LogOut className="size-3" /> Sair
           </button>
         </div>
       </div>
