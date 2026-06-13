@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { tenants } from "@/lib/mock-data";
 import { Plus } from "lucide-react";
 
-export const Route = createFileRoute("/app/clientes")({
+export const Route = createFileRoute("/_authenticated/app/clientes")({
   component: ClientesPage,
 });
 

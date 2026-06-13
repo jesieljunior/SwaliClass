@@ -3,7 +3,7 @@ import { useState } from "react";
 import { students } from "@/lib/mock-data";
 import { Search, Plus } from "lucide-react";
 
-export const Route = createFileRoute("/app/alunos")({
+export const Route = createFileRoute("/_authenticated/app/alunos")({
   component: AlunosPage,
 });
 

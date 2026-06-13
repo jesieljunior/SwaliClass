@@ -4,7 +4,7 @@ import { students, classes } from "@/lib/mock-data";
 import type { AttendanceStatus } from "@/lib/mock-data";
 import { Check, X, Clock3, FileText } from "lucide-react";
 
-export const Route = createFileRoute("/app/chamada")({
+export const Route = createFileRoute("/_authenticated/app/chamada")({
   component: ChamadaPage,
 });
 
