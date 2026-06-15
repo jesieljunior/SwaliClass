@@ -1,19 +1,35 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { students } from "@/lib/mock-data";
-import { Search, Plus } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { Search, Plus, Pencil, Trash2, UserPlus, Loader2 } from "lucide-react";
+import {
+  listStudents, upsertStudent, deleteStudent,
+  listClasses, enrollStudent, unenrollStudent,
+} from "@/lib/tenant.functions";
+import { Modal, Field, FormFooter, inputCls } from "./_authenticated.app.cursos";
 
 export const Route = createFileRoute("/_authenticated/app/alunos")({
   component: AlunosPage,
 });
 
 function AlunosPage() {
-  const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<"todos" | "ativo" | "arquivado">("todos");
-  const list = students.filter((s) =>
-    (filter === "todos" || s.status === filter) &&
-    (s.name.toLowerCase().includes(q.toLowerCase()) || s.email.toLowerCase().includes(q.toLowerCase()))
-  );
+  const fetchStudents = useServerFn(listStudents);
+  const fetchClasses = useServerFn(listClasses);
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["students"], queryFn: () => fetchStudents() });
+  const classesQ = useQuery({ queryKey: ["classes"], queryFn: () => fetchClasses() });
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
+  const [enrollFor, setEnrollFor] = useState<any | null>(null);
+
+  const list = useMemo(() => {
+    const term = search.toLowerCase();
+    return (q.data ?? []).filter((s: any) =>
+      !term || s.full_name?.toLowerCase().includes(term) || s.email?.toLowerCase().includes(term),
+    );
+  }, [q.data, search]);
 
   return (
     <div className="space-y-6">
@@ -22,34 +38,14 @@ function AlunosPage() {
           <h1 className="text-3xl font-display font-extrabold tracking-tight">Alunos</h1>
           <p className="text-xs text-navy-800/40 font-mono uppercase mt-1 tracking-widest">{list.length} resultados</p>
         </div>
-        <button className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-bold text-sm hover:bg-navy-800">
+        <button onClick={() => { setEditing(null); setOpen(true); }} className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-bold text-sm hover:bg-navy-800">
           <Plus className="size-4" /> Novo aluno
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <div className="flex-1 min-w-[240px] flex items-center gap-2 px-3 h-10 bg-white border border-border-subtle rounded-md">
-          <Search className="size-4 text-navy-800/40 shrink-0" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar por nome ou email…"
-            className="bg-transparent flex-1 min-w-0 text-sm outline-none"
-          />
-        </div>
-        <div className="flex bg-white border border-border-subtle rounded-md p-1">
-          {(["todos", "ativo", "arquivado"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 h-8 text-xs font-semibold uppercase tracking-wider rounded-sm capitalize ${
-                filter === f ? "bg-navy-900 text-paper" : "text-navy-800/60"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
+      <div className="flex-1 min-w-[240px] flex items-center gap-2 px-3 h-10 bg-white border border-border-subtle rounded-md">
+        <Search className="size-4 text-navy-800/40 shrink-0" />
+        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome ou email…" className="bg-transparent flex-1 min-w-0 text-sm outline-none" />
       </div>
 
       <div className="bg-white border border-border-subtle rounded-lg overflow-hidden">
@@ -57,46 +53,135 @@ function AlunosPage() {
           <thead className="bg-surface border-b border-border-subtle text-[10px] font-mono uppercase tracking-widest text-navy-800/50">
             <tr>
               <th className="text-left px-5 py-3 font-bold">Aluno</th>
-              <th className="text-left px-5 py-3 font-bold hidden md:table-cell">Turma</th>
+              <th className="text-left px-5 py-3 font-bold hidden md:table-cell">Turmas</th>
               <th className="text-left px-5 py-3 font-bold hidden lg:table-cell">Contato</th>
-              <th className="text-left px-5 py-3 font-bold">Frequência</th>
-              <th className="text-left px-5 py-3 font-bold">Status</th>
+              <th className="text-right px-5 py-3 font-bold">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border-subtle">
-            {list.map((s) => (
+            {q.isLoading && <tr><td colSpan={4} className="px-5 py-8 text-center"><Loader2 className="inline size-4 animate-spin" /></td></tr>}
+            {!q.isLoading && list.length === 0 && <tr><td colSpan={4} className="px-5 py-8 text-center text-navy-800/40 text-sm">Nenhum aluno.</td></tr>}
+            {list.map((s: any) => (
               <tr key={s.id} className="hover:bg-surface/60">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="size-8 rounded-full bg-navy-900/10 grid place-items-center text-[11px] font-bold shrink-0">
-                      {s.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                      {s.full_name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold truncate">{s.name}</p>
-                      <p className="text-[11px] text-navy-800/50 truncate">{s.email}</p>
+                      <p className="font-semibold truncate">{s.full_name}</p>
+                      {s.email && <p className="text-[11px] text-navy-800/50 truncate">{s.email}</p>}
                     </div>
                   </div>
                 </td>
-                <td className="px-5 py-3 hidden md:table-cell text-navy-800/80">{s.className}</td>
-                <td className="px-5 py-3 hidden lg:table-cell text-navy-800/80 font-mono text-xs">{s.phone}</td>
-                <td className="px-5 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 max-w-[120px] h-1.5 bg-navy-900/10 rounded-full overflow-hidden">
-                      <div className={`h-full ${s.attendance >= 85 ? "bg-emerald-500" : s.attendance >= 75 ? "bg-amber-500" : "bg-rose-500"}`} style={{ width: `${s.attendance}%` }} />
-                    </div>
-                    <span className="text-xs font-mono font-semibold tabular-nums">{s.attendance}%</span>
+                <td className="px-5 py-3 hidden md:table-cell text-navy-800/80 text-xs">{s.class_names || "—"}</td>
+                <td className="px-5 py-3 hidden lg:table-cell font-mono text-xs text-navy-800/80">{s.phone || "—"}</td>
+                <td className="px-5 py-3 text-right">
+                  <div className="inline-flex gap-1">
+                    <button onClick={() => setEnrollFor(s)} className="p-1.5 hover:bg-surface rounded-sm" title="Matrículas"><UserPlus className="size-3.5" /></button>
+                    <button onClick={() => { setEditing(s); setOpen(true); }} className="p-1.5 hover:bg-surface rounded-sm"><Pencil className="size-3.5" /></button>
+                    <DelStudent id={s.id} onDone={() => qc.invalidateQueries({ queryKey: ["students"] })} />
                   </div>
-                </td>
-                <td className="px-5 py-3">
-                  <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${s.status === "ativo" ? "bg-emerald-100 text-emerald-700" : "bg-navy-900/10 text-navy-800/60"}`}>
-                    {s.status}
-                  </span>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {open && (
+        <StudentDialog
+          initial={editing}
+          onClose={() => setOpen(false)}
+          onSaved={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["students"] }); }}
+        />
+      )}
+      {enrollFor && (
+        <EnrollmentDialog
+          student={enrollFor}
+          classes={classesQ.data ?? []}
+          onClose={() => setEnrollFor(null)}
+          onChange={() => { qc.invalidateQueries({ queryKey: ["students"] }); qc.invalidateQueries({ queryKey: ["classes"] }); }}
+        />
+      )}
     </div>
+  );
+}
+
+function DelStudent({ id, onDone }: { id: string; onDone: () => void }) {
+  const del = useServerFn(deleteStudent);
+  const m = useMutation({ mutationFn: () => del({ data: { id } }), onSuccess: onDone });
+  return <button onClick={() => { if (confirm("Excluir aluno?")) m.mutate(); }} className="p-1.5 hover:bg-rose-50 text-rose-700 rounded-sm"><Trash2 className="size-3.5" /></button>;
+}
+
+function StudentDialog({ initial, onClose, onSaved }: { initial: any | null; onClose: () => void; onSaved: () => void }) {
+  const save = useServerFn(upsertStudent);
+  const [s, setS] = useState<any>({
+    full_name: initial?.full_name ?? "",
+    email: initial?.email ?? "",
+    phone: initial?.phone ?? "",
+    document: initial?.document ?? "",
+    birth_date: initial?.birth_date ?? "",
+    guardian_name: initial?.guardian_name ?? "",
+    guardian_phone: initial?.guardian_phone ?? "",
+    notes: initial?.notes ?? "",
+  });
+  const upd = (k: string) => (e: any) => setS({ ...s, [k]: e.target.value });
+  const m = useMutation({
+    mutationFn: () => save({ data: { id: initial?.id, ...s } }),
+    onSuccess: onSaved,
+  });
+  return (
+    <Modal onClose={onClose} title={initial ? "Editar aluno" : "Novo aluno"}>
+      <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); m.mutate(); }}>
+        <Field label="Nome completo"><input required value={s.full_name} onChange={upd("full_name")} className={inputCls} /></Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="E-mail"><input type="email" value={s.email} onChange={upd("email")} className={inputCls} /></Field>
+          <Field label="Telefone"><input value={s.phone} onChange={upd("phone")} className={inputCls} /></Field>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Documento"><input value={s.document} onChange={upd("document")} className={inputCls} /></Field>
+          <Field label="Nascimento"><input type="date" value={s.birth_date} onChange={upd("birth_date")} className={inputCls} /></Field>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Responsável"><input value={s.guardian_name} onChange={upd("guardian_name")} className={inputCls} /></Field>
+          <Field label="Tel. responsável"><input value={s.guardian_phone} onChange={upd("guardian_phone")} className={inputCls} /></Field>
+        </div>
+        <Field label="Observações"><textarea rows={2} value={s.notes} onChange={upd("notes")} className={`${inputCls} h-auto py-2`} /></Field>
+        {m.error && <p className="text-xs text-rose-700">{(m.error as Error).message}</p>}
+        <FormFooter onCancel={onClose} loading={m.isPending} />
+      </form>
+    </Modal>
+  );
+}
+
+function EnrollmentDialog({ student, classes, onClose, onChange }: { student: any; classes: any[]; onClose: () => void; onChange: () => void }) {
+  const enroll = useServerFn(enrollStudent);
+  const unenroll = useServerFn(unenrollStudent);
+  const enrolledIds = new Set((student.enrollments ?? []).map((e: any) => e.class_id));
+  const enrollM = useMutation({ mutationFn: (cid: string) => enroll({ data: { student_id: student.id, class_id: cid } }), onSuccess: () => { onChange(); onClose(); } });
+  const unM = useMutation({ mutationFn: (cid: string) => unenroll({ data: { student_id: student.id, class_id: cid } }), onSuccess: () => { onChange(); onClose(); } });
+  return (
+    <Modal onClose={onClose} title={`Matrículas — ${student.full_name}`}>
+      {classes.length === 0 && <p className="text-sm text-navy-800/50">Nenhuma turma cadastrada.</p>}
+      <ul className="divide-y divide-border-subtle">
+        {classes.map((c) => {
+          const ok = enrolledIds.has(c.id);
+          return (
+            <li key={c.id} className="flex items-center justify-between py-2.5">
+              <div className="min-w-0">
+                <p className="font-semibold text-sm truncate">{c.name}</p>
+                <p className="text-[11px] text-navy-800/50 truncate">{c.course_name} {c.schedule && `· ${c.schedule}`}</p>
+              </div>
+              {ok ? (
+                <button onClick={() => unM.mutate(c.id)} disabled={unM.isPending} className="px-3 h-8 text-xs font-bold border border-rose-300 text-rose-700 rounded-sm hover:bg-rose-50">Remover</button>
+              ) : (
+                <button onClick={() => enrollM.mutate(c.id)} disabled={enrollM.isPending} className="px-3 h-8 text-xs font-bold bg-navy-900 text-paper rounded-sm hover:bg-navy-800">Matricular</button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </Modal>
   );
 }

@@ -1,42 +1,48 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { students, classes, weeklyAttendance } from "@/lib/mock-data";
-import { ArrowUpRight, AlertTriangle } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowUpRight, AlertTriangle, Loader2 } from "lucide-react";
+import { getDashboardStats } from "@/lib/tenant.functions";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
 });
 
 function Dashboard() {
-  const total = students.length;
-  const avg = Math.round(students.reduce((s, st) => s + st.attendance, 0) / total);
-  const lowFreq = students.filter((s) => s.attendance < 75);
+  const fetchStats = useServerFn(getDashboardStats);
+  const q = useQuery({ queryKey: ["dashboard"], queryFn: () => fetchStats() });
+  const stats = q.data;
+  const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-display font-extrabold tracking-tight">Visão geral</h1>
-        <p className="text-xs text-navy-800/40 font-mono uppercase mt-1 tracking-widest">Sexta-feira, 12 de junho de 2026</p>
+        <p className="text-xs text-navy-800/40 font-mono uppercase mt-1 tracking-widest">{today}</p>
       </div>
 
+      {q.isLoading && <p className="text-navy-800/40"><Loader2 className="inline size-5 animate-spin" /></p>}
+
+      {stats && (
       <div className="grid grid-cols-12 gap-4">
-        <KpiCard label="Total alunos" value={total.toString()} />
-        <KpiCard label="Turmas ativas" value={classes.length.toString()} />
-        <KpiCard label="Frequência média" value={`${avg}%`} accent="emerald" />
-        <KpiCard label="Chamadas hoje" value="14" />
-        <KpiCard label="Baixa frequência" value={lowFreq.length.toString()} dark />
-        <KpiCard label="Cursos ativos" value="5" />
+        <KpiCard label="Total alunos" value={stats.totalStudents.toString()} />
+        <KpiCard label="Turmas" value={stats.totalClasses.toString()} />
+        <KpiCard label="Cursos" value={stats.totalCourses.toString()} />
+        <KpiCard label="Freq. média (30d)" value={`${stats.avgAttendance}%`} accent="emerald" />
+        <KpiCard label="Chamadas (7d)" value={stats.sessionsThisWeek.toString()} />
+        <KpiCard label="Baixa frequência" value={stats.lowFreq.length.toString()} dark />
 
         <div className="col-span-12 lg:col-span-8 bg-white border border-border-subtle rounded-lg p-6">
           <div className="flex justify-between items-end mb-6 gap-3 flex-wrap">
             <div>
               <h3 className="font-display font-bold text-lg">Frequência semanal</h3>
-              <p className="text-xs text-navy-800/50">Média consolidada por dia letivo</p>
+              <p className="text-xs text-navy-800/50">Últimos 7 dias · % de presença</p>
             </div>
             <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600">
-              <ArrowUpRight className="size-3.5" /> +2,4%
+              <ArrowUpRight className="size-3.5" /> {stats.avgAttendance}%
             </span>
           </div>
-          <WeeklyChart />
+          <WeeklyChart data={stats.weekly} />
         </div>
 
         <div className="col-span-12 lg:col-span-4 bg-navy-900 text-paper rounded-lg p-6 flex flex-col">
@@ -45,11 +51,11 @@ function Dashboard() {
           </h3>
           <p className="text-xs text-paper/50 mb-4">Frequência abaixo de 75%</p>
           <div className="space-y-2 flex-1">
-            {lowFreq.map((s) => (
+            {stats.lowFreq.length === 0 && <p className="text-xs text-paper/40">Sem alertas. 👍</p>}
+            {stats.lowFreq.map((s: any) => (
               <div key={s.id} className="flex items-center justify-between p-3 bg-white/5 rounded-sm">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{s.name}</p>
-                  <p className="text-[10px] font-mono uppercase text-paper/40">{s.className}</p>
+                  <p className="text-sm font-medium truncate">{s.full_name}</p>
                 </div>
                 <span className="text-sm font-bold shrink-0">{s.attendance}%</span>
               </div>
@@ -57,6 +63,7 @@ function Dashboard() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -76,12 +83,12 @@ function KpiCard({ label, value, dark, accent }: { label: string; value: string;
   );
 }
 
-function WeeklyChart() {
+function WeeklyChart({ data }: { data: { day: string; value: number }[] }) {
   const max = 100;
   const w = 600;
   const h = 200;
-  const points = weeklyAttendance.map((d, i) => ({
-    x: (i / (weeklyAttendance.length - 1)) * w,
+  const points = data.map((d, i) => ({
+    x: (i / Math.max(1, data.length - 1)) * w,
     y: h - (d.value / max) * h,
     ...d,
   }));
