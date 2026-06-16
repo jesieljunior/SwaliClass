@@ -358,3 +358,118 @@ export const getDashboardStats = createServerFn({ method: "GET" })
       weekly,
     };
   });
+
+// ============ REPORTS ============
+const reportSchema = z.object({
+  start_date: z.string(),
+  end_date: z.string(),
+  class_id: z.string().uuid().optional().nullable(),
+  course_id: z.string().uuid().optional().nullable(),
+  student_id: z.string().uuid().optional().nullable(),
+});
+
+export const getReportData = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => reportSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    // 1. Fetch sessions in the period, with optional class/course filter
+    let sessQ = context.supabase
+      .from("attendance_sessions")
+      .select("id, session_date, topic, class_id, classes(id, name, course_id, courses(id, name))")
+      .gte("session_date", data.start_date)
+      .lte("session_date", data.end_date)
+      .order("session_date", { ascending: true });
+    if (data.class_id) sessQ = sessQ.eq("class_id", data.class_id);
+    const { data: sessions, error: e1 } = await sessQ;
+    if (e1) throw new Error(e1.message);
+
+    let filteredSessions = (sessions ?? []) as any[];
+    if (data.course_id) {
+      filteredSessions = filteredSessions.filter((s) => s.classes?.course_id === data.course_id);
+    }
+    const sessionIds = filteredSessions.map((s) => s.id);
+    if (sessionIds.length === 0) {
+      return { sessions: [], records: [], byStudent: [], byClass: [], byCourse: [], totals: { sessions: 0, students: 0, present: 0, absent: 0, late: 0, justified: 0, rate: 0 } };
+    }
+
+    // 2. Fetch records for those sessions
+    let recQ = context.supabase
+      .from("attendance_records")
+      .select("session_id, student_id, status, students(id, full_name, email)")
+      .in("session_id", sessionIds);
+    if (data.student_id) recQ = recQ.eq("student_id", data.student_id);
+    const { data: records, error: e2 } = await recQ;
+    if (e2) throw new Error(e2.message);
+
+    const recs = (records ?? []) as any[];
+    const sessById = new Map(filteredSessions.map((s) => [s.id, s]));
+
+    const aggKey = <T,>(map: Map<string, T>, k: string, init: () => T) => {
+      if (!map.has(k)) map.set(k, init());
+      return map.get(k)!;
+    };
+    type Agg = { id: string; name: string; present: number; absent: number; late: number; justified: number; total: number };
+    const byStudent = new Map<string, Agg>();
+    const byClass = new Map<string, Agg>();
+    const byCourse = new Map<string, Agg>();
+    let totalPresent = 0, totalAbsent = 0, totalLate = 0, totalJustified = 0;
+
+    for (const r of recs) {
+      const sess = sessById.get(r.session_id);
+      if (!sess) continue;
+      const cls = sess.classes;
+      const course = cls?.courses;
+      const st = aggKey(byStudent, r.student_id, () => ({ id: r.student_id, name: r.students?.full_name ?? "—", present: 0, absent: 0, late: 0, justified: 0, total: 0 }));
+      const cl = cls ? aggKey(byClass, cls.id, () => ({ id: cls.id, name: cls.name, present: 0, absent: 0, late: 0, justified: 0, total: 0 })) : null;
+      const co = course ? aggKey(byCourse, course.id, () => ({ id: course.id, name: course.name, present: 0, absent: 0, late: 0, justified: 0, total: 0 })) : null;
+      const buckets = [st, cl, co].filter(Boolean) as Agg[];
+      for (const b of buckets) {
+        b.total++;
+        if (r.status === "presente") b.present++;
+        else if (r.status === "ausente") b.absent++;
+        else if (r.status === "atrasado") b.late++;
+        else if (r.status === "justificado") b.justified++;
+      }
+      if (r.status === "presente") totalPresent++;
+      else if (r.status === "ausente") totalAbsent++;
+      else if (r.status === "atrasado") totalLate++;
+      else if (r.status === "justificado") totalJustified++;
+    }
+
+    const finish = (a: Agg) => ({
+      ...a,
+      rate: a.total ? Math.round(((a.present + a.late) / a.total) * 100) : 0,
+    });
+
+    const totalRecs = recs.length;
+    return {
+      sessions: filteredSessions.map((s) => ({
+        id: s.id,
+        date: s.session_date,
+        topic: s.topic,
+        class_name: s.classes?.name ?? "—",
+        course_name: s.classes?.courses?.name ?? "—",
+      })),
+      records: recs.map((r) => ({
+        session_id: r.session_id,
+        date: sessById.get(r.session_id)?.session_date,
+        class_name: sessById.get(r.session_id)?.classes?.name ?? "—",
+        course_name: sessById.get(r.session_id)?.classes?.courses?.name ?? "—",
+        student_id: r.student_id,
+        student_name: r.students?.full_name ?? "—",
+        status: r.status,
+      })),
+      byStudent: Array.from(byStudent.values()).map(finish).sort((a, b) => a.rate - b.rate),
+      byClass: Array.from(byClass.values()).map(finish).sort((a, b) => b.rate - a.rate),
+      byCourse: Array.from(byCourse.values()).map(finish).sort((a, b) => b.rate - a.rate),
+      totals: {
+        sessions: filteredSessions.length,
+        students: byStudent.size,
+        present: totalPresent,
+        absent: totalAbsent,
+        late: totalLate,
+        justified: totalJustified,
+        rate: totalRecs ? Math.round(((totalPresent + totalLate) / totalRecs) * 100) : 0,
+      },
+    };
+  });
