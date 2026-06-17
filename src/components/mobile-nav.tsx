@@ -1,13 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { LayoutDashboard, Users, GraduationCap, ClipboardCheck, BarChart3 } from "lucide-react";
 
-const items = [
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+const items: NavItem[] = [
   { to: "/app", label: "Início", icon: LayoutDashboard, exact: true },
   { to: "/app/chamada", label: "Chamada", icon: ClipboardCheck },
   { to: "/app/alunos", label: "Alunos", icon: Users },
   { to: "/app/turmas", label: "Turmas", icon: GraduationCap },
   { to: "/app/relatorios", label: "Relatórios", icon: BarChart3 },
-] as const;
+];
 
 export function MobileNav() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
