@@ -27,7 +27,7 @@ export function MobileNav() {
 
   return (
     <nav
-      className={`lg:hidden fixed bottom-0 inset-x-0 z-40 bg-navy-900 text-paper border-t border-white/10 grid grid-cols-${items.length}`}
+      className={`lg:hidden fixed bottom-0 inset-x-0 z-40 bg-navy-900 text-paper border-t border-white/10 grid ${items.length === 5 ? "grid-cols-5" : "grid-cols-4"}`}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {items.map((it) => {

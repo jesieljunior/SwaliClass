@@ -8,6 +8,7 @@ import {
   BarChart3,
   Building2,
   LogOut,
+  FileText,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,6 +16,7 @@ import { useAuth } from "@/hooks/use-auth";
 const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/app/chamada", label: "Chamada", icon: ClipboardCheck },
+  { to: "/app/atividades", label: "Atividades", icon: FileText },
   { to: "/app/alunos", label: "Alunos", icon: Users },
   { to: "/app/turmas", label: "Turmas", icon: GraduationCap },
   { to: "/app/cursos", label: "Cursos", icon: BookOpen },
