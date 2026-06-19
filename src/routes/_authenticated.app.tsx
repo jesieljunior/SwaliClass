@@ -1,6 +1,8 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/app-sidebar";
 import { MobileNav } from "@/components/mobile-nav";
+import { ViewModeProvider } from "@/lib/view-mode";
+import { ViewModeToggle } from "@/components/view-mode-toggle";
 import { Bell, Search } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -16,16 +18,18 @@ export const Route = createFileRoute("/_authenticated/app")({
 function AppLayout() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   return (
-    <div className="min-h-screen flex bg-surface text-navy-900">
-      <AppSidebar />
-      <div className="flex-1 min-w-0 flex flex-col">
-        <Topbar pathname={pathname} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
-          <Outlet />
-        </main>
+    <ViewModeProvider>
+      <div className="min-h-screen flex bg-surface text-navy-900">
+        <AppSidebar />
+        <div className="flex-1 min-w-0 flex flex-col">
+          <Topbar pathname={pathname} />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
+            <Outlet />
+          </main>
+        </div>
+        <MobileNav />
       </div>
-      <MobileNav />
-    </div>
+    </ViewModeProvider>
   );
 }
 
@@ -47,6 +51,7 @@ function Topbar({ pathname }: { pathname: string }) {
         </div>
       </div>
       <div className="ml-auto flex items-center gap-3 shrink-0">
+        <ViewModeToggle />
         <button className="size-9 rounded-md border border-border-subtle bg-white grid place-items-center text-navy-800/60 hover:text-navy-900">
           <Bell className="size-4" />
         </button>

@@ -1,23 +1,33 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, GraduationCap, ClipboardCheck, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, GraduationCap, ClipboardCheck, BarChart3, FileText, Award, UserCircle2 } from "lucide-react";
+import { useViewMode } from "@/lib/view-mode";
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
-const items: NavItem[] = [
+const teacherItems: NavItem[] = [
   { to: "/app", label: "Início", icon: LayoutDashboard, exact: true },
   { to: "/app/chamada", label: "Chamada", icon: ClipboardCheck },
-  { to: "/app/alunos", label: "Alunos", icon: Users },
+  { to: "/app/atividades", label: "Atividades", icon: FileText },
   { to: "/app/turmas", label: "Turmas", icon: GraduationCap },
   { to: "/app/relatorios", label: "Relatórios", icon: BarChart3 },
 ];
 
+const studentItems: NavItem[] = [
+  { to: "/app", label: "Início", icon: LayoutDashboard, exact: true },
+  { to: "/app/atividades", label: "Atividades", icon: FileText },
+  { to: "/app/notas", label: "Notas", icon: Award },
+  { to: "/app/perfil", label: "Perfil", icon: UserCircle2 },
+];
+
 export function MobileNav() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const { mode } = useViewMode();
+  const items = mode === "teacher" ? teacherItems : studentItems;
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-navy-900 text-paper border-t border-white/10 grid grid-cols-5"
+      className={`lg:hidden fixed bottom-0 inset-x-0 z-40 bg-navy-900 text-paper border-t border-white/10 grid ${items.length === 5 ? "grid-cols-5" : "grid-cols-4"}`}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {items.map((it) => {
