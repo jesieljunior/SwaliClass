@@ -22,6 +22,7 @@ import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppCursosRouteImport } from './routes/_authenticated.app.cursos'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated.app.clientes'
 import { Route as AuthenticatedAppChamadaRouteImport } from './routes/_authenticated.app.chamada'
+import { Route as AuthenticatedAppAtividadesRouteImport } from './routes/_authenticated.app.atividades'
 import { Route as AuthenticatedAppAlunosRouteImport } from './routes/_authenticated.app.alunos'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -90,6 +91,12 @@ const AuthenticatedAppChamadaRoute = AuthenticatedAppChamadaRouteImport.update({
   path: '/chamada',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppAtividadesRoute =
+  AuthenticatedAppAtividadesRouteImport.update({
+    id: '/atividades',
+    path: '/atividades',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppAlunosRoute = AuthenticatedAppAlunosRouteImport.update({
   id: '/alunos',
   path: '/alunos',
@@ -103,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/app/alunos': typeof AuthenticatedAppAlunosRoute
+  '/app/atividades': typeof AuthenticatedAppAtividadesRoute
   '/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/cursos': typeof AuthenticatedAppCursosRoute
@@ -117,6 +125,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/app/alunos': typeof AuthenticatedAppAlunosRoute
+  '/app/atividades': typeof AuthenticatedAppAtividadesRoute
   '/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/cursos': typeof AuthenticatedAppCursosRoute
@@ -134,6 +143,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/app/alunos': typeof AuthenticatedAppAlunosRoute
+  '/_authenticated/app/atividades': typeof AuthenticatedAppAtividadesRoute
   '/_authenticated/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
   '/_authenticated/app/cursos': typeof AuthenticatedAppCursosRoute
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/app'
     | '/app/alunos'
+    | '/app/atividades'
     | '/app/chamada'
     | '/app/clientes'
     | '/app/cursos'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/app/alunos'
+    | '/app/atividades'
     | '/app/chamada'
     | '/app/clientes'
     | '/app/cursos'
@@ -181,6 +193,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/app'
     | '/_authenticated/app/alunos'
+    | '/_authenticated/app/atividades'
     | '/_authenticated/app/chamada'
     | '/_authenticated/app/clientes'
     | '/_authenticated/app/cursos'
@@ -291,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppChamadaRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/atividades': {
+      id: '/_authenticated/app/atividades'
+      path: '/atividades'
+      fullPath: '/app/atividades'
+      preLoaderRoute: typeof AuthenticatedAppAtividadesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/alunos': {
       id: '/_authenticated/app/alunos'
       path: '/alunos'
@@ -303,6 +323,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAlunosRoute: typeof AuthenticatedAppAlunosRoute
+  AuthenticatedAppAtividadesRoute: typeof AuthenticatedAppAtividadesRoute
   AuthenticatedAppChamadaRoute: typeof AuthenticatedAppChamadaRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
   AuthenticatedAppCursosRoute: typeof AuthenticatedAppCursosRoute
@@ -314,6 +335,7 @@ interface AuthenticatedAppRouteChildren {
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAlunosRoute: AuthenticatedAppAlunosRoute,
+  AuthenticatedAppAtividadesRoute: AuthenticatedAppAtividadesRoute,
   AuthenticatedAppChamadaRoute: AuthenticatedAppChamadaRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
   AuthenticatedAppCursosRoute: AuthenticatedAppCursosRoute,
