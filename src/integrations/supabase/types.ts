@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_at: string
+          id: string
+          student_id: string | null
+          tenant_id: string
+          title: string
+          type: Database["public"]["Enums"]["activity_type"]
+          updated_at: string
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at: string
+          id?: string
+          student_id?: string | null
+          tenant_id: string
+          title: string
+          type: Database["public"]["Enums"]["activity_type"]
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string
+          id?: string
+          student_id?: string | null
+          tenant_id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["activity_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendance_records: {
         Row: {
           created_at: string
@@ -414,6 +471,69 @@ export type Database = {
           },
         ]
       }
+      submissions: {
+        Row: {
+          activity_id: string
+          created_at: string
+          feedback: string | null
+          grade: number | null
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          note: string | null
+          status: Database["public"]["Enums"]["activity_status"]
+          student_id: string
+          submitted_at: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string
+          feedback?: string | null
+          grade?: number | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          note?: string | null
+          status?: Database["public"]["Enums"]["activity_status"]
+          student_id: string
+          submitted_at?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string
+          feedback?: string | null
+          grade?: number | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          note?: string | null
+          status?: Database["public"]["Enums"]["activity_status"]
+          student_id?: string
+          submitted_at?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submissions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           contact_email: string | null
@@ -502,6 +622,8 @@ export type Database = {
       }
     }
     Enums: {
+      activity_status: "pendente" | "entregue" | "corrigida"
+      activity_type: "particular" | "turma"
       app_role: "super_admin" | "admin_instituicao"
       attendance_status: "presente" | "ausente" | "atrasado" | "justificado"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
@@ -634,6 +756,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_status: ["pendente", "entregue", "corrigida"],
+      activity_type: ["particular", "turma"],
       app_role: ["super_admin", "admin_instituicao"],
       attendance_status: ["presente", "ausente", "atrasado", "justificado"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
