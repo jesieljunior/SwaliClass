@@ -19,11 +19,9 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAppTurmasRouteImport } from './routes/_authenticated.app.turmas'
 import { Route as AuthenticatedAppRelatoriosRouteImport } from './routes/_authenticated.app.relatorios'
 import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated.app.perfil'
-import { Route as AuthenticatedAppNotasRouteImport } from './routes/_authenticated.app.notas'
 import { Route as AuthenticatedAppCursosRouteImport } from './routes/_authenticated.app.cursos'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated.app.clientes'
 import { Route as AuthenticatedAppChamadaRouteImport } from './routes/_authenticated.app.chamada'
-import { Route as AuthenticatedAppAtividadesRouteImport } from './routes/_authenticated.app.atividades'
 import { Route as AuthenticatedAppAlunosRouteImport } from './routes/_authenticated.app.alunos'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -76,11 +74,6 @@ const AuthenticatedAppPerfilRoute = AuthenticatedAppPerfilRouteImport.update({
   path: '/perfil',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AuthenticatedAppNotasRoute = AuthenticatedAppNotasRouteImport.update({
-  id: '/notas',
-  path: '/notas',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
 const AuthenticatedAppCursosRoute = AuthenticatedAppCursosRouteImport.update({
   id: '/cursos',
   path: '/cursos',
@@ -97,12 +90,6 @@ const AuthenticatedAppChamadaRoute = AuthenticatedAppChamadaRouteImport.update({
   path: '/chamada',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AuthenticatedAppAtividadesRoute =
-  AuthenticatedAppAtividadesRouteImport.update({
-    id: '/atividades',
-    path: '/atividades',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
 const AuthenticatedAppAlunosRoute = AuthenticatedAppAlunosRouteImport.update({
   id: '/alunos',
   path: '/alunos',
@@ -116,11 +103,9 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/app/alunos': typeof AuthenticatedAppAlunosRoute
-  '/app/atividades': typeof AuthenticatedAppAtividadesRoute
   '/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/cursos': typeof AuthenticatedAppCursosRoute
-  '/app/notas': typeof AuthenticatedAppNotasRoute
   '/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/app/relatorios': typeof AuthenticatedAppRelatoriosRoute
   '/app/turmas': typeof AuthenticatedAppTurmasRoute
@@ -132,11 +117,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/app/alunos': typeof AuthenticatedAppAlunosRoute
-  '/app/atividades': typeof AuthenticatedAppAtividadesRoute
   '/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/cursos': typeof AuthenticatedAppCursosRoute
-  '/app/notas': typeof AuthenticatedAppNotasRoute
   '/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/app/relatorios': typeof AuthenticatedAppRelatoriosRoute
   '/app/turmas': typeof AuthenticatedAppTurmasRoute
@@ -151,11 +134,9 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/app/alunos': typeof AuthenticatedAppAlunosRoute
-  '/_authenticated/app/atividades': typeof AuthenticatedAppAtividadesRoute
   '/_authenticated/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
   '/_authenticated/app/cursos': typeof AuthenticatedAppCursosRoute
-  '/_authenticated/app/notas': typeof AuthenticatedAppNotasRoute
   '/_authenticated/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/_authenticated/app/relatorios': typeof AuthenticatedAppRelatoriosRoute
   '/_authenticated/app/turmas': typeof AuthenticatedAppTurmasRoute
@@ -170,11 +151,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/app'
     | '/app/alunos'
-    | '/app/atividades'
     | '/app/chamada'
     | '/app/clientes'
     | '/app/cursos'
-    | '/app/notas'
     | '/app/perfil'
     | '/app/relatorios'
     | '/app/turmas'
@@ -186,11 +165,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/app/alunos'
-    | '/app/atividades'
     | '/app/chamada'
     | '/app/clientes'
     | '/app/cursos'
-    | '/app/notas'
     | '/app/perfil'
     | '/app/relatorios'
     | '/app/turmas'
@@ -204,11 +181,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/app'
     | '/_authenticated/app/alunos'
-    | '/_authenticated/app/atividades'
     | '/_authenticated/app/chamada'
     | '/_authenticated/app/clientes'
     | '/_authenticated/app/cursos'
-    | '/_authenticated/app/notas'
     | '/_authenticated/app/perfil'
     | '/_authenticated/app/relatorios'
     | '/_authenticated/app/turmas'
@@ -295,13 +270,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppPerfilRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/app/notas': {
-      id: '/_authenticated/app/notas'
-      path: '/notas'
-      fullPath: '/app/notas'
-      preLoaderRoute: typeof AuthenticatedAppNotasRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
     '/_authenticated/app/cursos': {
       id: '/_authenticated/app/cursos'
       path: '/cursos'
@@ -323,13 +291,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppChamadaRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/app/atividades': {
-      id: '/_authenticated/app/atividades'
-      path: '/atividades'
-      fullPath: '/app/atividades'
-      preLoaderRoute: typeof AuthenticatedAppAtividadesRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
     '/_authenticated/app/alunos': {
       id: '/_authenticated/app/alunos'
       path: '/alunos'
@@ -342,11 +303,9 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAlunosRoute: typeof AuthenticatedAppAlunosRoute
-  AuthenticatedAppAtividadesRoute: typeof AuthenticatedAppAtividadesRoute
   AuthenticatedAppChamadaRoute: typeof AuthenticatedAppChamadaRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
   AuthenticatedAppCursosRoute: typeof AuthenticatedAppCursosRoute
-  AuthenticatedAppNotasRoute: typeof AuthenticatedAppNotasRoute
   AuthenticatedAppPerfilRoute: typeof AuthenticatedAppPerfilRoute
   AuthenticatedAppRelatoriosRoute: typeof AuthenticatedAppRelatoriosRoute
   AuthenticatedAppTurmasRoute: typeof AuthenticatedAppTurmasRoute
@@ -355,11 +314,9 @@ interface AuthenticatedAppRouteChildren {
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAlunosRoute: AuthenticatedAppAlunosRoute,
-  AuthenticatedAppAtividadesRoute: AuthenticatedAppAtividadesRoute,
   AuthenticatedAppChamadaRoute: AuthenticatedAppChamadaRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
   AuthenticatedAppCursosRoute: AuthenticatedAppCursosRoute,
-  AuthenticatedAppNotasRoute: AuthenticatedAppNotasRoute,
   AuthenticatedAppPerfilRoute: AuthenticatedAppPerfilRoute,
   AuthenticatedAppRelatoriosRoute: AuthenticatedAppRelatoriosRoute,
   AuthenticatedAppTurmasRoute: AuthenticatedAppTurmasRoute,
