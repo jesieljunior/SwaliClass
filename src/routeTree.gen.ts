@@ -18,6 +18,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated.ap
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated.app.index'
 import { Route as AuthenticatedAppTurmasRouteImport } from './routes/_authenticated.app.turmas'
 import { Route as AuthenticatedAppRelatoriosRouteImport } from './routes/_authenticated.app.relatorios'
+import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated.app.perfil'
 import { Route as AuthenticatedAppCursosRouteImport } from './routes/_authenticated.app.cursos'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated.app.clientes'
 import { Route as AuthenticatedAppChamadaRouteImport } from './routes/_authenticated.app.chamada'
@@ -69,6 +70,11 @@ const AuthenticatedAppRelatoriosRoute =
     path: '/relatorios',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppPerfilRoute = AuthenticatedAppPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppCursosRoute = AuthenticatedAppCursosRouteImport.update({
   id: '/cursos',
   path: '/cursos',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/cursos': typeof AuthenticatedAppCursosRoute
+  '/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/app/relatorios': typeof AuthenticatedAppRelatoriosRoute
   '/app/turmas': typeof AuthenticatedAppTurmasRoute
   '/app/': typeof AuthenticatedAppIndexRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
   '/app/cursos': typeof AuthenticatedAppCursosRoute
+  '/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/app/relatorios': typeof AuthenticatedAppRelatoriosRoute
   '/app/turmas': typeof AuthenticatedAppTurmasRoute
   '/app': typeof AuthenticatedAppIndexRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/_authenticated/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
   '/_authenticated/app/cursos': typeof AuthenticatedAppCursosRoute
+  '/_authenticated/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/_authenticated/app/relatorios': typeof AuthenticatedAppRelatoriosRoute
   '/_authenticated/app/turmas': typeof AuthenticatedAppTurmasRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/app/chamada'
     | '/app/clientes'
     | '/app/cursos'
+    | '/app/perfil'
     | '/app/relatorios'
     | '/app/turmas'
     | '/app/'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/app/chamada'
     | '/app/clientes'
     | '/app/cursos'
+    | '/app/perfil'
     | '/app/relatorios'
     | '/app/turmas'
     | '/app'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/chamada'
     | '/_authenticated/app/clientes'
     | '/_authenticated/app/cursos'
+    | '/_authenticated/app/perfil'
     | '/_authenticated/app/relatorios'
     | '/_authenticated/app/turmas'
     | '/_authenticated/app/'
@@ -264,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRelatoriosRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/perfil': {
+      id: '/_authenticated/app/perfil'
+      path: '/perfil'
+      fullPath: '/app/perfil'
+      preLoaderRoute: typeof AuthenticatedAppPerfilRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/cursos': {
       id: '/_authenticated/app/cursos'
       path: '/cursos'
@@ -308,6 +327,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppChamadaRoute: typeof AuthenticatedAppChamadaRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
   AuthenticatedAppCursosRoute: typeof AuthenticatedAppCursosRoute
+  AuthenticatedAppPerfilRoute: typeof AuthenticatedAppPerfilRoute
   AuthenticatedAppRelatoriosRoute: typeof AuthenticatedAppRelatoriosRoute
   AuthenticatedAppTurmasRoute: typeof AuthenticatedAppTurmasRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
@@ -319,6 +339,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppChamadaRoute: AuthenticatedAppChamadaRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
   AuthenticatedAppCursosRoute: AuthenticatedAppCursosRoute,
+  AuthenticatedAppPerfilRoute: AuthenticatedAppPerfilRoute,
   AuthenticatedAppRelatoriosRoute: AuthenticatedAppRelatoriosRoute,
   AuthenticatedAppTurmasRoute: AuthenticatedAppTurmasRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
