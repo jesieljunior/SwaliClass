@@ -432,6 +432,7 @@ export type Database = {
           phone: string | null
           tenant_id: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           birth_date?: string | null
@@ -446,6 +447,7 @@ export type Database = {
           phone?: string | null
           tenant_id: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           birth_date?: string | null
@@ -460,6 +462,7 @@ export type Database = {
           phone?: string | null
           tenant_id?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -624,7 +627,7 @@ export type Database = {
     Enums: {
       activity_status: "pendente" | "entregue" | "corrigida"
       activity_type: "particular" | "turma"
-      app_role: "super_admin" | "admin_instituicao"
+      app_role: "super_admin" | "admin_instituicao" | "aluno" | "professor"
       attendance_status: "presente" | "ausente" | "atrasado" | "justificado"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
       tenant_plan: "starter" | "professional" | "business" | "enterprise"
@@ -758,7 +761,7 @@ export const Constants = {
     Enums: {
       activity_status: ["pendente", "entregue", "corrigida"],
       activity_type: ["particular", "turma"],
-      app_role: ["super_admin", "admin_instituicao"],
+      app_role: ["super_admin", "admin_instituicao", "aluno", "professor"],
       attendance_status: ["presente", "ausente", "atrasado", "justificado"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
       tenant_plan: ["starter", "professional", "business", "enterprise"],
