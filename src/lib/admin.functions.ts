@@ -200,6 +200,16 @@ export const acceptInvite = createServerFn({ method: "POST" })
         if (r.error && !r.error.message.includes("duplicate")) throw new Error(r.error.message);
       });
 
+    // If accepting as student, link the auth user to the matching student row (by email + tenant).
+    if (invite.role === "aluno" && invite.tenant_id) {
+      await supabaseAdmin
+        .from("students")
+        .update({ user_id: userId! })
+        .eq("tenant_id", invite.tenant_id)
+        .ilike("email", invite.email)
+        .is("user_id", null);
+    }
+
     // Activate tenant if still trial-with-no-users
     if (invite.tenant_id) {
       await supabaseAdmin
