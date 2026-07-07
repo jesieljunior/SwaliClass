@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { useViewMode } from "@/lib/view-mode";
 import { usePreviewStudent } from "@/lib/preview-student";
+import { useSession } from "@/hooks/use-session";
 import {
   listActivities, createActivity, deleteActivity, markSubmissionComplete, gradeSubmission,
 } from "@/lib/activities.functions";
@@ -38,6 +39,9 @@ type Activity = {
 
 function AtividadesPage() {
   const { mode } = useViewMode();
+  const session = useSession();
+  const isAluno = !!session.data?.isAluno && !session.data?.isStaff;
+  const effectiveMode = isAluno ? "student" : mode;
   const fetchActivities = useServerFn(listActivities);
   const q = useQuery({ queryKey: ["activities"], queryFn: () => fetchActivities() });
 
@@ -45,13 +49,13 @@ function AtividadesPage() {
     <div className="space-y-6">
       <AnimatePresence mode="wait">
         <motion.div
-          key={mode}
+          key={effectiveMode}
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
         >
           {q.isLoading ? (
             <div className="p-12 text-center text-navy-800/40"><Loader2 className="inline size-5 animate-spin" /></div>
-          ) : mode === "teacher" ? (
+          ) : effectiveMode === "teacher" ? (
             <TeacherView activities={(q.data ?? []) as Activity[]} />
           ) : (
             <StudentView activities={(q.data ?? []) as Activity[]} />
@@ -291,11 +295,23 @@ function Stat({ label, value, tone }: { label: string; value: number; tone: "nav
 /* ---------------- STUDENT VIEW ---------------- */
 function StudentView({ activities }: { activities: Activity[] }) {
   const qc = useQueryClient();
+  const session = useSession();
+  const isRealStudent = !!session.data?.isAluno && !session.data?.isStaff;
+  // Staff previewing the portal → list of students; real aluno → own session
   const fetchStudents = useServerFn(listStudents);
-  const students = useQuery({ queryKey: ["students"], queryFn: () => fetchStudents() });
+  const students = useQuery({
+    queryKey: ["students"],
+    queryFn: () => fetchStudents(),
+    enabled: !isRealStudent,
+  });
   const list = (students.data ?? []) as any[];
-  const { studentId, setStudentId } = usePreviewStudent(list[0]?.id);
-  const current = list.find((s) => s.id === studentId);
+  const { studentId: previewId, setStudentId } = usePreviewStudent(list[0]?.id);
+  const studentId = isRealStudent ? session.data?.student?.id : previewId;
+  const current = isRealStudent
+    ? session.data?.student
+      ? { id: session.data.student.id, full_name: session.data.student.full_name }
+      : undefined
+    : list.find((s) => s.id === studentId);
 
   const [tab, setTab] = useState<"pendentes" | "entregues">("pendentes");
   const [openId, setOpenId] = useState<string | null>(null);
@@ -336,7 +352,7 @@ function StudentView({ activities }: { activities: Activity[] }) {
           </p>
           <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight">Suas atividades</h1>
         </div>
-        {list.length > 0 && (
+        {!isRealStudent && list.length > 0 && (
           <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50/60 p-3 flex items-center gap-3">
             <div className="text-[10px] font-mono uppercase tracking-widest text-amber-800">Prévia</div>
             <Select value={studentId ?? ""} onValueChange={setStudentId}>
@@ -349,13 +365,19 @@ function StudentView({ activities }: { activities: Activity[] }) {
         )}
       </header>
 
-      {list.length === 0 && (
+      {!isRealStudent && list.length === 0 && (
         <div className="bg-white border border-border-subtle rounded-2xl p-8 text-center text-sm text-navy-800/60">
           Cadastre alunos para simular o portal do aluno.
         </div>
       )}
 
-      {list.length > 0 && (
+      {isRealStudent && !session.data?.student && (
+        <div className="bg-white border border-border-subtle rounded-2xl p-8 text-center text-sm text-navy-800/60">
+          Seu acesso ainda não está vinculado a um cadastro de aluno. Peça ao administrador para regenerar o convite.
+        </div>
+      )}
+
+      {studentId && (
         <>
           <div className="inline-flex bg-surface border border-border-subtle rounded-full p-1 text-sm">
             {(["pendentes", "entregues"] as const).map((t) => (
