@@ -432,6 +432,7 @@ export type Database = {
           phone: string | null
           tenant_id: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           birth_date?: string | null
@@ -446,6 +447,7 @@ export type Database = {
           phone?: string | null
           tenant_id: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           birth_date?: string | null
@@ -460,6 +462,7 @@ export type Database = {
           phone?: string | null
           tenant_id?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -607,6 +610,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_student_id: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -620,11 +624,13 @@ export type Database = {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
       }
+      is_tenant_staff: { Args: { _user_id: string }; Returns: boolean }
+      student_in_class: { Args: { _class_id: string }; Returns: boolean }
     }
     Enums: {
       activity_status: "pendente" | "entregue" | "corrigida"
       activity_type: "particular" | "turma"
-      app_role: "super_admin" | "admin_instituicao"
+      app_role: "super_admin" | "admin_instituicao" | "aluno" | "professor"
       attendance_status: "presente" | "ausente" | "atrasado" | "justificado"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
       tenant_plan: "starter" | "professional" | "business" | "enterprise"
@@ -758,7 +764,7 @@ export const Constants = {
     Enums: {
       activity_status: ["pendente", "entregue", "corrigida"],
       activity_type: ["particular", "turma"],
-      app_role: ["super_admin", "admin_instituicao"],
+      app_role: ["super_admin", "admin_instituicao", "aluno", "professor"],
       attendance_status: ["presente", "ausente", "atrasado", "justificado"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
       tenant_plan: ["starter", "professional", "business", "enterprise"],

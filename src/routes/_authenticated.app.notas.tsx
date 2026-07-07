@@ -7,6 +7,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { usePreviewStudent } from "@/lib/preview-student";
 import { listStudents } from "@/lib/tenant.functions";
 import { listStudentGrades } from "@/lib/activities.functions";
+import { useSession } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/_authenticated/app/notas")({
   head: () => ({ meta: [{ title: "Notas — BitraHub" }, { name: "robots", content: "noindex" }] }),
@@ -14,11 +15,20 @@ export const Route = createFileRoute("/_authenticated/app/notas")({
 });
 
 function NotasPage() {
+  const session = useSession();
+  const isRealStudent = !!session.data?.isAluno && !session.data?.isStaff;
   const fetchStudents = useServerFn(listStudents);
-  const students = useQuery({ queryKey: ["students"], queryFn: () => fetchStudents() });
+  const students = useQuery({
+    queryKey: ["students"],
+    queryFn: () => fetchStudents(),
+    enabled: !isRealStudent,
+  });
   const list = (students.data ?? []) as any[];
-  const { studentId, setStudentId } = usePreviewStudent(list[0]?.id);
-  const current = list.find((s) => s.id === studentId);
+  const { studentId: previewId, setStudentId } = usePreviewStudent(list[0]?.id);
+  const studentId = isRealStudent ? session.data?.student?.id : previewId;
+  const current = isRealStudent
+    ? session.data?.student
+    : list.find((s) => s.id === studentId);
 
   const fetchGrades = useServerFn(listStudentGrades);
   const grades = useQuery({
@@ -40,7 +50,7 @@ function NotasPage() {
           </p>
           <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight">Minhas notas</h1>
         </div>
-        {list.length > 0 && (
+        {!isRealStudent && list.length > 0 && (
           <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50/60 p-3 flex items-center gap-3">
             <div className="text-[10px] font-mono uppercase tracking-widest text-amber-800">Prévia</div>
             <Select value={studentId ?? ""} onValueChange={setStudentId}>
@@ -53,7 +63,7 @@ function NotasPage() {
         )}
       </header>
 
-      {list.length === 0 && (
+      {!isRealStudent && list.length === 0 && (
         <div className="bg-white border border-border-subtle rounded-2xl p-8 text-center text-sm text-navy-800/60">
           Cadastre alunos para visualizar notas.
         </div>

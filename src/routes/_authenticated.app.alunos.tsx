@@ -2,12 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Search, Plus, Pencil, Trash2, UserPlus, Loader2 } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, UserPlus, Loader2, Send, Copy, CheckCircle2 } from "lucide-react";
 import {
   listStudents, upsertStudent, deleteStudent,
   listClasses, enrollStudent, unenrollStudent,
 } from "@/lib/tenant.functions";
+import { inviteStudent } from "@/lib/session.functions";
 import { Modal, Field, FormFooter, inputCls } from "./_authenticated.app.cursos";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/app/alunos")({
   component: AlunosPage,
@@ -78,6 +80,7 @@ function AlunosPage() {
                 <td className="px-5 py-3 hidden lg:table-cell font-mono text-xs text-navy-800/80">{s.phone || "—"}</td>
                 <td className="px-5 py-3 text-right">
                   <div className="inline-flex gap-1">
+                    <InviteStudent student={s} />
                     <button onClick={() => setEnrollFor(s)} className="p-1.5 hover:bg-surface rounded-sm" title="Matrículas"><UserPlus className="size-3.5" /></button>
                     <button onClick={() => { setEditing(s); setOpen(true); }} className="p-1.5 hover:bg-surface rounded-sm"><Pencil className="size-3.5" /></button>
                     <DelStudent id={s.id} onDone={() => qc.invalidateQueries({ queryKey: ["students"] })} />
@@ -112,6 +115,57 @@ function DelStudent({ id, onDone }: { id: string; onDone: () => void }) {
   const del = useServerFn(deleteStudent);
   const m = useMutation({ mutationFn: () => del({ data: { id } }), onSuccess: onDone });
   return <button onClick={() => { if (confirm("Excluir aluno?")) m.mutate(); }} className="p-1.5 hover:bg-rose-50 text-rose-700 rounded-sm"><Trash2 className="size-3.5" /></button>;
+}
+
+function InviteStudent({ student }: { student: any }) {
+  const invite = useServerFn(inviteStudent);
+  const [link, setLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const m = useMutation({
+    mutationFn: () => invite({ data: { student_id: student.id } }),
+    onSuccess: (r) => {
+      const url = `${window.location.origin}/accept-invite?token=${r.token}`;
+      setLink(url);
+      toast.success("Convite gerado", { description: r.email });
+    },
+    onError: (e: any) => toast.error("Não foi possível convidar", { description: e.message }),
+  });
+  return (
+    <>
+      <button
+        onClick={() => m.mutate()}
+        disabled={m.isPending}
+        className="p-1.5 hover:bg-emerald-50 text-emerald-700 rounded-sm"
+        title="Convidar acesso ao portal"
+      >
+        {m.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
+      </button>
+      {link && (
+        <Modal onClose={() => { setLink(null); setCopied(false); }} title={`Convite — ${student.full_name}`}>
+          <div className="space-y-3">
+            <p className="text-sm text-navy-800/70">
+              Envie este link para o aluno. Ele definirá uma senha e entrará no portal.
+              O link expira em 7 dias.
+            </p>
+            <div className="flex gap-2">
+              <input readOnly value={link} className={`${inputCls} font-mono text-xs`} onFocus={(e) => e.currentTarget.select()} />
+              <button
+                onClick={async () => {
+                  await navigator.clipboard.writeText(link);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+                className="shrink-0 h-10 px-3 bg-navy-900 text-paper rounded-sm text-xs font-bold inline-flex items-center gap-1.5 hover:bg-navy-800"
+              >
+                {copied ? <CheckCircle2 className="size-3.5" /> : <Copy className="size-3.5" />}
+                {copied ? "Copiado" : "Copiar"}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </>
+  );
 }
 
 function StudentDialog({ initial, onClose, onSaved }: { initial: any | null; onClose: () => void; onSaved: () => void }) {
