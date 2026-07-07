@@ -6,6 +6,7 @@ import { Bell, ChevronRight, HelpCircle, LogOut, Settings } from "lucide-react";
 import { usePreviewStudent } from "@/lib/preview-student";
 import { listStudents } from "@/lib/tenant.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/_authenticated/app/perfil")({
   head: () => ({ meta: [{ title: "Perfil — BitraHub" }, { name: "robots", content: "noindex" }] }),
@@ -14,12 +15,20 @@ export const Route = createFileRoute("/_authenticated/app/perfil")({
 
 function PerfilPage() {
   const navigate = useNavigate();
+  const session = useSession();
+  const isRealStudent = !!session.data?.isAluno && !session.data?.isStaff;
   const fetchStudents = useServerFn(listStudents);
-  const students = useQuery({ queryKey: ["students"], queryFn: () => fetchStudents() });
+  const students = useQuery({
+    queryKey: ["students"],
+    queryFn: () => fetchStudents(),
+    enabled: !isRealStudent,
+  });
   const list = (students.data ?? []) as any[];
   const { studentId } = usePreviewStudent(list[0]?.id);
-  const current = list.find((s) => s.id === studentId);
-  const name = current?.full_name ?? "Aluno";
+  const current = isRealStudent
+    ? session.data?.student
+    : list.find((s) => s.id === studentId);
+  const name = (current as any)?.full_name ?? session.data?.fullName ?? "Aluno";
   const initials = name.split(" ").map((p: string) => p[0]).slice(0, 2).join("").toUpperCase();
 
   return (
