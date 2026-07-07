@@ -93,8 +93,8 @@ Panorama rápido: o app tem multi-tenant, auth, chamada, alunos, turmas, cursos 
 ---
 
 ## Ordem sugerida de execução (MVP para 1ª escola paga)
-1. **Persistência de Atividades** (item 1) — desbloqueia o valor principal.
-2. **Portal do Aluno real** (item 2) + **Professor** (item 3).
+1. ✅ **Persistência de Atividades** (item 1) — concluído.
+2. ✅ **Portal do Aluno real** (item 2) — concluído (roles `aluno`/`professor`, vínculo `students.user_id`, RLS por papel, gate de rota, botão "Convidar acesso"). Falta o **Papel de Professor** (item 3) — turmas por professor.
 3. **E-mails transacionais** (item 4) — sem isso convite não escala.
 4. **Auth hardening** (item 5) e nova varredura de segurança.
 5. **Billing Stripe** (item 6) — só depois que houver escola pagante confirmada.
