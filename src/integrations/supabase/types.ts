@@ -610,6 +610,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_student_id: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -623,6 +624,8 @@ export type Database = {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
       }
+      is_tenant_staff: { Args: { _user_id: string }; Returns: boolean }
+      student_in_class: { Args: { _class_id: string }; Returns: boolean }
     }
     Enums: {
       activity_status: "pendente" | "entregue" | "corrigida"
