@@ -180,6 +180,38 @@ export type Database = {
           },
         ]
       }
+      class_teachers: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          teacher_id: string
+          tenant_id: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          teacher_id: string
+          tenant_id: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          teacher_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_teachers_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           course_id: string
@@ -619,6 +651,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin_or_super: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_tenant_admin: {
         Args: { _tenant_id: string; _user_id: string }
@@ -626,6 +659,10 @@ export type Database = {
       }
       is_tenant_staff: { Args: { _user_id: string }; Returns: boolean }
       student_in_class: { Args: { _class_id: string }; Returns: boolean }
+      teaches_class: {
+        Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       activity_status: "pendente" | "entregue" | "corrigida"
