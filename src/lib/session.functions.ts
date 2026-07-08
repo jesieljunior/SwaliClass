@@ -32,6 +32,8 @@ export const getMySession = createServerFn({ method: "GET" })
       isStaff,
       isAluno,
       isSuperAdmin: roles.includes("super_admin"),
+      isAdmin: roles.includes("admin_instituicao") || roles.includes("super_admin"),
+      isProfessor: roles.includes("professor"),
       tenantId,
       student: studentR.data
         ? { id: studentR.data.id as string, full_name: studentR.data.full_name as string }

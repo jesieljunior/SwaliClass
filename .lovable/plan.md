@@ -17,10 +17,10 @@ Panorama rápido: o app tem multi-tenant, auth, chamada, alunos, turmas, cursos 
   - Gate real por role no roteamento (`/notas`, `/perfil` só para aluno; `/chamada`, `/turmas` só para professor/admin).
   - Remover ou esconder o `ViewModeToggle` em produção.
 
-## 3. Papel de Professor
-- Adicionar role `professor` e tabela de vínculo `class_teachers` (ou usar `classes.teacher_id` já existente).
-- Policies: professor só vê/edita turmas e atividades onde é titular.
-- Filtros de "minhas turmas" nas listas.
+## 3. Papel de Professor ✅
+- Role `professor` já existente + tabela `class_teachers` (turma ↔ professor).
+- Policies reescritas: admin da instituição mantém acesso total; professor só vê/edita turmas, matrículas, atividades, chamadas, presenças e entregas das turmas em que é titular.
+- UI de gestão em `Turmas`: admin convida professor por link e atribui/remove por turma.
 
 ## 4. Convites e e-mails transacionais
 - Hoje `createTenant` gera `invite_token` mas não envia e-mail — o super admin precisa copiar o link manualmente.
