@@ -146,3 +146,130 @@ function ClassDialog({ initial, courses, onClose, onSaved }: { initial: any | nu
     </Modal>
   );
 }
+
+function TeachersDialog({ classItem, onClose }: { classItem: any; onClose: () => void }) {
+  const qc = useQueryClient();
+  const fetchList = useServerFn(listClassTeachers);
+  const fetchProfs = useServerFn(listTenantProfessors);
+  const assign = useServerFn(assignTeacher);
+  const unassign = useServerFn(unassignTeacher);
+  const list = useQuery({
+    queryKey: ["class-teachers", classItem.id],
+    queryFn: () => fetchList({ data: { class_id: classItem.id } }),
+  });
+  const profs = useQuery({ queryKey: ["tenant-professors"], queryFn: () => fetchProfs() });
+  const [selected, setSelected] = useState<string>("");
+  const addM = useMutation({
+    mutationFn: () => assign({ data: { class_id: classItem.id, teacher_id: selected } }),
+    onSuccess: () => {
+      setSelected("");
+      qc.invalidateQueries({ queryKey: ["class-teachers", classItem.id] });
+    },
+  });
+  const removeM = useMutation({
+    mutationFn: (id: string) => unassign({ data: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["class-teachers", classItem.id] }),
+  });
+  const currentIds = new Set((list.data ?? []).map((r: any) => r.teacher_id));
+  const available = (profs.data ?? []).filter((p: any) => !currentIds.has(p.id));
+
+  return (
+    <Modal onClose={onClose} title={`Professores — ${classItem.name}`}>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          {list.isLoading && <p className="text-xs text-navy-800/40"><Loader2 className="inline size-3 animate-spin" /></p>}
+          {!list.isLoading && (list.data ?? []).length === 0 && (
+            <p className="text-xs text-navy-800/50">Nenhum professor atribuído.</p>
+          )}
+          {(list.data ?? []).map((r: any) => (
+            <div key={r.id} className="flex items-center justify-between bg-surface rounded-md px-3 py-2 text-sm">
+              <div className="min-w-0">
+                <p className="font-semibold truncate">{r.full_name}</p>
+                <p className="text-[11px] text-navy-800/50 truncate">{r.email}</p>
+              </div>
+              <button
+                onClick={() => { if (confirm("Remover professor desta turma?")) removeM.mutate(r.id); }}
+                className="p-1.5 hover:bg-rose-50 text-rose-700 rounded-sm"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-border-subtle pt-4 space-y-2">
+          <label className="block text-xs font-mono uppercase tracking-widest text-navy-800/60">Atribuir professor existente</label>
+          {profs.isLoading ? (
+            <p className="text-xs text-navy-800/40"><Loader2 className="inline size-3 animate-spin" /></p>
+          ) : available.length === 0 ? (
+            <p className="text-xs text-navy-800/50">Nenhum professor disponível. Convide um pela tela de turmas.</p>
+          ) : (
+            <div className="flex gap-2">
+              <select value={selected} onChange={(e) => setSelected(e.target.value)} className={inputCls + " flex-1"}>
+                <option value="">Selecione…</option>
+                {available.map((p: any) => (
+                  <option key={p.id} value={p.id}>{p.full_name} — {p.email}</option>
+                ))}
+              </select>
+              <button
+                disabled={!selected || addM.isPending}
+                onClick={() => addM.mutate()}
+                className="px-3 h-10 bg-navy-900 text-paper rounded-sm font-bold text-xs hover:bg-navy-800 disabled:opacity-50"
+              >
+                Adicionar
+              </button>
+            </div>
+          )}
+          {addM.error && <p className="text-xs text-rose-700">{(addM.error as Error).message}</p>}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function InviteProfessorDialog({ onClose }: { onClose: () => void }) {
+  const invite = useServerFn(inviteProfessor);
+  const [email, setEmail] = useState("");
+  const [link, setLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const m = useMutation({
+    mutationFn: () => invite({ data: { email } }),
+    onSuccess: (res: any) => {
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      setLink(`${origin}/accept-invite?token=${res.token}`);
+    },
+  });
+  return (
+    <Modal onClose={onClose} title="Convidar professor">
+      {!link ? (
+        <form
+          className="space-y-3"
+          onSubmit={(e) => { e.preventDefault(); m.mutate(); }}
+        >
+          <Field label="E-mail do professor">
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
+          </Field>
+          {m.error && <p className="text-xs text-rose-700">{(m.error as Error).message}</p>}
+          <FormFooter onCancel={onClose} loading={m.isPending} />
+        </form>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-sm text-navy-800/70">
+            Compartilhe este link com o professor para criar a senha e acessar o painel.
+          </p>
+          <div className="flex gap-2">
+            <input readOnly value={link} className={inputCls + " flex-1 text-xs"} />
+            <button
+              onClick={() => { navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+              className="px-3 h-10 bg-navy-900 text-paper rounded-sm font-bold text-xs hover:bg-navy-800 inline-flex items-center gap-1.5"
+            >
+              {copied ? <><Check className="size-3.5" /> Copiado</> : <><Copy className="size-3.5" /> Copiar</>}
+            </button>
+          </div>
+          <button onClick={onClose} className="w-full h-10 border border-border-subtle rounded-sm font-semibold text-sm hover:bg-surface">
+            Fechar
+          </button>
+        </div>
+      )}
+    </Modal>
+  );
+}
