@@ -2,8 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Plus, Clock, Pencil, Trash2, MapPin, Loader2 } from "lucide-react";
+import { Plus, Clock, Pencil, Trash2, MapPin, Loader2, UserPlus, Users, X, Copy, Check } from "lucide-react";
 import { listClasses, listCourses, upsertClass, deleteClass } from "@/lib/tenant.functions";
+import {
+  listTenantProfessors,
+  listClassTeachers,
+  assignTeacher,
+  unassignTeacher,
+  inviteProfessor,
+} from "@/lib/teachers.functions";
+import { useSession } from "@/hooks/use-session";
 import { Modal, Field, FormFooter, inputCls } from "./_authenticated.app.cursos";
 
 export const Route = createFileRoute("/_authenticated/app/turmas")({
@@ -18,6 +26,10 @@ function TurmasPage() {
   const cQ = useQuery({ queryKey: ["courses"], queryFn: () => fetchCourses() });
   const [editing, setEditing] = useState<any | null>(null);
   const [open, setOpen] = useState(false);
+  const [teachersFor, setTeachersFor] = useState<any | null>(null);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const session = useSession();
+  const isAdmin = !!session.data?.isAdmin;
   const classes = q.data ?? [];
 
   return (
@@ -27,9 +39,18 @@ function TurmasPage() {
           <h1 className="text-3xl font-display font-extrabold tracking-tight">Turmas</h1>
           <p className="text-xs text-navy-800/40 font-mono uppercase mt-1 tracking-widest">{classes.length} turmas</p>
         </div>
-        <button onClick={() => { setEditing(null); setOpen(true); }} className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-bold text-sm hover:bg-navy-800">
-          <Plus className="size-4" /> Nova turma
-        </button>
+        <div className="flex gap-2">
+          {isAdmin && (
+            <button onClick={() => setInviteOpen(true)} className="inline-flex items-center gap-2 px-4 h-10 border border-border-subtle bg-white text-navy-900 rounded-sm font-bold text-sm hover:bg-surface">
+              <UserPlus className="size-4" /> Convidar professor
+            </button>
+          )}
+          {isAdmin && (
+            <button onClick={() => { setEditing(null); setOpen(true); }} className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-bold text-sm hover:bg-navy-800">
+              <Plus className="size-4" /> Nova turma
+            </button>
+          )}
+        </div>
       </div>
 
       {q.isLoading && <p className="text-sm text-navy-800/40"><Loader2 className="inline size-4 animate-spin" /></p>}
@@ -47,10 +68,13 @@ function TurmasPage() {
                 <h3 className="font-display font-bold text-lg truncate">{c.name}</h3>
                 <p className="text-xs text-navy-800/50 truncate">{c.course_name}</p>
               </div>
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100">
-                <button onClick={() => { setEditing(c); setOpen(true); }} className="p-1.5 hover:bg-surface rounded-sm"><Pencil className="size-3.5" /></button>
-                <DelBtn id={c.id} onDone={() => qc.invalidateQueries({ queryKey: ["classes"] })} />
-              </div>
+              {isAdmin && (
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100">
+                  <button title="Professores" onClick={() => setTeachersFor(c)} className="p-1.5 hover:bg-surface rounded-sm"><Users className="size-3.5" /></button>
+                  <button title="Editar" onClick={() => { setEditing(c); setOpen(true); }} className="p-1.5 hover:bg-surface rounded-sm"><Pencil className="size-3.5" /></button>
+                  <DelBtn id={c.id} onDone={() => qc.invalidateQueries({ queryKey: ["classes"] })} />
+                </div>
+              )}
             </div>
             <div className="space-y-2 text-xs text-navy-800/70">
               {c.schedule && <p className="flex items-center gap-2"><Clock className="size-3.5" /> {c.schedule}</p>}
@@ -74,6 +98,10 @@ function TurmasPage() {
           onSaved={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["classes"] }); }}
         />
       )}
+      {teachersFor && (
+        <TeachersDialog classItem={teachersFor} onClose={() => setTeachersFor(null)} />
+      )}
+      {inviteOpen && <InviteProfessorDialog onClose={() => setInviteOpen(false)} />}
     </div>
   );
 }
