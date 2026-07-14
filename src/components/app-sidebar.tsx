@@ -9,12 +9,14 @@ import {
   Building2,
   LogOut,
   FileText,
+  UserCircle2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
 const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/app/portal", label: "Meu Portal", icon: UserCircle2 },
   { to: "/app/chamada", label: "Chamada", icon: ClipboardCheck },
   { to: "/app/atividades", label: "Atividades", icon: FileText },
   { to: "/app/alunos", label: "Alunos", icon: Users },
