@@ -9,7 +9,7 @@
 > - Tabela `plan_entitlements` + função SQL `entitlements_can`
 > - `src/core/entitlements/` (serviço + `FEATURES`)
 > - `src/core/rbac/permissions.ts` (matriz central + `can()`)
-> - `src/modules/` criada (aguardando migração do primeiro módulo piloto: `portal`)
+> - Módulo piloto **`portal`** migrado: `src/modules/portal/{server,components}` + rota `/app/portal`
 
 ---
 
