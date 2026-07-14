@@ -406,6 +406,36 @@ export type Database = {
           },
         ]
       }
+      plan_entitlements: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          feature_key: string
+          id: string
+          plan: Database["public"]["Enums"]["plan_tier"]
+          quota: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          feature_key: string
+          id?: string
+          plan: Database["public"]["Enums"]["plan_tier"]
+          quota?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          feature_key?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["plan_tier"]
+          quota?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -579,6 +609,7 @@ export type Database = {
           slug: string
           status: Database["public"]["Enums"]["tenant_status"]
           trial_ends_at: string | null
+          type: Database["public"]["Enums"]["tenant_type"]
           updated_at: string
         }
         Insert: {
@@ -590,6 +621,7 @@ export type Database = {
           slug: string
           status?: Database["public"]["Enums"]["tenant_status"]
           trial_ends_at?: string | null
+          type?: Database["public"]["Enums"]["tenant_type"]
           updated_at?: string
         }
         Update: {
@@ -601,6 +633,7 @@ export type Database = {
           slug?: string
           status?: Database["public"]["Enums"]["tenant_status"]
           trial_ends_at?: string | null
+          type?: Database["public"]["Enums"]["tenant_type"]
           updated_at?: string
         }
         Relationships: []
@@ -644,6 +677,10 @@ export type Database = {
     Functions: {
       current_student_id: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
+      entitlements_can: {
+        Args: { _feature: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -667,11 +704,18 @@ export type Database = {
     Enums: {
       activity_status: "pendente" | "entregue" | "corrigida"
       activity_type: "particular" | "turma"
-      app_role: "super_admin" | "admin_instituicao" | "aluno" | "professor"
+      app_role:
+        | "super_admin"
+        | "admin_instituicao"
+        | "aluno"
+        | "coordenador"
+        | "professor"
       attendance_status: "presente" | "ausente" | "atrasado" | "justificado"
       invite_status: "pending" | "accepted" | "revoked" | "expired"
+      plan_tier: "free" | "student_plus" | "teacher" | "institution"
       tenant_plan: "starter" | "professional" | "business" | "enterprise"
       tenant_status: "trial" | "active" | "suspended" | "cancelled"
+      tenant_type: "personal" | "teacher" | "institution"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -801,11 +845,19 @@ export const Constants = {
     Enums: {
       activity_status: ["pendente", "entregue", "corrigida"],
       activity_type: ["particular", "turma"],
-      app_role: ["super_admin", "admin_instituicao", "aluno", "professor"],
+      app_role: [
+        "super_admin",
+        "admin_instituicao",
+        "aluno",
+        "coordenador",
+        "professor",
+      ],
       attendance_status: ["presente", "ausente", "atrasado", "justificado"],
       invite_status: ["pending", "accepted", "revoked", "expired"],
+      plan_tier: ["free", "student_plus", "teacher", "institution"],
       tenant_plan: ["starter", "professional", "business", "enterprise"],
       tenant_status: ["trial", "active", "suspended", "cancelled"],
+      tenant_type: ["personal", "teacher", "institution"],
     },
   },
 } as const
