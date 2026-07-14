@@ -3,6 +3,14 @@
 
 > Documento de arquitetura. Nenhum código será escrito antes da sua aprovação.
 
+> **Fase 1 em andamento** — fundação criada:
+> - `tenants.type` (`personal|teacher|institution`) — default `institution`
+> - Papel `coordenador` no enum `app_role`
+> - Tabela `plan_entitlements` + função SQL `entitlements_can`
+> - `src/core/entitlements/` (serviço + `FEATURES`)
+> - `src/core/rbac/permissions.ts` (matriz central + `can()`)
+> - `src/modules/` criada (aguardando migração do primeiro módulo piloto: `portal`)
+
 ---
 
 ## 1. Visão de Produto
