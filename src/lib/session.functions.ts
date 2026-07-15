@@ -2,7 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type SessionRole = "super_admin" | "admin_instituicao" | "professor" | "aluno";
+export type SessionRole =
+  | "super_admin"
+  | "admin_instituicao"
+  | "coordenador"
+  | "professor"
+  | "aluno";
 
 /**
  * Returns the effective session for the currently authenticated user:
@@ -17,7 +22,13 @@ export const getMySession = createServerFn({ method: "GET" })
       context.supabase.from("students").select("id, tenant_id, full_name, email").eq("user_id", context.userId).maybeSingle(),
     ]);
     const roles = ((rolesR.data ?? []) as any[]).map((r) => r.role as SessionRole);
-    const isStaff = roles.some((r) => r === "super_admin" || r === "admin_instituicao" || r === "professor");
+    const isStaff = roles.some(
+      (r) =>
+        r === "super_admin" ||
+        r === "admin_instituicao" ||
+        r === "coordenador" ||
+        r === "professor",
+    );
     const isAluno = roles.includes("aluno");
     const tenantId =
       profileR.data?.tenant_id ??
@@ -33,6 +44,7 @@ export const getMySession = createServerFn({ method: "GET" })
       isAluno,
       isSuperAdmin: roles.includes("super_admin"),
       isAdmin: roles.includes("admin_instituicao") || roles.includes("super_admin"),
+      isCoordenador: roles.includes("coordenador"),
       isProfessor: roles.includes("professor"),
       tenantId,
       student: studentR.data
