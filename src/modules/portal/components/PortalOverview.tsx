@@ -1,7 +1,7 @@
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, CalendarClock, GraduationCap, Loader2 } from "lucide-react";
-import { getMyPortalOverview } from "../server/portal.functions";
+import { getMyPortalOverview } from "../portal.functions";
 
 export function PortalOverview() {
   const fn = useServerFn(getMyPortalOverview);
