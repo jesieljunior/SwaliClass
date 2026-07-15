@@ -108,3 +108,58 @@ Essas migrações **só entram se e quando** uma fase do MVP as tornar realmente
 ## Entregável desta resposta
 
 Aprovação do plano. Depois disso, executo **Fase 0 (auditoria)** e volto com o backlog priorizado antes de tocar em qualquer código de feature. Nenhum módulo fora do MVP receberá UI nesta sprint.
+
+---
+
+## MVP Acadêmico — Backlog priorizado (Fase 0 concluída)
+
+Legenda: **[P0]** trava o fluxo. **[P1]** UX quebrada mas fluxo funciona. **[P2]** polimento.
+Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MVP fechar.
+
+### Fase 1 — Fundamentos do workspace
+1. [P0] **AppLayout redireciona aluno para longe do próprio portal.**
+   `alunoAllowed` = `/app/(atividades|notas|perfil)` mas a sidebar oferece `/app/portal`. Aluno é jogado em `/app/atividades` toda vez. Incluir `portal` no regex e revisar a lista canônica de rotas do aluno num único lugar.
+2. [P0] **Sidebar tenant hardcoded "COLÉGIO ALPHA"** e topbar avatar hardcoded "JD". Puxar `tenant.name` e iniciais do usuário via `useSession`.
+3. [P1] **Onboarding do admin novo:** hoje cai num dashboard vazio sem próximos passos. Adicionar cartão "Primeiros passos" no `/app` (criar curso → turma → aluno → convidar professor) quando `totalStudents=0`. Sem wizard modal, apenas checklist inline.
+4. [P1] **Convites — estados órfãos.** Botão "Convidar" no aluno regenera token mesmo se já houver convite pendente/aceito, sem aviso. Server fn deve retornar status (`pending`/`accepted`/`expired`) e a UI mostrar o estado antes de gerar novo link.
+5. [P2] **Dashboard não filtra por professor.** Professor vê números do tenant inteiro. `getDashboardStats` deve escopar por `teaches_class` quando o usuário for professor (não admin).
+
+### Fase 2 — Estrutura acadêmica
+6. [P1] **Cursos**: sem confirmação clara ao excluir curso com turmas dentro. Verificar `class_count > 0` no server e bloquear com mensagem explícita.
+7. [P1] **Turmas**: filtro por curso ausente; lista vira ruim com > 20 turmas. Adicionar seletor de curso + busca por nome.
+8. [P1] **Turmas ↔ Professor**: o vínculo funciona no diálogo, mas não existe visão inversa "turmas deste professor". Adicionar seção simples em `perfil` do professor / ou aba na lista de professores. (Se ficar grande, adiar para Fase 5.)
+9. [P1] **Import CSV alunos**: erros retornam apenas em toast agregado. Mostrar tabela dos erros linha-a-linha após import + preview antes de confirmar (client-side parse já existe).
+10. [P2] **Matrícula histórico**: `enrollments.active` existe mas UI só permite matricular/remover — sem "desativar mantendo histórico". Trocar botão "Remover" por "Desativar matrícula" (soft) e um "Excluir matrícula" secundário.
+
+### Fase 3 — Operação diária
+11. [P0] **Entrega de atividade sem arquivo real.** Aluno só clica "Marcar como concluída" + texto. Backend (`submission_files` + bucket `submissions`) está pronto e não é usado. Adicionar upload no drawer do aluno e listagem/download no drawer de correção do professor. Sem preview embutido — apenas link.
+12. [P1] **Atividades — rubrica mínima.** Hoje nota é livre 0-10; sem `max_grade`. Adicionar coluna `max_grade numeric` (default 10) em `activities`, respeitar no `gradeSubmission` (validação server) e exibir "X / max" nas telas.
+13. [P1] **Chamada — edição de sessão passada** funciona, mas não há indicação de "editado em". Adicionar `updated_at` visível + toast "Chamada atualizada".
+14. [P1] **Chamada — status default**: alunos sem marca hoje viram `ausente` no `saveAttendance`. Explícito no UI: rótulo "Não marcado → contará como ausente".
+15. [P2] **Atividades — filtro por turma/status** para o professor com muitas turmas. Selector simples no header.
+
+### Fase 4 — Portal do aluno
+16. [P1] **Portal sem frequência.** `getMyPortalOverview` não retorna % de presença por turma. Somar via `attendance_records` do próprio aluno e mostrar barra por turma.
+17. [P1] **Portal — próximos prazos vs atividades já entregues** não distingue. Buscar submissão do aluno para cada atividade upcoming e esconder as entregues.
+18. [P2] **Aluno — página `/app/notas`** duplica parcialmente o portal. Manter, mas linkar do Portal ("Ver todas as notas").
+
+### Fase 5 — Relatórios + Dashboard
+19. [P1] **Relatório de notas** inexistente. Reaproveitar padrão de `getReportData` para gerar `getGradesReport(class_id?, student_id?, period?)` com export CSV/Excel/PDF (já usa jspdf e xlsx). Sem boletim formatado ainda.
+20. [P2] **Boletim simples do aluno (HTML imprimível)** — agrupar por matéria/turma, média por período. Sem PDF fancy; usar `window.print()` com CSS de impressão. Adiar PDF dedicado.
+21. [P2] **Dashboard do professor**: entregas pendentes de correção, média por turma. Card único no `/app` visível quando `isProfessor && !isAdmin`.
+
+### Fase 6 — Estabilização
+22. [P0] **Rotas sem `errorComponent`/`notFoundComponent`.** Adicionar boundary padrão em `__root` (defaultErrorComponent) e leves em cada rota com loader — hoje qualquer erro no Supabase gera tela em branco silencioso.
+23. [P1] **`session.isAdmin` e `isAluno` espalhados** ainda existem em `alunos.tsx`, `chamada.tsx`, `notas.tsx`. Migrar para `usePermission` conforme os arquivos forem tocados.
+24. [P1] **Empty/loading/error states padronizados** — extrair `<EmptyState/>`, `<LoadingBlock/>`, `<ErrorBlock/>` em `src/components/ui/`.
+25. [P2] **`.lovable/architecture.md`** documentando decisões, RLS por tabela, matriz RBAC e feature flags atuais.
+
+### Achados de banco (não bloqueantes, mas registrados)
+- Todas as tabelas do fluxo já têm RLS + GRANT ao `authenticated` e políticas por tenant/role. OK.
+- `activities` não tem `max_grade` (item 12).
+- `enrollments.active` existe mas UI ignora (item 10).
+- `attendance_sessions.updated_at` deve ser adicionado se ainda não existir (item 13).
+- Storage `submissions` já é privado com signed URLs (10min). Já pronto para item 11.
+
+### Fora do MVP (roadmap.md)
+Bitra AI · Biblioteca · Créditos · Comunidade · Gamificação · Marketplace · Portal do responsável · SSO · Boletim PDF elaborado · Professor Particular UI · Estudante Individual UI.
