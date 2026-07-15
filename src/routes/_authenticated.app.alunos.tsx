@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { Search, Plus, Pencil, Trash2, UserPlus, Loader2, Send, Copy, CheckCircle2 } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Search, Plus, Pencil, Trash2, UserPlus, Loader2, Send, Copy, CheckCircle2, Upload, Download } from "lucide-react";
 import {
   listStudents, upsertStudent, deleteStudent,
-  listClasses, enrollStudent, unenrollStudent,
+  listClasses, enrollStudent, unenrollStudent, bulkImportStudents,
 } from "@/lib/tenant.functions";
 import { inviteStudent } from "@/lib/session.functions";
 import { Modal, Field, FormFooter, inputCls } from "./_authenticated.app.cursos";
@@ -40,9 +40,13 @@ function AlunosPage() {
           <h1 className="text-3xl font-display font-extrabold tracking-tight">Alunos</h1>
           <p className="text-xs text-navy-800/40 font-mono uppercase mt-1 tracking-widest">{list.length} resultados</p>
         </div>
-        <button onClick={() => { setEditing(null); setOpen(true); }} className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-bold text-sm hover:bg-navy-800">
-          <Plus className="size-4" /> Novo aluno
-        </button>
+        <div className="flex items-center gap-2">
+          <ExportCsvButton students={list} />
+          <ImportCsvButton onDone={() => qc.invalidateQueries({ queryKey: ["students"] })} />
+          <button onClick={() => { setEditing(null); setOpen(true); }} className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-bold text-sm hover:bg-navy-800">
+            <Plus className="size-4" /> Novo aluno
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 min-w-[240px] flex items-center gap-2 px-3 h-10 bg-white border border-border-subtle rounded-md">
