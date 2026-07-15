@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { Search, Plus, Pencil, Trash2, UserPlus, Loader2, Send, Copy, CheckCircle2 } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Search, Plus, Pencil, Trash2, UserPlus, Loader2, Send, Copy, CheckCircle2, Upload, Download } from "lucide-react";
 import {
   listStudents, upsertStudent, deleteStudent,
-  listClasses, enrollStudent, unenrollStudent,
+  listClasses, enrollStudent, unenrollStudent, bulkImportStudents,
 } from "@/lib/tenant.functions";
 import { inviteStudent } from "@/lib/session.functions";
 import { Modal, Field, FormFooter, inputCls } from "./_authenticated.app.cursos";
@@ -40,9 +40,13 @@ function AlunosPage() {
           <h1 className="text-3xl font-display font-extrabold tracking-tight">Alunos</h1>
           <p className="text-xs text-navy-800/40 font-mono uppercase mt-1 tracking-widest">{list.length} resultados</p>
         </div>
-        <button onClick={() => { setEditing(null); setOpen(true); }} className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-bold text-sm hover:bg-navy-800">
-          <Plus className="size-4" /> Novo aluno
-        </button>
+        <div className="flex items-center gap-2">
+          <ExportCsvButton students={list} />
+          <ImportCsvButton onDone={() => qc.invalidateQueries({ queryKey: ["students"] })} />
+          <button onClick={() => { setEditing(null); setOpen(true); }} className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-bold text-sm hover:bg-navy-800">
+            <Plus className="size-4" /> Novo aluno
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 min-w-[240px] flex items-center gap-2 px-3 h-10 bg-white border border-border-subtle rounded-md">
@@ -115,6 +119,130 @@ function DelStudent({ id, onDone }: { id: string; onDone: () => void }) {
   const del = useServerFn(deleteStudent);
   const m = useMutation({ mutationFn: () => del({ data: { id } }), onSuccess: onDone });
   return <button onClick={() => { if (confirm("Excluir aluno?")) m.mutate(); }} className="p-1.5 hover:bg-rose-50 text-rose-700 rounded-sm"><Trash2 className="size-3.5" /></button>;
+}
+
+// ---------- CSV helpers ----------
+const CSV_HEADERS = [
+  "full_name",
+  "email",
+  "phone",
+  "document",
+  "birth_date",
+  "guardian_name",
+  "guardian_phone",
+  "notes",
+  "class_name",
+];
+
+function csvEscape(v: unknown): string {
+  const s = v == null ? "" : String(v);
+  return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function parseCsv(text: string): Record<string, string>[] {
+  const lines = text.replace(/\r\n?/g, "\n").split("\n").filter((l) => l.trim().length);
+  if (lines.length === 0) return [];
+  const splitLine = (line: string) => {
+    const out: string[] = [];
+    let cur = "";
+    let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQ) {
+        if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') inQ = false;
+        else cur += ch;
+      } else {
+        if (ch === '"') inQ = true;
+        else if (ch === "," || ch === ";") { out.push(cur); cur = ""; }
+        else cur += ch;
+      }
+    }
+    out.push(cur);
+    return out.map((s) => s.trim());
+  };
+  const headers = splitLine(lines[0]).map((h) => h.toLowerCase());
+  return lines.slice(1).map((line) => {
+    const cols = splitLine(line);
+    const row: Record<string, string> = {};
+    headers.forEach((h, i) => { row[h] = cols[i] ?? ""; });
+    return row;
+  });
+}
+
+function ExportCsvButton({ students }: { students: any[] }) {
+  const onClick = () => {
+    const header = CSV_HEADERS.join(",");
+    const lines = students.map((s) =>
+      CSV_HEADERS.map((h) =>
+        h === "class_name" ? csvEscape(s.class_names ?? "") : csvEscape(s[h] ?? ""),
+      ).join(","),
+    );
+    const blob = new Blob([[header, ...lines].join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `alunos-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  return (
+    <button onClick={onClick} className="inline-flex items-center gap-2 px-3 h-10 border border-border-subtle rounded-sm text-sm hover:bg-surface">
+      <Download className="size-4" /> Exportar CSV
+    </button>
+  );
+}
+
+function ImportCsvButton({ onDone }: { onDone: () => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const imp = useServerFn(bulkImportStudents);
+  const m = useMutation({
+    mutationFn: (rows: any[]) => imp({ data: { rows } }),
+    onSuccess: (r: any) => {
+      toast.success("Importação concluída", {
+        description: `${r.created} criados · ${r.skipped} já existiam · ${r.enrolled} matriculados${r.errors?.length ? ` · ${r.errors.length} erros` : ""}`,
+      });
+      onDone();
+    },
+    onError: (e: any) => toast.error("Falha na importação", { description: e.message }),
+  });
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const text = await file.text();
+    const rows = parseCsv(text)
+      .map((r) => ({
+        full_name: r.full_name || r.nome || "",
+        email: r.email || null,
+        phone: r.phone || r.telefone || null,
+        document: r.document || r.documento || null,
+        birth_date: r.birth_date || r.nascimento || null,
+        guardian_name: r.guardian_name || r.responsavel || null,
+        guardian_phone: r.guardian_phone || null,
+        notes: r.notes || r.observacoes || null,
+        class_name: r.class_name || r.turma || null,
+      }))
+      .filter((r) => r.full_name.trim().length >= 2);
+    if (!rows.length) {
+      toast.error("CSV vazio ou inválido", { description: `Cabeçalhos esperados: ${CSV_HEADERS.join(", ")}` });
+      return;
+    }
+    m.mutate(rows);
+  };
+  return (
+    <>
+      <input ref={inputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={onFile} />
+      <button
+        onClick={() => inputRef.current?.click()}
+        disabled={m.isPending}
+        className="inline-flex items-center gap-2 px-3 h-10 border border-border-subtle rounded-sm text-sm hover:bg-surface"
+      >
+        {m.isPending ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+        Importar CSV
+      </button>
+    </>
+  );
 }
 
 function InviteStudent({ student }: { student: any }) {

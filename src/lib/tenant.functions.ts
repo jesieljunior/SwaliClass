@@ -156,6 +156,191 @@ export const deleteStudent = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ---------- BULK IMPORT (CSV) ----------
+const bulkStudentRow = z.object({
+  full_name: z.string().min(2).max(120),
+  email: z.string().email().optional().nullable().or(z.literal("")),
+  phone: z.string().max(40).optional().nullable(),
+  document: z.string().max(40).optional().nullable(),
+  birth_date: z.string().optional().nullable(),
+  guardian_name: z.string().max(120).optional().nullable(),
+  guardian_phone: z.string().max(40).optional().nullable(),
+  notes: z.string().max(500).optional().nullable(),
+  class_name: z.string().max(120).optional().nullable(),
+});
+
+const bulkImportSchema = z.object({
+  rows: z.array(bulkStudentRow).min(1).max(1000),
+});
+
+/**
+ * Importa alunos em lote (via CSV parseado no cliente).
+ * - Deduplica por (tenant_id, email) e (tenant_id, full_name) para não duplicar existentes.
+ * - Se `class_name` bater com uma turma existente do tenant, já matricula o aluno nela.
+ * Retorna resumo: criados, ignorados (já existiam), matriculados, erros.
+ */
+export const bulkImportStudents = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => bulkImportSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const tenant_id = await getTenantId(context.supabase);
+
+    const { data: staffCheck } = await context.supabase.rpc("is_tenant_staff", {
+      _user_id: context.userId,
+    });
+    if (!staffCheck) throw new Error("Somente staff pode importar alunos.");
+
+    const { data: existing } = await context.supabase
+      .from("students")
+      .select("id, full_name, email");
+    const byEmail = new Map<string, string>();
+    const byName = new Map<string, string>();
+    for (const s of existing ?? []) {
+      if (s.email) byEmail.set(String(s.email).toLowerCase(), s.id);
+      byName.set(String(s.full_name).toLowerCase().trim(), s.id);
+    }
+
+    const { data: classes } = await context.supabase
+      .from("classes")
+      .select("id, name");
+    const classByName = new Map<string, string>();
+    for (const c of classes ?? []) classByName.set(String(c.name).toLowerCase().trim(), c.id);
+
+    let created = 0;
+    let skipped = 0;
+    let enrolled = 0;
+    const errors: { row: number; message: string }[] = [];
+
+    for (let i = 0; i < data.rows.length; i++) {
+      const r = data.rows[i];
+      const emailKey = r.email ? r.email.toLowerCase() : null;
+      const nameKey = r.full_name.toLowerCase().trim();
+      let studentId = (emailKey && byEmail.get(emailKey)) || byName.get(nameKey);
+
+      if (!studentId) {
+        const insertRow: any = {
+          tenant_id,
+          full_name: r.full_name,
+          email: r.email || null,
+          phone: r.phone || null,
+          document: r.document || null,
+          birth_date: r.birth_date || null,
+          guardian_name: r.guardian_name || null,
+          guardian_phone: r.guardian_phone || null,
+          notes: r.notes || null,
+        };
+        const { data: ins, error } = await context.supabase
+          .from("students")
+          .insert(insertRow)
+          .select("id")
+          .single();
+        if (error) {
+          errors.push({ row: i + 2, message: error.message });
+          continue;
+        }
+        studentId = ins.id;
+        created++;
+        if (emailKey) byEmail.set(emailKey, studentId);
+        byName.set(nameKey, studentId);
+      } else {
+        skipped++;
+      }
+
+      if (r.class_name && studentId) {
+        const classId = classByName.get(r.class_name.toLowerCase().trim());
+        if (classId) {
+          const { error } = await context.supabase
+            .from("enrollments")
+            .insert({ tenant_id, student_id: studentId, class_id: classId });
+          if (!error) enrolled++;
+        }
+      }
+    }
+
+    return { created, skipped, enrolled, errors };
+  });
+
+// ---------- SUBMISSION FILES ----------
+const attachFileSchema = z.object({
+  submission_id: z.string().uuid(),
+  storage_path: z.string().min(1).max(500),
+  file_name: z.string().min(1).max(200),
+  mime_type: z.string().max(100).optional().nullable(),
+  size_bytes: z.number().int().min(0).max(50 * 1024 * 1024).optional().nullable(),
+});
+
+export const attachSubmissionFile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => attachFileSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: sub, error: e1 } = await context.supabase
+      .from("submissions")
+      .select("id, tenant_id, student_id, students!inner(user_id)")
+      .eq("id", data.submission_id)
+      .maybeSingle();
+    if (e1) throw new Error(e1.message);
+    if (!sub) throw new Error("Entrega não encontrada.");
+    if ((sub as any).students?.user_id !== context.userId)
+      throw new Error("Você só pode anexar arquivos à sua própria entrega.");
+
+    const { data: row, error } = await context.supabase
+      .from("submission_files")
+      .insert({
+        tenant_id: sub.tenant_id,
+        submission_id: sub.id,
+        student_id: sub.student_id,
+        storage_path: data.storage_path,
+        file_name: data.file_name,
+        mime_type: data.mime_type ?? null,
+        size_bytes: data.size_bytes ?? null,
+        uploaded_by: context.userId,
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, id: row.id };
+  });
+
+export const listSubmissionFiles = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ submission_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("submission_files")
+      .select("id, storage_path, file_name, mime_type, size_bytes, created_at")
+      .eq("submission_id", data.submission_id)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    // Signed URLs (10 min) para download pelo cliente
+    const signed = await Promise.all(
+      (rows ?? []).map(async (r) => {
+        const { data: s } = await context.supabase.storage
+          .from("submissions")
+          .createSignedUrl(r.storage_path, 600);
+        return { ...r, download_url: s?.signedUrl ?? null };
+      }),
+    );
+    return signed;
+  });
+
+export const deleteSubmissionFile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: row, error: e1 } = await context.supabase
+      .from("submission_files")
+      .select("id, storage_path")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (e1) throw new Error(e1.message);
+    if (!row) return { ok: true };
+    await context.supabase.storage.from("submissions").remove([row.storage_path]);
+    const { error } = await context.supabase.from("submission_files").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 // ============ ENROLLMENTS ============
 export const enrollStudent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

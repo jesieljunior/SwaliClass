@@ -10,6 +10,14 @@
 > - `src/core/entitlements/` (serviço + `FEATURES`)
 > - `src/core/rbac/permissions.ts` (matriz central + `can()`)
 > - Módulo piloto **`portal`** migrado: `src/modules/portal/{server,components}` + rota `/app/portal`
+>
+> **Fase 2 em andamento** — sistema acadêmico:
+> - `is_tenant_staff` agora inclui `coordenador`
+> - Bucket privado `submissions` + policies de leitura (dono ou staff) e escrita (dono)
+> - Tabela `submission_files` (metadados dos anexos das entregas) com RLS
+> - Server fns: `bulkImportStudents`, `attachSubmissionFile`, `listSubmissionFiles`, `deleteSubmissionFile`
+> - UI Alunos: **Importar CSV** e **Exportar CSV** (com matrícula automática por nome de turma)
+> - `session.isCoordenador` exposto no client
 
 ---
 
