@@ -1,6 +1,11 @@
 # Modules
 
-Cada módulo é auto-contido: rotas, componentes e server functions.
+Cada módulo é auto-contido: componentes e server functions.
+
+**Estrutura de pastas por módulo:**
+- `components/` — UI do módulo
+- `*.functions.ts` — server functions (NÃO usar pasta `server/` — bloqueada pelo import-protection do TanStack Start)
+- `*.server.ts` — helpers 100% server-only (bloqueados no bundle client)
 
 **Regra de ouro**: módulos não importam de outros módulos. Se precisam se
 comunicar, usam serviços do `core/` (ex.: `entitlements.can`, event bus).
