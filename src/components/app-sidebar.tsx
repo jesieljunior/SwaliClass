@@ -13,16 +13,29 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { usePermissions } from "@/core/rbac/use-permission";
+import { PERMISSIONS, type Permission } from "@/core/rbac/permissions";
 
-const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
-  { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/app/portal", label: "Meu Portal", icon: UserCircle2 },
-  { to: "/app/chamada", label: "Chamada", icon: ClipboardCheck },
+type NavItem = {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+  /** Permission required to see this item. Omit to show for all roles. */
+  require?: Permission;
+  /** If true, only shown for students (aluno role). */
+  studentOnly?: boolean;
+};
+
+const nav: NavItem[] = [
+  { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true, require: PERMISSIONS.CLASS_VIEW },
+  { to: "/app/portal", label: "Meu Portal", icon: UserCircle2, studentOnly: true },
+  { to: "/app/chamada", label: "Chamada", icon: ClipboardCheck, require: PERMISSIONS.ATTENDANCE_TAKE },
   { to: "/app/atividades", label: "Atividades", icon: FileText },
-  { to: "/app/alunos", label: "Alunos", icon: Users },
-  { to: "/app/turmas", label: "Turmas", icon: GraduationCap },
-  { to: "/app/cursos", label: "Cursos", icon: BookOpen },
-  { to: "/app/relatorios", label: "Relatórios", icon: BarChart3 },
+  { to: "/app/alunos", label: "Alunos", icon: Users, require: PERMISSIONS.STUDENT_MANAGE },
+  { to: "/app/turmas", label: "Turmas", icon: GraduationCap, require: PERMISSIONS.CLASS_VIEW },
+  { to: "/app/cursos", label: "Cursos", icon: BookOpen, require: PERMISSIONS.CLASS_MANAGE },
+  { to: "/app/relatorios", label: "Relatórios", icon: BarChart3, require: PERMISSIONS.REPORTS_VIEW },
 ];
 
 const admin: { to: string; label: string; icon: typeof LayoutDashboard }[] = [
@@ -34,6 +47,13 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { user, roles, fullName } = useAuth();
   const isSuper = roles.includes("super_admin");
+  const { can, roles: sessionRoles } = usePermissions();
+  const isStudent = sessionRoles.includes("aluno");
+  const visibleNav = nav.filter((item) => {
+    if (item.studentOnly) return isStudent;
+    if (item.require) return can(item.require);
+    return true;
+  });
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
@@ -54,7 +74,7 @@ export function AppSidebar() {
 
       <nav className="px-3 py-5 space-y-0.5">
         <p className="px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-paper/30">Operação</p>
-        {nav.map((item) => {
+        {visibleNav.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.to, item.exact);
           return (
