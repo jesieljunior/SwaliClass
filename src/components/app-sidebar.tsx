@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useSession } from "@/hooks/use-session";
 import { usePermissions } from "@/core/rbac/use-permission";
 import { PERMISSIONS, type Permission } from "@/core/rbac/permissions";
 
@@ -46,6 +47,8 @@ export function AppSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
   const { user, roles, fullName } = useAuth();
+  const session = useSession();
+  const tenantName = session.data?.tenantName?.trim() || "BitraHub";
   const isSuper = roles.includes("super_admin");
   const { can, roles: sessionRoles } = usePermissions();
   const isStudent = sessionRoles.includes("aluno");
@@ -67,7 +70,7 @@ export function AppSidebar() {
       <div className="px-6 py-6 flex items-center gap-3 border-b border-white/5">
         <div className="size-9 bg-navy-600 rounded-md flex items-center justify-center font-display font-extrabold text-paper">B</div>
         <div className="min-w-0">
-          <p className="font-display font-bold text-sm tracking-wide truncate">COLÉGIO ALPHA</p>
+          <p className="font-display font-bold text-sm tracking-wide truncate">{tenantName}</p>
           <p className="text-[10px] font-mono uppercase text-paper/40 tracking-widest">Tenant ativo</p>
         </div>
       </div>

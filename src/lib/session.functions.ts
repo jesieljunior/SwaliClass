@@ -35,6 +35,15 @@ export const getMySession = createServerFn({ method: "GET" })
       studentR.data?.tenant_id ??
       (rolesR.data ?? []).find((r: any) => r.tenant_id)?.tenant_id ??
       null;
+    let tenantName: string | null = null;
+    if (tenantId) {
+      const { data: tenant } = await context.supabase
+        .from("tenants")
+        .select("name")
+        .eq("id", tenantId)
+        .maybeSingle();
+      tenantName = (tenant?.name as string | undefined) ?? null;
+    }
     return {
       userId: context.userId,
       email: (profileR.data?.email ?? studentR.data?.email ?? null) as string | null,
@@ -47,6 +56,7 @@ export const getMySession = createServerFn({ method: "GET" })
       isCoordenador: roles.includes("coordenador"),
       isProfessor: roles.includes("professor"),
       tenantId,
+      tenantName,
       student: studentR.data
         ? { id: studentR.data.id as string, full_name: studentR.data.full_name as string }
         : null,

@@ -117,9 +117,9 @@ Legenda: **[P0]** trava o fluxo. **[P1]** UX quebrada mas fluxo funciona. **[P2]
 Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MVP fechar.
 
 ### Fase 1 — Fundamentos do workspace
-1. [P0] **AppLayout redireciona aluno para longe do próprio portal.**
+1. ✅ [P0] **AppLayout redireciona aluno para longe do próprio portal.**
    `alunoAllowed` = `/app/(atividades|notas|perfil)` mas a sidebar oferece `/app/portal`. Aluno é jogado em `/app/atividades` toda vez. Incluir `portal` no regex e revisar a lista canônica de rotas do aluno num único lugar.
-2. [P0] **Sidebar tenant hardcoded "COLÉGIO ALPHA"** e topbar avatar hardcoded "JD". Puxar `tenant.name` e iniciais do usuário via `useSession`.
+2. ✅ [P0] **Sidebar tenant hardcoded "COLÉGIO ALPHA"** e topbar avatar hardcoded "JD". Puxar `tenant.name` e iniciais do usuário via `useSession`.
 3. [P1] **Onboarding do admin novo:** hoje cai num dashboard vazio sem próximos passos. Adicionar cartão "Primeiros passos" no `/app` (criar curso → turma → aluno → convidar professor) quando `totalStudents=0`. Sem wizard modal, apenas checklist inline.
 4. [P1] **Convites — estados órfãos.** Botão "Convidar" no aluno regenera token mesmo se já houver convite pendente/aceito, sem aviso. Server fn deve retornar status (`pending`/`accepted`/`expired`) e a UI mostrar o estado antes de gerar novo link.
 5. [P2] **Dashboard não filtra por professor.** Professor vê números do tenant inteiro. `getDashboardStats` deve escopar por `teaches_class` quando o usuário for professor (não admin).
@@ -149,7 +149,7 @@ Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MV
 21. [P2] **Dashboard do professor**: entregas pendentes de correção, média por turma. Card único no `/app` visível quando `isProfessor && !isAdmin`.
 
 ### Fase 6 — Estabilização
-22. [P0] **Rotas sem `errorComponent`/`notFoundComponent`.** Adicionar boundary padrão em `__root` (defaultErrorComponent) e leves em cada rota com loader — hoje qualquer erro no Supabase gera tela em branco silencioso.
+22. 🟡 [P0] **Rotas sem `errorComponent`/`notFoundComponent`.** `defaultErrorComponent` + `defaultNotFoundComponent` adicionados no `createRouter` — cobre todas as rotas sem override. Boundaries específicos por rota podem ser adicionados sob demanda.
 23. [P1] **`session.isAdmin` e `isAluno` espalhados** ainda existem em `alunos.tsx`, `chamada.tsx`, `notas.tsx`. Migrar para `usePermission` conforme os arquivos forem tocados.
 24. [P1] **Empty/loading/error states padronizados** — extrair `<EmptyState/>`, `<LoadingBlock/>`, `<ErrorBlock/>` em `src/components/ui/`.
 25. [P2] **`.lovable/architecture.md`** documentando decisões, RLS por tabela, matriz RBAC e feature flags atuais.
