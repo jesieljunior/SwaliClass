@@ -25,12 +25,12 @@ function AppLayout() {
   const isAluno = !!session.data?.isAluno && !session.data?.isStaff;
 
   // Routes an aluno can actually access
-  const alunoAllowed = /^\/app(\/(atividades|notas|perfil))?\/?$/;
+  const alunoAllowed = /^\/app(\/(portal|atividades|notas|perfil))?\/?$/;
 
   useEffect(() => {
     if (!session.data) return;
     if (isAluno && !alunoAllowed.test(pathname)) {
-      navigate({ to: "/app/atividades", replace: true });
+      navigate({ to: "/app/portal", replace: true });
     }
   }, [isAluno, pathname, session.data]);
 
