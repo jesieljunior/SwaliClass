@@ -18,8 +18,13 @@ import { useSession } from "@/hooks/use-session";
 import {
   listActivities, createActivity, deleteActivity, markSubmissionComplete, gradeSubmission,
 } from "@/lib/activities.functions";
-import { listClasses, listStudents } from "@/lib/tenant.functions";
+import {
+  listClasses, listStudents,
+  attachSubmissionFile, listSubmissionFiles, deleteSubmissionFile,
+} from "@/lib/tenant.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Paperclip, Download, X } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/atividades")({
   head: () => ({ meta: [{ title: "Atividades — BitraHub" }, { name: "robots", content: "noindex" }] }),
@@ -36,6 +41,145 @@ type Activity = {
   type: "particular" | "turma"; classId?: string; className?: string;
   studentId?: string; studentName?: string; submissions: Submission[];
 };
+
+type SubmissionFile = {
+  id: string;
+  file_name: string;
+  size_bytes: number | null;
+  mime_type: string | null;
+  download_url: string | null;
+  created_at: string;
+};
+
+function fmtSize(b?: number | null) {
+  if (!b) return "";
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
+  return `${(b / 1024 / 1024).toFixed(1)} MB`;
+}
+
+/* ---------------- SUBMISSION FILES PANEL ---------------- */
+function SubmissionFilesPanel({
+  submissionId,
+  canUpload,
+  studentId,
+  tenantId,
+}: {
+  submissionId: string;
+  canUpload: boolean;
+  studentId?: string | null;
+  tenantId?: string | null;
+}) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listSubmissionFiles);
+  const attachFn = useServerFn(attachSubmissionFile);
+  const delFn = useServerFn(deleteSubmissionFile);
+  const [uploading, setUploading] = useState(false);
+
+  const q = useQuery({
+    queryKey: ["submission-files", submissionId],
+    queryFn: () => listFn({ data: { submission_id: submissionId } }),
+  });
+
+  const files = (q.data ?? []) as SubmissionFile[];
+
+  const delM = useMutation({
+    mutationFn: (id: string) => delFn({ data: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["submission-files", submissionId] }),
+    onError: (e: any) => toast.error("Erro ao remover", { description: e.message }),
+  });
+
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!studentId || !tenantId) {
+      toast.error("Não foi possível anexar", { description: "Sessão sem aluno/tenant." });
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Arquivo muito grande", { description: "Máximo 20 MB." });
+      return;
+    }
+    setUploading(true);
+    try {
+      const safe = file.name.replace(/[^\w.\-]+/g, "_");
+      const path = `${studentId}/${tenantId}/${submissionId}/${crypto.randomUUID()}-${safe}`;
+      const up = await supabase.storage.from("submissions").upload(path, file, {
+        contentType: file.type || undefined,
+        upsert: false,
+      });
+      if (up.error) throw new Error(up.error.message);
+      await attachFn({
+        data: {
+          submission_id: submissionId,
+          storage_path: path,
+          file_name: file.name,
+          mime_type: file.type || null,
+          size_bytes: file.size,
+        },
+      });
+      qc.invalidateQueries({ queryKey: ["submission-files", submissionId] });
+      toast.success("Arquivo anexado");
+    } catch (err: any) {
+      toast.error("Falha no upload", { description: err.message });
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-mono uppercase tracking-widest text-navy-800/40">
+          Arquivos ({files.length})
+        </p>
+        {canUpload && (
+          <label className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-navy-900 text-paper text-xs font-bold cursor-pointer hover:bg-navy-800">
+            {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <Paperclip className="size-3.5" />}
+            {uploading ? "Enviando…" : "Anexar arquivo"}
+            <input type="file" className="hidden" onChange={onPick} disabled={uploading} />
+          </label>
+        )}
+      </div>
+      {q.isLoading && <div className="text-xs text-navy-800/40">Carregando…</div>}
+      {!q.isLoading && files.length === 0 && (
+        <p className="text-xs text-navy-800/50 italic">Nenhum arquivo anexado.</p>
+      )}
+      <ul className="space-y-1.5">
+        {files.map((f) => (
+          <li key={f.id} className="flex items-center gap-2 p-2 rounded-lg bg-surface border border-border-subtle text-sm">
+            <FileText className="size-4 text-navy-800/60 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium">{f.file_name}</p>
+              <p className="text-[10px] text-navy-800/50">{fmtSize(f.size_bytes)}</p>
+            </div>
+            {f.download_url && (
+              <a
+                href={f.download_url}
+                target="_blank"
+                rel="noreferrer"
+                className="shrink-0 p-1.5 rounded-md hover:bg-white text-navy-800/70"
+                title="Baixar"
+              >
+                <Download className="size-3.5" />
+              </a>
+            )}
+            {canUpload && (
+              <button
+                onClick={() => { if (confirm("Remover arquivo?")) delM.mutate(f.id); }}
+                className="shrink-0 p-1.5 rounded-md hover:bg-rose-50 text-rose-700"
+                title="Remover"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function AtividadesPage() {
   const { mode } = useViewMode();
@@ -462,6 +606,12 @@ function StudentView({ activities }: { activities: Activity[] }) {
 
                           {sub.status === "pendente" && (
                             <div className="space-y-3">
+                              <SubmissionFilesPanel
+                                submissionId={sub.id}
+                                canUpload={isRealStudent}
+                                studentId={studentId}
+                                tenantId={session.data?.tenantId}
+                              />
                               <div className="space-y-1.5">
                                 <Label htmlFor={`note-${sub.id}`} className="text-xs">Observações (opcional)</Label>
                                 <Textarea
@@ -481,6 +631,15 @@ function StudentView({ activities }: { activities: Activity[] }) {
                                 Marcar como concluída
                               </Button>
                             </div>
+                          )}
+
+                          {sub.status !== "pendente" && (
+                            <SubmissionFilesPanel
+                              submissionId={sub.id}
+                              canUpload={false}
+                              studentId={studentId}
+                              tenantId={session.data?.tenantId}
+                            />
                           )}
                         </div>
                       </motion.div>
@@ -530,6 +689,12 @@ function GradeDrawer({
               <p className="text-[11px] font-mono uppercase tracking-widest text-navy-800/40 mb-1">Observação do aluno</p>
               <p className="text-sm italic">"{grading.submission.note}"</p>
             </div>
+          )}
+          {grading && (
+            <SubmissionFilesPanel
+              submissionId={grading.submission.id}
+              canUpload={false}
+            />
           )}
           <div className="space-y-1.5">
             <Label htmlFor="grade" className="text-xs">Nota (0 a 10)</Label>
