@@ -58,7 +58,17 @@ function AppLayout() {
   );
 }
 
+function initialsFrom(name?: string | null, email?: string | null) {
+  const src = (name?.trim() || email?.split("@")[0] || "").trim();
+  if (!src) return "•";
+  const parts = src.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 function Topbar({ pathname, isAluno }: { pathname: string; isAluno: boolean }) {
+  const session = useSession();
+  const initials = initialsFrom(session.data?.fullName, session.data?.email);
   return (
     <header className="h-16 border-b border-border-subtle bg-white/80 backdrop-blur-md px-4 lg:px-8 flex items-center gap-4">
       <Link to="/" className={`${isAluno ? "" : "lg:hidden"} flex items-center gap-2 shrink-0`}>
@@ -80,7 +90,7 @@ function Topbar({ pathname, isAluno }: { pathname: string; isAluno: boolean }) {
         <button className="size-9 rounded-md border border-border-subtle bg-white grid place-items-center text-navy-800/60 hover:text-navy-900">
           <Bell className="size-4" />
         </button>
-        <div className="size-9 rounded-full bg-navy-900 text-paper grid place-items-center text-xs font-bold">JD</div>
+        <div className="size-9 rounded-full bg-navy-900 text-paper grid place-items-center text-xs font-bold" title={session.data?.fullName || session.data?.email || ""}>{initials}</div>
       </div>
       <span className="sr-only">{pathname}</span>
     </header>
