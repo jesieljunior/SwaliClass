@@ -606,6 +606,12 @@ function StudentView({ activities }: { activities: Activity[] }) {
 
                           {sub.status === "pendente" && (
                             <div className="space-y-3">
+                              <SubmissionFilesPanel
+                                submissionId={sub.id}
+                                canUpload={isRealStudent}
+                                studentId={studentId}
+                                tenantId={session.data?.tenantId}
+                              />
                               <div className="space-y-1.5">
                                 <Label htmlFor={`note-${sub.id}`} className="text-xs">Observações (opcional)</Label>
                                 <Textarea
@@ -625,6 +631,15 @@ function StudentView({ activities }: { activities: Activity[] }) {
                                 Marcar como concluída
                               </Button>
                             </div>
+                          )}
+
+                          {sub.status !== "pendente" && (
+                            <SubmissionFilesPanel
+                              submissionId={sub.id}
+                              canUpload={false}
+                              studentId={studentId}
+                              tenantId={session.data?.tenantId}
+                            />
                           )}
                         </div>
                       </motion.div>
