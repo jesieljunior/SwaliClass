@@ -18,8 +18,13 @@ import { useSession } from "@/hooks/use-session";
 import {
   listActivities, createActivity, deleteActivity, markSubmissionComplete, gradeSubmission,
 } from "@/lib/activities.functions";
-import { listClasses, listStudents } from "@/lib/tenant.functions";
+import {
+  listClasses, listStudents,
+  attachSubmissionFile, listSubmissionFiles, deleteSubmissionFile,
+} from "@/lib/tenant.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Paperclip, Download, X } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/atividades")({
   head: () => ({ meta: [{ title: "Atividades — BitraHub" }, { name: "robots", content: "noindex" }] }),
@@ -36,6 +41,22 @@ type Activity = {
   type: "particular" | "turma"; classId?: string; className?: string;
   studentId?: string; studentName?: string; submissions: Submission[];
 };
+
+type SubmissionFile = {
+  id: string;
+  file_name: string;
+  size_bytes: number | null;
+  mime_type: string | null;
+  download_url: string | null;
+  created_at: string;
+};
+
+function fmtSize(b?: number | null) {
+  if (!b) return "";
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
+  return `${(b / 1024 / 1024).toFixed(1)} MB`;
+}
 
 function AtividadesPage() {
   const { mode } = useViewMode();
