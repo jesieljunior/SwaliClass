@@ -690,6 +690,12 @@ function GradeDrawer({
               <p className="text-sm italic">"{grading.submission.note}"</p>
             </div>
           )}
+          {grading && (
+            <SubmissionFilesPanel
+              submissionId={grading.submission.id}
+              canUpload={false}
+            />
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="grade" className="text-xs">Nota (0 a 10)</Label>
             <Input
