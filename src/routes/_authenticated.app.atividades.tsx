@@ -39,7 +39,7 @@ type Submission = {
 type Activity = {
   id: string; title: string; description: string; due: string; createdAt: string;
   type: "particular" | "turma"; classId?: string; className?: string;
-  studentId?: string; studentName?: string; submissions: Submission[];
+  studentId?: string; studentName?: string; maxGrade: number; submissions: Submission[];
 };
 
 type SubmissionFile = {
@@ -375,7 +375,7 @@ function TeacherView({ activities }: { activities: Activity[] }) {
                                 <div className="flex items-center gap-2 mt-0.5">
                                   <StatusBadge s={s.status} />
                                   {typeof s.grade === "number" && (
-                                    <span className="text-xs font-bold text-emerald-700">Nota {s.grade.toFixed(1)}</span>
+                                    <span className="text-xs font-bold text-emerald-700">Nota {s.grade.toFixed(1)} / {a.maxGrade}</span>
                                   )}
                                 </div>
                               </div>
@@ -592,6 +592,7 @@ function StudentView({ activities }: { activities: Activity[] }) {
                               <div className="flex items-center justify-between mb-1">
                                 <p className="text-[11px] font-mono uppercase tracking-widest text-emerald-700">Correção do professor</p>
                                 <span className="text-lg font-display font-extrabold text-emerald-700">{sub.grade?.toFixed(1)}</span>
+                                <span className="text-xs text-emerald-700/70">/ {a.maxGrade}</span>
                               </div>
                               {sub.feedback && <p className="text-sm text-emerald-900">{sub.feedback}</p>}
                             </div>
@@ -697,11 +698,14 @@ function GradeDrawer({
             />
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="grade" className="text-xs">Nota (0 a 10)</Label>
+            <Label htmlFor="grade" className="text-xs">
+              Nota (0 a {grading?.activity.maxGrade ?? 10})
+            </Label>
             <Input
-              id="grade" type="number" min={0} max={10} step={0.1}
+              id="grade" type="number" min={0} max={grading?.activity.maxGrade ?? 10} step={0.1}
               value={grade} onChange={(e) => setGrade(e.target.value)}
-              className="h-12 rounded-xl text-lg font-display font-bold" placeholder="8.5"
+              className="h-12 rounded-xl text-lg font-display font-bold"
+              placeholder={String(((grading?.activity.maxGrade ?? 10) * 0.85).toFixed(1))}
             />
           </div>
           <div className="space-y-1.5">
