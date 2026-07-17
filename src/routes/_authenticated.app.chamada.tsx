@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Check, X, Clock3, FileText, Loader2, Save } from "lucide-react";
 import { listClasses, getAttendanceRoster, saveAttendance } from "@/lib/tenant.functions";
+import { toast } from "sonner";
 
 type AttendanceStatus = "presente" | "ausente" | "atrasado" | "justificado";
 
@@ -66,8 +67,19 @@ function ChamadaPage() {
       class_id: classId!, session_date: date, topic: topic || null, notes: null,
       marks: roster.map((s: any) => ({ student_id: s.id, status: marks[s.id] ?? "ausente" as AttendanceStatus })),
     }}),
-    onSuccess: () => { setSavedAt(new Date().toLocaleTimeString("pt-BR")); qc.invalidateQueries({ queryKey: ["dashboard"] }); },
+    onSuccess: () => {
+      setSavedAt(new Date().toLocaleTimeString("pt-BR"));
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["roster", classId, date] });
+      toast.success(session ? "Chamada atualizada" : "Chamada salva");
+    },
   });
+
+  const session = rosterQ.data?.session as { updated_at?: string; created_at?: string } | null | undefined;
+  const wasEdited = !!(session?.updated_at && session?.created_at && session.updated_at !== session.created_at);
+  const lastEditedLabel = session?.updated_at
+    ? new Date(session.updated_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })
+    : null;
 
   return (
     <div className="space-y-5 pb-28 lg:pb-0">
@@ -99,6 +111,12 @@ function ChamadaPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Conteúdo da aula (opcional)" className="flex-1 min-w-[180px] h-10 px-3 border border-border-subtle rounded-sm text-sm bg-surface" />
               <span className="text-sm font-mono text-navy-800/60 shrink-0">{present} / {roster.length} presentes</span>
+            </div>
+            <div className="flex items-center justify-between gap-3 flex-wrap text-[11px] font-mono text-navy-800/50">
+              <span>Não marcado → contará como <span className="text-rose-700 font-bold">ausente</span></span>
+              {lastEditedLabel && (
+                <span>{wasEdited ? "Editada em" : "Registrada em"} {lastEditedLabel}</span>
+              )}
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] font-mono uppercase tracking-widest text-navy-800/50 shrink-0">Marcar todos:</span>

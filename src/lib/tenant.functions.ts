@@ -385,7 +385,7 @@ export const getAttendanceRoster = createServerFn({ method: "GET" })
 
     const { data: session } = await context.supabase
       .from("attendance_sessions")
-      .select("id, topic, notes")
+      .select("id, topic, notes, created_at, updated_at")
       .eq("class_id", data.class_id)
       .eq("session_date", data.session_date)
       .maybeSingle();
@@ -434,7 +434,7 @@ export const saveAttendance = createServerFn({ method: "POST" })
     if (sessionId) {
       await context.supabase
         .from("attendance_sessions")
-        .update({ topic: data.topic ?? null, notes: data.notes ?? null })
+        .update({ topic: data.topic ?? null, notes: data.notes ?? null, updated_at: new Date().toISOString() })
         .eq("id", sessionId);
     } else {
       const { data: s, error } = await context.supabase
