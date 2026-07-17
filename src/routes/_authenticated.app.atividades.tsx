@@ -745,14 +745,15 @@ function CreateActivityDrawer({ open, onClose }: { open: boolean; onClose: () =>
   const [due, setDue] = useState("");
   const [type, setType] = useState<"particular" | "turma">("turma");
   const [targetId, setTargetId] = useState("");
+  const [maxGrade, setMaxGrade] = useState("10");
 
   const options = type === "turma" ? (classes.data ?? []) : (students.data ?? []);
   const optName = (o: any) => (type === "turma" ? o.name : o.full_name);
 
-  const reset = () => { setTitle(""); setDescription(""); setDue(""); setType("turma"); setTargetId(""); };
+  const reset = () => { setTitle(""); setDescription(""); setDue(""); setType("turma"); setTargetId(""); setMaxGrade("10"); };
 
   const createM = useMutation({
-    mutationFn: () => createFn({ data: { title, description: description || null, due, type, targetId } }),
+    mutationFn: () => createFn({ data: { title, description: description || null, due, type, targetId, maxGrade: Number(maxGrade) || 10 } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["activities"] });
       toast.success("Atividade criada", { description: title });
@@ -813,6 +814,16 @@ function CreateActivityDrawer({ open, onClose }: { open: boolean; onClose: () =>
           <div className="space-y-1.5">
             <Label htmlFor="due" className="text-xs">Prazo</Label>
             <Input id="due" type="date" value={due} onChange={(e) => setDue(e.target.value)} className="h-12 rounded-xl" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="maxGrade" className="text-xs">Nota máxima</Label>
+            <Input
+              id="maxGrade" type="number" min={0.1} step={0.1}
+              value={maxGrade} onChange={(e) => setMaxGrade(e.target.value)}
+              className="h-12 rounded-xl"
+              placeholder="10"
+            />
+            <p className="text-[11px] text-navy-800/40">Padrão 10. Use 100 para provas percentuais.</p>
           </div>
         </div>
         <DrawerFooter className="flex-row gap-2">
