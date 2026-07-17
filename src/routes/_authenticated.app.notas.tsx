@@ -113,9 +113,14 @@ function NotasPage() {
                     <p className="mt-2 text-xs text-navy-800/70 italic line-clamp-2">"{g.feedback}"</p>
                   )}
                 </div>
-                <span className="text-2xl font-display font-extrabold text-emerald-700 shrink-0">
-                  {g.grade.toFixed(1)}
-                </span>
+                <div className="text-right shrink-0">
+                  <span className="text-2xl font-display font-extrabold text-emerald-700">
+                    {g.grade.toFixed(1)}
+                  </span>
+                  <span className="block text-[11px] text-navy-800/50">
+                    / {(g.activity.maxGrade ?? 10)}
+                  </span>
+                </div>
               </motion.div>
             ))}
           </div>

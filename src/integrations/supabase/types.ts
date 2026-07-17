@@ -22,6 +22,7 @@ export type Database = {
           description: string | null
           due_at: string
           id: string
+          max_grade: number
           student_id: string | null
           tenant_id: string
           title: string
@@ -35,6 +36,7 @@ export type Database = {
           description?: string | null
           due_at: string
           id?: string
+          max_grade?: number
           student_id?: string | null
           tenant_id: string
           title: string
@@ -48,6 +50,7 @@ export type Database = {
           description?: string | null
           due_at?: string
           id?: string
+          max_grade?: number
           student_id?: string | null
           tenant_id?: string
           title?: string

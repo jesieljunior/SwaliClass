@@ -133,7 +133,7 @@ Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MV
 
 ### Fase 3 — Operação diária
 11. ✅ [P0] **Entrega de atividade com arquivo real.** Aluno anexa arquivos (até 20 MB) no drawer da atividade; upload direto ao bucket `submissions` + `attachSubmissionFile`. Professor vê e baixa via signed URL (10 min) no drawer de correção. Sem preview embutido.
-12. [P1] **Atividades — rubrica mínima.** Hoje nota é livre 0-10; sem `max_grade`. Adicionar coluna `max_grade numeric` (default 10) em `activities`, respeitar no `gradeSubmission` (validação server) e exibir "X / max" nas telas.
+12. ✅ [P1] **Atividades — rubrica mínima.** Coluna `activities.max_grade numeric` (default 10, check > 0). `createActivity` aceita `maxGrade`, `gradeSubmission` valida no servidor. UI mostra "X / max" no professor, portal, drawer de correção e página de notas.
 13. [P1] **Chamada — edição de sessão passada** funciona, mas não há indicação de "editado em". Adicionar `updated_at` visível + toast "Chamada atualizada".
 14. [P1] **Chamada — status default**: alunos sem marca hoje viram `ausente` no `saveAttendance`. Explícito no UI: rótulo "Não marcado → contará como ausente".
 15. [P2] **Atividades — filtro por turma/status** para o professor com muitas turmas. Selector simples no header.

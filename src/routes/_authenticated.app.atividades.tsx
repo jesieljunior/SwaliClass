@@ -39,7 +39,7 @@ type Submission = {
 type Activity = {
   id: string; title: string; description: string; due: string; createdAt: string;
   type: "particular" | "turma"; classId?: string; className?: string;
-  studentId?: string; studentName?: string; submissions: Submission[];
+  studentId?: string; studentName?: string; maxGrade: number; submissions: Submission[];
 };
 
 type SubmissionFile = {
@@ -375,7 +375,7 @@ function TeacherView({ activities }: { activities: Activity[] }) {
                                 <div className="flex items-center gap-2 mt-0.5">
                                   <StatusBadge s={s.status} />
                                   {typeof s.grade === "number" && (
-                                    <span className="text-xs font-bold text-emerald-700">Nota {s.grade.toFixed(1)}</span>
+                                    <span className="text-xs font-bold text-emerald-700">Nota {s.grade.toFixed(1)} / {a.maxGrade}</span>
                                   )}
                                 </div>
                               </div>
@@ -592,6 +592,7 @@ function StudentView({ activities }: { activities: Activity[] }) {
                               <div className="flex items-center justify-between mb-1">
                                 <p className="text-[11px] font-mono uppercase tracking-widest text-emerald-700">Correção do professor</p>
                                 <span className="text-lg font-display font-extrabold text-emerald-700">{sub.grade?.toFixed(1)}</span>
+                                <span className="text-xs text-emerald-700/70">/ {a.maxGrade}</span>
                               </div>
                               {sub.feedback && <p className="text-sm text-emerald-900">{sub.feedback}</p>}
                             </div>
@@ -697,11 +698,14 @@ function GradeDrawer({
             />
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="grade" className="text-xs">Nota (0 a 10)</Label>
+            <Label htmlFor="grade" className="text-xs">
+              Nota (0 a {grading?.activity.maxGrade ?? 10})
+            </Label>
             <Input
-              id="grade" type="number" min={0} max={10} step={0.1}
+              id="grade" type="number" min={0} max={grading?.activity.maxGrade ?? 10} step={0.1}
               value={grade} onChange={(e) => setGrade(e.target.value)}
-              className="h-12 rounded-xl text-lg font-display font-bold" placeholder="8.5"
+              className="h-12 rounded-xl text-lg font-display font-bold"
+              placeholder={String(((grading?.activity.maxGrade ?? 10) * 0.85).toFixed(1))}
             />
           </div>
           <div className="space-y-1.5">
@@ -741,14 +745,15 @@ function CreateActivityDrawer({ open, onClose }: { open: boolean; onClose: () =>
   const [due, setDue] = useState("");
   const [type, setType] = useState<"particular" | "turma">("turma");
   const [targetId, setTargetId] = useState("");
+  const [maxGrade, setMaxGrade] = useState("10");
 
   const options = type === "turma" ? (classes.data ?? []) : (students.data ?? []);
   const optName = (o: any) => (type === "turma" ? o.name : o.full_name);
 
-  const reset = () => { setTitle(""); setDescription(""); setDue(""); setType("turma"); setTargetId(""); };
+  const reset = () => { setTitle(""); setDescription(""); setDue(""); setType("turma"); setTargetId(""); setMaxGrade("10"); };
 
   const createM = useMutation({
-    mutationFn: () => createFn({ data: { title, description: description || null, due, type, targetId } }),
+    mutationFn: () => createFn({ data: { title, description: description || null, due, type, targetId, maxGrade: Number(maxGrade) || 10 } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["activities"] });
       toast.success("Atividade criada", { description: title });
@@ -809,6 +814,16 @@ function CreateActivityDrawer({ open, onClose }: { open: boolean; onClose: () =>
           <div className="space-y-1.5">
             <Label htmlFor="due" className="text-xs">Prazo</Label>
             <Input id="due" type="date" value={due} onChange={(e) => setDue(e.target.value)} className="h-12 rounded-xl" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="maxGrade" className="text-xs">Nota máxima</Label>
+            <Input
+              id="maxGrade" type="number" min={0.1} step={0.1}
+              value={maxGrade} onChange={(e) => setMaxGrade(e.target.value)}
+              className="h-12 rounded-xl"
+              placeholder="10"
+            />
+            <p className="text-[11px] text-navy-800/40">Padrão 10. Use 100 para provas percentuais.</p>
           </div>
         </div>
         <DrawerFooter className="flex-row gap-2">

@@ -16,7 +16,7 @@ export const listActivities = createServerFn({ method: "GET" })
     const { data: acts, error } = await context.supabase
       .from("activities")
       .select(
-        "id, title, description, due_at, type, class_id, student_id, created_at, classes(id, name), students(id, full_name)"
+        "id, title, description, due_at, type, class_id, student_id, max_grade, created_at, classes(id, name), students(id, full_name)"
       )
       .order("due_at", { ascending: true });
     if (error) throw new Error(error.message);
@@ -58,6 +58,7 @@ export const listActivities = createServerFn({ method: "GET" })
       className: a.classes?.name,
       studentId: a.student_id ?? undefined,
       studentName: a.students?.full_name,
+      maxGrade: a.max_grade != null ? Number(a.max_grade) : 10,
       submissions: byAct.get(a.id) ?? [],
     }));
   });
@@ -69,6 +70,7 @@ const createSchema = z.object({
   due: z.string(), // ISO or yyyy-mm-dd
   type: z.enum(["particular", "turma"]),
   targetId: z.string().uuid(),
+  maxGrade: z.number().positive().max(1000).optional(),
 });
 
 export const createActivity = createServerFn({ method: "POST" })
@@ -85,6 +87,7 @@ export const createActivity = createServerFn({ method: "POST" })
       type: data.type,
       class_id: data.type === "turma" ? data.targetId : null,
       student_id: data.type === "particular" ? data.targetId : null,
+      max_grade: data.maxGrade ?? 10,
     };
     const { data: act, error } = await context.supabase
       .from("activities")
@@ -154,7 +157,7 @@ export const markSubmissionComplete = createServerFn({ method: "POST" })
 // ---------- GRADE (teacher action) ----------
 const gradeSchema = z.object({
   submission_id: z.string().uuid(),
-  grade: z.number().min(0).max(10),
+  grade: z.number().min(0),
   feedback: z.string().max(2000).optional().nullable(),
 });
 
@@ -162,6 +165,19 @@ export const gradeSubmission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => gradeSchema.parse(d))
   .handler(async ({ data, context }) => {
+    // Validate against activity.max_grade
+    const { data: sub, error: subErr } = await context.supabase
+      .from("submissions")
+      .select("activity_id, activities:activity_id(max_grade)")
+      .eq("id", data.submission_id)
+      .maybeSingle();
+    if (subErr) throw new Error(subErr.message);
+    const maxGrade = Number(
+      (sub as any)?.activities?.max_grade ?? 10,
+    );
+    if (data.grade > maxGrade) {
+      throw new Error(`Nota acima do máximo permitido (${maxGrade}).`);
+    }
     const { error } = await context.supabase
       .from("submissions")
       .update({
@@ -183,7 +199,7 @@ export const listStudentGrades = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("submissions")
-      .select("id, status, grade, feedback, graded_at, activities(id, title, type, classes(name))")
+      .select("id, status, grade, feedback, graded_at, activities(id, title, type, max_grade, classes(name))")
       .eq("student_id", data.student_id)
       .eq("status", "corrigida")
       .order("graded_at", { ascending: false });
@@ -197,6 +213,7 @@ export const listStudentGrades = createServerFn({ method: "POST" })
         id: r.activities?.id,
         title: r.activities?.title ?? "—",
         type: r.activities?.type,
+        maxGrade: r.activities?.max_grade != null ? Number(r.activities.max_grade) : 10,
         className: r.activities?.classes?.name,
       },
     }));
