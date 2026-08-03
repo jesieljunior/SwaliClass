@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { FileText, FileSpreadsheet, Download, Loader2, Filter } from "lucide-react";
 import { toast } from "sonner";
-import { listCourses, listClasses, listStudents, getReportData } from "@/lib/tenant.functions";
+import { listCourses, listClasses, listStudents, getReportData, getGradesReport } from "@/lib/tenant.functions";
 
 export const Route = createFileRoute("/_authenticated/app/relatorios")({
   component: RelatoriosPage,
@@ -14,12 +14,15 @@ const todayISO = () => new Date().toISOString().slice(0, 10);
 const daysAgoISO = (n: number) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
 
 type Tab = "overview" | "byStudent" | "byClass" | "byCourse" | "detailed";
+type GradeTab = "byStudent" | "byClass" | "byActivity" | "detailed";
+type ReportType = "attendance" | "grades";
 
 function RelatoriosPage() {
   const fetchCourses = useServerFn(listCourses);
   const fetchClasses = useServerFn(listClasses);
   const fetchStudents = useServerFn(listStudents);
   const fetchReport = useServerFn(getReportData);
+  const fetchGrades = useServerFn(getGradesReport);
 
   const coursesQ = useQuery({ queryKey: ["courses"], queryFn: () => fetchCourses() });
   const classesQ = useQuery({ queryKey: ["classes"], queryFn: () => fetchClasses() });
@@ -33,9 +36,12 @@ function RelatoriosPage() {
     student_id: "",
   });
   const [tab, setTab] = useState<Tab>("overview");
+  const [gradeTab, setGradeTab] = useState<GradeTab>("byStudent");
+  const [reportType, setReportType] = useState<ReportType>("attendance");
 
   const reportQ = useQuery({
     queryKey: ["report", filters],
+    enabled: reportType === "attendance",
     queryFn: () =>
       fetchReport({
         data: {
@@ -48,7 +54,23 @@ function RelatoriosPage() {
       }),
   });
 
+  const gradesQ = useQuery({
+    queryKey: ["grades-report", filters],
+    enabled: reportType === "grades",
+    queryFn: () =>
+      fetchGrades({
+        data: {
+          start_date: filters.start_date,
+          end_date: filters.end_date,
+          course_id: filters.course_id || null,
+          class_id: filters.class_id || null,
+          student_id: filters.student_id || null,
+        },
+      }),
+  });
+
   const data = reportQ.data;
+  const grades = gradesQ.data;
   const periodLabel = `${filters.start_date} a ${filters.end_date}`;
 
   // Class options filtered by selected course
