@@ -375,8 +375,8 @@ function RelatoriosPage() {
       </div>
 
       {/* KPIs */}
-      {reportQ.isLoading && <p className="text-sm text-navy-800/40"><Loader2 className="inline size-4 animate-spin" /> Carregando…</p>}
-      {data && (
+      {(isGrades ? gradesQ.isLoading : reportQ.isLoading) && <p className="text-sm text-navy-800/40"><Loader2 className="inline size-4 animate-spin" /> Carregando…</p>}
+      {!isGrades && data && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <Kpi label="Sessões" value={data.totals.sessions} />
@@ -443,6 +443,74 @@ function RelatoriosPage() {
                 rows={data.records.slice(0, 500).map((r) => [r.date, r.course_name, r.class_name, r.student_name, r.status])}
               />
               {data.records.length > 500 && (
+                <p className="text-[11px] text-navy-800/50 mt-2 font-mono">Exibindo primeiros 500. Exporte para ver todos.</p>
+              )}
+            </Card>
+          )}
+        </>
+      )}
+
+      {isGrades && grades && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <Kpi label="Atividades" value={grades.totals.activities} />
+            <Kpi label="Alunos" value={grades.totals.students} />
+            <Kpi label="Corrigidas" value={grades.totals.graded} accent="text-emerald-700" />
+            <Kpi label="Pendentes" value={grades.totals.pending} accent="text-amber-700" />
+            <Kpi label="Média geral" value={`${grades.totals.average}%`} accent="text-navy-900" />
+          </div>
+
+          <div className="flex gap-1 border-b border-border-subtle">
+            {([
+              ["byStudent", "Por aluno"],
+              ["byClass", "Por turma"],
+              ["byActivity", "Por atividade"],
+              ["detailed", "Detalhado"],
+            ] as [GradeTab, string][]).map(([id, lb]) => (
+              <button key={id} onClick={() => setGradeTab(id)} className={`px-3 h-9 text-xs font-semibold border-b-2 -mb-px ${gradeTab === id ? "border-navy-900 text-navy-900" : "border-transparent text-navy-800/50 hover:text-navy-900"}`}>
+                {lb}
+              </button>
+            ))}
+          </div>
+
+          {gradeTab === "byStudent" && (
+            <Card title={`Por aluno (${grades.byStudent.length})`}>
+              <SimpleTable
+                head={["Aluno", "Corrigidas", "Entregues", "Pendentes", "Média"]}
+                rows={grades.byStudent.map((s: any) => [s.name, s.graded, s.delivered, s.pending, `${s.average}%`])}
+              />
+            </Card>
+          )}
+          {gradeTab === "byClass" && (
+            <Card title={`Por turma (${grades.byClass.length})`}>
+              <SimpleTable
+                head={["Turma", "Corrigidas", "Entregues", "Pendentes", "Média"]}
+                rows={grades.byClass.map((s: any) => [s.name, s.graded, s.delivered, s.pending, `${s.average}%`])}
+              />
+            </Card>
+          )}
+          {gradeTab === "byActivity" && (
+            <Card title={`Por atividade (${grades.byActivity.length})`}>
+              <SimpleTable
+                head={["Atividade", "Corrigidas", "Entregues", "Pendentes", "Média"]}
+                rows={grades.byActivity.map((s: any) => [s.name, s.graded, s.delivered, s.pending, `${s.average}%`])}
+              />
+            </Card>
+          )}
+          {gradeTab === "detailed" && (
+            <Card title={`Notas lançadas (${grades.records.length})`}>
+              <SimpleTable
+                head={["Prazo", "Turma", "Aluno", "Atividade", "Status", "Nota"]}
+                rows={grades.records.slice(0, 500).map((r: any) => [
+                  String(r.due_at).slice(0, 10),
+                  r.class_name,
+                  r.student_name,
+                  r.activity_title,
+                  r.status,
+                  r.grade === null ? "—" : `${r.grade} / ${r.max_grade}`,
+                ])}
+              />
+              {grades.records.length > 500 && (
                 <p className="text-[11px] text-navy-800/50 mt-2 font-mono">Exibindo primeiros 500. Exporte para ver todos.</p>
               )}
             </Card>
