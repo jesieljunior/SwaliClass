@@ -190,24 +190,140 @@ function RelatoriosPage() {
 
   const setPreset = (n: number) => setFilters((f) => ({ ...f, start_date: daysAgoISO(n), end_date: todayISO() }));
 
+  // ===== Grades exports =====
+  const gradeRows = () =>
+    (grades?.records ?? []).map((r: any) => ({
+      Prazo: String(r.due_at).slice(0, 10),
+      Curso: r.course_name,
+      Turma: r.class_name,
+      Aluno: r.student_name,
+      Atividade: r.activity_title,
+      Status: r.status,
+      Nota: r.grade ?? "",
+      Máx: r.max_grade,
+      "%": r.percent ?? "",
+    }));
+
+  const exportGradesExcel = async () => {
+    if (!grades) return;
+    const XLSX = await import("xlsx");
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.aoa_to_sheet([
+        ["Relatório de Notas"],
+        ["Período", periodLabel],
+        ["Atividades", grades.totals.activities],
+        ["Alunos", grades.totals.students],
+        ["Corrigidas", grades.totals.graded],
+        ["Entregues", grades.totals.delivered],
+        ["Pendentes", grades.totals.pending],
+        ["Média geral", `${grades.totals.average}%`],
+      ]),
+      "Resumo",
+    );
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(grades.byStudent.map((s: any) => ({ Aluno: s.name, Corrigidas: s.graded, Entregues: s.delivered, Pendentes: s.pending, "Média %": s.average }))), "Por aluno");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(grades.byClass.map((s: any) => ({ Turma: s.name, Corrigidas: s.graded, Entregues: s.delivered, Pendentes: s.pending, "Média %": s.average }))), "Por turma");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(grades.byActivity.map((s: any) => ({ Atividade: s.name, Corrigidas: s.graded, Entregues: s.delivered, Pendentes: s.pending, "Média %": s.average }))), "Por atividade");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(gradeRows()), "Detalhado");
+    XLSX.writeFile(wb, `relatorio-notas-${filters.start_date}_${filters.end_date}.xlsx`);
+    toast.success("Excel exportado");
+  };
+
+  const exportGradesCSV = () => {
+    if (!grades) return;
+    const rows = gradeRows();
+    const head = ["prazo", "curso", "turma", "aluno", "atividade", "status", "nota", "max", "percentual"];
+    const csv = [head, ...rows.map((r) => Object.values(r))]
+      .map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `relatorio-notas-${filters.start_date}_${filters.end_date}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exportado");
+  };
+
+  const exportGradesPDF = async () => {
+    if (!grades) return;
+    const { default: jsPDF } = await import("jspdf");
+    const autoTable = (await import("jspdf-autotable")).default;
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("BitraHub — Relatório de Notas", 14, 18);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Período: ${periodLabel}`, 14, 26);
+    doc.text(
+      `Atividades: ${grades.totals.activities}  •  Alunos: ${grades.totals.students}  •  Média geral: ${grades.totals.average}%`,
+      14,
+      32,
+    );
+    autoTable(doc, {
+      startY: 40,
+      head: [["Aluno", "Corrigidas", "Entregues", "Pendentes", "Média %"]],
+      body: grades.byStudent.map((s: any) => [s.name, s.graded, s.delivered, s.pending, `${s.average}%`]),
+      headStyles: { fillColor: [15, 23, 42] },
+      styles: { fontSize: 8 },
+    });
+    const y1 = (doc as any).lastAutoTable.finalY + 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Por turma", 14, y1);
+    autoTable(doc, {
+      startY: y1 + 4,
+      head: [["Turma", "Corrigidas", "Pendentes", "Média %"]],
+      body: grades.byClass.map((s: any) => [s.name, s.graded, s.pending, `${s.average}%`]),
+      headStyles: { fillColor: [15, 23, 42] },
+      styles: { fontSize: 8 },
+    });
+    doc.save(`relatorio-notas-${filters.start_date}_${filters.end_date}.pdf`);
+    toast.success("PDF exportado");
+  };
+
+  const isGrades = reportType === "grades";
+  const canExport = isGrades ? !!grades : !!data;
+  const doPDF = isGrades ? exportGradesPDF : exportPDF;
+  const doExcel = isGrades ? exportGradesExcel : exportExcel;
+  const doCSV = isGrades ? exportGradesCSV : exportCSV;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-end gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-display font-extrabold tracking-tight">Relatórios</h1>
-          <p className="text-xs text-navy-800/40 font-mono uppercase mt-1 tracking-widest">Frequência consolidada — exporte em PDF, Excel ou CSV</p>
+          <p className="text-xs text-navy-800/40 font-mono uppercase mt-1 tracking-widest">
+            {isGrades ? "Notas consolidadas" : "Frequência consolidada"} — exporte em PDF, Excel ou CSV
+          </p>
         </div>
         <div className="flex gap-2">
-          <button onClick={exportPDF} disabled={!data} className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-semibold text-xs hover:bg-navy-800 disabled:opacity-40">
+          <button onClick={doPDF} disabled={!canExport} className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-semibold text-xs hover:bg-navy-800 disabled:opacity-40">
             <FileText className="size-3.5" /> PDF
           </button>
-          <button onClick={exportExcel} disabled={!data} className="inline-flex items-center gap-2 px-4 h-10 bg-white border border-border-subtle rounded-sm font-semibold text-xs hover:bg-surface disabled:opacity-40">
+          <button onClick={doExcel} disabled={!canExport} className="inline-flex items-center gap-2 px-4 h-10 bg-white border border-border-subtle rounded-sm font-semibold text-xs hover:bg-surface disabled:opacity-40">
             <FileSpreadsheet className="size-3.5" /> Excel
           </button>
-          <button onClick={exportCSV} disabled={!data} className="inline-flex items-center gap-2 px-4 h-10 bg-white border border-border-subtle rounded-sm font-semibold text-xs hover:bg-surface disabled:opacity-40">
+          <button onClick={doCSV} disabled={!canExport} className="inline-flex items-center gap-2 px-4 h-10 bg-white border border-border-subtle rounded-sm font-semibold text-xs hover:bg-surface disabled:opacity-40">
             <Download className="size-3.5" /> CSV
           </button>
         </div>
+      </div>
+
+      {/* Report type switch */}
+      <div className="inline-flex bg-white border border-border-subtle rounded-sm p-1 gap-1">
+        {([["attendance", "Frequência"], ["grades", "Notas"]] as [ReportType, string][]).map(([id, lb]) => (
+          <button
+            key={id}
+            onClick={() => setReportType(id)}
+            className={`px-4 h-8 text-xs font-semibold rounded-sm ${reportType === id ? "bg-navy-900 text-paper" : "text-navy-800/60 hover:bg-surface"}`}
+          >
+            {lb}
+          </button>
+        ))}
       </div>
 
       {/* Filters */}
