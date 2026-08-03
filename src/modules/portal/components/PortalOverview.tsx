@@ -59,9 +59,35 @@ export function PortalOverview() {
             {data.classes.map((c) => (
               <li
                 key={c.id}
-                className="text-sm p-3 bg-navy-900/5 rounded-sm font-medium"
+                className="text-sm p-3 bg-navy-900/5 rounded-sm"
               >
-                {c.name}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium truncate">{c.name}</span>
+                  <span className="text-xs font-mono text-navy-800/60 shrink-0">
+                    {c.attendance.rate === null
+                      ? "sem chamada"
+                      : `${c.attendance.rate}% presença`}
+                  </span>
+                </div>
+                {c.attendance.rate !== null && (
+                  <>
+                    <div className="mt-2 h-1.5 w-full rounded-full bg-navy-900/10 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${
+                          c.attendance.rate >= 75
+                            ? "bg-emerald-500"
+                            : c.attendance.rate >= 50
+                              ? "bg-amber-500"
+                              : "bg-rose-500"
+                        }`}
+                        style={{ width: `${c.attendance.rate}%` }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-navy-800/40 mt-1 font-mono">
+                      {c.attendance.present} de {c.attendance.total} aulas
+                    </p>
+                  </>
+                )}
               </li>
             ))}
           </ul>
