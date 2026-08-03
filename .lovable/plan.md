@@ -136,11 +136,11 @@ Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MV
 12. ✅ [P1] **Atividades — rubrica mínima.** Coluna `activities.max_grade numeric` (default 10, check > 0). `createActivity` aceita `maxGrade`, `gradeSubmission` valida no servidor. UI mostra "X / max" no professor, portal, drawer de correção e página de notas.
 13. ✅ [P1] **Chamada — edição de sessão passada.** Trigger `updated_at` na `attendance_sessions`; server fn expõe `created_at/updated_at`; UI mostra "Registrada em / Editada em <data>" e dispara toast `Chamada atualizada` (ou `Chamada salva` no primeiro registro).
 14. ✅ [P1] **Chamada — status default.** Rótulo "Não marcado → contará como ausente" agora fica visível abaixo do topo, deixando o comportamento explícito para o professor antes de salvar.
-15. [P2] **Atividades — filtro por turma/status** para o professor com muitas turmas. Selector simples no header.
+15. ✅ [P2] **Atividades — filtro por turma/status** para o professor com muitas turmas. Selector simples no header.
 
 ### Fase 4 — Portal do aluno
-16. [P1] **Portal sem frequência.** `getMyPortalOverview` não retorna % de presença por turma. Somar via `attendance_records` do próprio aluno e mostrar barra por turma.
-17. [P1] **Portal — próximos prazos vs atividades já entregues** não distingue. Buscar submissão do aluno para cada atividade upcoming e esconder as entregues.
+16. ✅ [P1] **Portal sem frequência.** `getMyPortalOverview` não retorna % de presença por turma. Somar via `attendance_records` do próprio aluno e mostrar barra por turma.
+17. ✅ [P1] **Portal — próximos prazos vs atividades já entregues** não distingue. Buscar submissão do aluno para cada atividade upcoming e esconder as entregues.
 18. [P2] **Aluno — página `/app/notas`** duplica parcialmente o portal. Manter, mas linkar do Portal ("Ver todas as notas").
 
 ### Fase 5 — Relatórios + Dashboard
