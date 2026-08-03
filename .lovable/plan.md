@@ -144,7 +144,7 @@ Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MV
 18. [P2] **Aluno — página `/app/notas`** duplica parcialmente o portal. Manter, mas linkar do Portal ("Ver todas as notas").
 
 ### Fase 5 — Relatórios + Dashboard
-19. [P1] **Relatório de notas** inexistente. Reaproveitar padrão de `getReportData` para gerar `getGradesReport(class_id?, student_id?, period?)` com export CSV/Excel/PDF (já usa jspdf e xlsx). Sem boletim formatado ainda.
+19. ✅ [P1] **Relatório de notas.** `getGradesReport(period, course_id?, class_id?, student_id?)` em `tenant.functions.ts`; tela de Relatórios ganhou alternador Frequência/Notas, KPIs (atividades, alunos, corrigidas, pendentes, média) e abas por aluno / turma / atividade / detalhado, com export PDF, Excel e CSV. Boletim formatado fica no item 20.
 20. [P2] **Boletim simples do aluno (HTML imprimível)** — agrupar por matéria/turma, média por período. Sem PDF fancy; usar `window.print()` com CSS de impressão. Adiar PDF dedicado.
 21. [P2] **Dashboard do professor**: entregas pendentes de correção, média por turma. Card único no `/app` visível quando `isProfessor && !isAdmin`.
 
