@@ -260,6 +260,8 @@ function TeacherView({ activities }: { activities: Activity[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [grading, setGrading] = useState<{ activity: Activity; submission: Submission } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [filterClass, setFilterClass] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const gradeFn = useServerFn(gradeSubmission);
   const deleteFn = useServerFn(deleteActivity);
@@ -290,6 +292,25 @@ function TeacherView({ activities }: { activities: Activity[] }) {
     };
   }, [activities]);
 
+  const classOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    activities.forEach((a) => {
+      if (a.classId && a.className) map.set(a.classId, a.className);
+    });
+    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+  }, [activities]);
+
+  const visible = useMemo(
+    () =>
+      activities.filter((a) => {
+        if (filterClass === "particular" ? a.type !== "particular" : filterClass !== "all" && a.classId !== filterClass)
+          return false;
+        if (filterStatus !== "all" && aggregateStatus(a) !== filterStatus) return false;
+        return true;
+      }),
+    [activities, filterClass, filterStatus],
+  );
+
   return (
     <div className="space-y-6">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-end sm:justify-between">
@@ -309,15 +330,58 @@ function TeacherView({ activities }: { activities: Activity[] }) {
         <Stat label="Corrigidas" value={counts.corrigidas} tone="emerald" />
       </div>
 
+      {activities.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={filterClass} onValueChange={setFilterClass}>
+            <SelectTrigger className="h-9 w-auto min-w-[170px] rounded-full text-sm">
+              <SelectValue placeholder="Turma" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as turmas</SelectItem>
+              <SelectItem value="particular">Somente particulares</SelectItem>
+              {classOptions.map(([id, name]) => (
+                <SelectItem key={id} value={id}>{name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="h-9 w-auto min-w-[150px] rounded-full text-sm">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os status</SelectItem>
+              <SelectItem value="pendente">Pendentes</SelectItem>
+              <SelectItem value="entregue">Para corrigir</SelectItem>
+              <SelectItem value="corrigida">Corrigidas</SelectItem>
+            </SelectContent>
+          </Select>
+          {(filterClass !== "all" || filterStatus !== "all") && (
+            <Button
+              variant="ghost" size="sm"
+              onClick={() => { setFilterClass("all"); setFilterStatus("all"); }}
+              className="h-9 rounded-full text-xs"
+            >
+              Limpar filtros ({visible.length})
+            </Button>
+          )}
+        </div>
+      )}
+
       {activities.length === 0 ? (
         <div className="bg-white border border-border-subtle rounded-2xl p-10 text-center">
           <FileText className="mx-auto size-8 text-navy-800/30 mb-2" />
           <p className="font-display font-bold">Nenhuma atividade ainda</p>
           <p className="text-sm text-navy-800/60">Crie a primeira para começar.</p>
         </div>
+      ) : visible.length === 0 ? (
+        <div className="bg-white border border-border-subtle rounded-2xl p-10 text-center">
+          <FileText className="mx-auto size-8 text-navy-800/30 mb-2" />
+          <p className="font-display font-bold">Nenhuma atividade com esses filtros</p>
+          <p className="text-sm text-navy-800/60">Ajuste turma ou status para ver mais.</p>
+        </div>
       ) : (
         <div className="space-y-3">
-          {activities.map((a) => {
+          {visible.map((a) => {
             const agg = aggregateStatus(a);
             const pendingGrade = a.submissions.filter((s) => s.status === "entregue").length;
             const isOpen = openId === a.id;
