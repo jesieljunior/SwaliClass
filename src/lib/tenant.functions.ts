@@ -658,3 +658,121 @@ export const getReportData = createServerFn({ method: "POST" })
       },
     };
   });
+
+// ============ GRADES REPORT ============
+export const getGradesReport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => reportSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const empty = {
+      records: [],
+      byStudent: [],
+      byClass: [],
+      byActivity: [],
+      totals: { activities: 0, students: 0, graded: 0, delivered: 0, pending: 0, average: 0 },
+    };
+
+    let actQ = context.supabase
+      .from("activities")
+      .select("id, title, due_at, max_grade, type, class_id, student_id, classes(id, name, course_id, courses(id, name))")
+      .gte("due_at", `${data.start_date}T00:00:00Z`)
+      .lte("due_at", `${data.end_date}T23:59:59Z`)
+      .order("due_at", { ascending: true });
+    if (data.class_id) actQ = actQ.eq("class_id", data.class_id);
+    const { data: activities, error: e1 } = await actQ;
+    if (e1) throw new Error(e1.message);
+
+    let acts = (activities ?? []) as any[];
+    if (data.course_id) acts = acts.filter((a) => a.classes?.course_id === data.course_id);
+    if (acts.length === 0) return empty;
+
+    const actIds = acts.map((a) => a.id);
+    let subQ = context.supabase
+      .from("submissions")
+      .select("id, activity_id, student_id, grade, status, submitted_at, graded_at, students(id, full_name)")
+      .in("activity_id", actIds);
+    if (data.student_id) subQ = subQ.eq("student_id", data.student_id);
+    const { data: submissions, error: e2 } = await subQ;
+    if (e2) throw new Error(e2.message);
+
+    const subs = (submissions ?? []) as any[];
+    const actById = new Map(acts.map((a) => [a.id, a]));
+
+    type Agg = {
+      id: string;
+      name: string;
+      graded: number;
+      delivered: number;
+      pending: number;
+      sumPct: number;
+      average: number;
+    };
+    const mk = (id: string, name: string): Agg => ({ id, name, graded: 0, delivered: 0, pending: 0, sumPct: 0, average: 0 });
+    const get = (map: Map<string, Agg>, id: string, name: string) => {
+      if (!map.has(id)) map.set(id, mk(id, name));
+      return map.get(id)!;
+    };
+
+    const byStudent = new Map<string, Agg>();
+    const byClass = new Map<string, Agg>();
+    const byActivity = new Map<string, Agg>();
+
+    let graded = 0, delivered = 0, pending = 0, sumPct = 0;
+    const records: any[] = [];
+
+    for (const s of subs) {
+      const act = actById.get(s.activity_id);
+      if (!act) continue;
+      const max = Number(act.max_grade ?? 10) || 10;
+      const grade = s.grade === null || s.grade === undefined ? null : Number(s.grade);
+      const pct = grade === null ? null : Math.round((grade / max) * 1000) / 10;
+
+      const st = get(byStudent, s.student_id, s.students?.full_name ?? "—");
+      const cl = act.classes ? get(byClass, act.classes.id, act.classes.name) : null;
+      const ac = get(byActivity, act.id, act.title);
+      const buckets = [st, cl, ac].filter(Boolean) as Agg[];
+
+      for (const b of buckets) {
+        if (s.status === "corrigida" && pct !== null) {
+          b.graded++;
+          b.sumPct += pct;
+        } else if (s.status === "entregue") b.delivered++;
+        else b.pending++;
+      }
+      if (s.status === "corrigida" && pct !== null) { graded++; sumPct += pct; }
+      else if (s.status === "entregue") delivered++;
+      else pending++;
+
+      records.push({
+        activity_id: act.id,
+        activity_title: act.title,
+        due_at: act.due_at,
+        class_name: act.classes?.name ?? "Particular",
+        course_name: act.classes?.courses?.name ?? "—",
+        student_id: s.student_id,
+        student_name: s.students?.full_name ?? "—",
+        status: s.status,
+        grade,
+        max_grade: max,
+        percent: pct,
+        graded_at: s.graded_at,
+      });
+    }
+
+    const finish = (a: Agg) => ({ ...a, average: a.graded ? Math.round((a.sumPct / a.graded) * 10) / 10 : 0 });
+
+    return {
+      records: records.sort((a, b) => String(a.due_at).localeCompare(String(b.due_at))),
+      byStudent: Array.from(byStudent.values()).map(finish).sort((a, b) => a.average - b.average),
+      byClass: Array.from(byClass.values()).map(finish).sort((a, b) => b.average - a.average),
+      byActivity: Array.from(byActivity.values()).map(finish).sort((a, b) => b.average - a.average),
+      totals: {
+        activities: acts.length,
+        students: byStudent.size,
+        graded,
+        delivered,
+        pending,
+        average: graded ? Math.round((sumPct / graded) * 10) / 10 : 0,
+      },
+    };
+  });
