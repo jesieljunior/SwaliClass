@@ -544,6 +544,81 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     };
   });
 
+/**
+ * Painel do professor: turmas que ele leciona, entregas pendentes de correção
+ * e média de notas por turma.
+ */
+export const getTeacherDashboard = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: links } = await context.supabase
+      .from("class_teachers")
+      .select("class_id, classes:class_id (id, name, courses:course_id (name))")
+      .eq("teacher_id", context.userId);
+
+    const classes = (links ?? []).map((l: any) => ({
+      id: l.class_id as string,
+      name: (l.classes?.name as string) ?? "Turma",
+      course: (l.classes?.courses?.name as string) ?? null,
+    }));
+    const classIds = classes.map((c) => c.id);
+
+    if (!classIds.length) {
+      return { classes: [], pendingTotal: 0, gradedTotal: 0 };
+    }
+
+    const { data: acts } = await context.supabase
+      .from("activities")
+      .select("id, class_id, max_grade")
+      .in("class_id", classIds);
+
+    const actIds = (acts ?? []).map((a: any) => a.id as string);
+    const actClass = new Map<string, { class_id: string; max: number }>();
+    for (const a of acts ?? [])
+      actClass.set(a.id as string, {
+        class_id: a.class_id as string,
+        max: Number(a.max_grade ?? 10) || 10,
+      });
+
+    const { data: subs } = actIds.length
+      ? await context.supabase
+          .from("submissions")
+          .select("id, activity_id, status, grade")
+          .in("activity_id", actIds)
+      : { data: [] as any[] };
+
+    const agg = new Map<string, { pending: number; graded: number; sum: number }>();
+    for (const c of classes) agg.set(c.id, { pending: 0, graded: 0, sum: 0 });
+
+    for (const s of (subs ?? []) as any[]) {
+      const meta = actClass.get(s.activity_id as string);
+      if (!meta) continue;
+      const bucket = agg.get(meta.class_id);
+      if (!bucket) continue;
+      if (s.status === "entregue") bucket.pending += 1;
+      if (s.grade !== null && s.grade !== undefined) {
+        bucket.graded += 1;
+        bucket.sum += (Number(s.grade) / meta.max) * 100;
+      }
+    }
+
+    const out = classes.map((c) => {
+      const b = agg.get(c.id)!;
+      return {
+        ...c,
+        pending: b.pending,
+        graded: b.graded,
+        avg: b.graded ? Math.round((b.sum / b.graded) * 10) / 10 : null,
+      };
+    });
+
+    return {
+      classes: out,
+      pendingTotal: out.reduce((s, c) => s + c.pending, 0),
+      gradedTotal: out.reduce((s, c) => s + c.graded, 0),
+    };
+  });
+
 // ============ REPORTS ============
 const reportSchema = z.object({
   start_date: z.string(),
