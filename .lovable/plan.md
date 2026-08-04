@@ -146,7 +146,7 @@ Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MV
 ### Fase 5 — Relatórios + Dashboard
 19. ✅ [P1] **Relatório de notas.** `getGradesReport(period, course_id?, class_id?, student_id?)` em `tenant.functions.ts`; tela de Relatórios ganhou alternador Frequência/Notas, KPIs (atividades, alunos, corrigidas, pendentes, média) e abas por aluno / turma / atividade / detalhado, com export PDF, Excel e CSV. Boletim formatado fica no item 20.
 20. ✅ [P2] **Boletim simples do aluno (HTML imprimível).** Botão "Boletim" no modo Notas (exige aluno selecionado) abre `BoletimPrint`: cabeçalho com tenant/aluno/período/média geral, seções agrupadas por curso+turma com média por grupo e tabela de atividades. Impressão via `window.print()` com CSS `@media print` (`.print-area` / `.no-print`).
-21. [P2] **Dashboard do professor**: entregas pendentes de correção, média por turma. Card único no `/app` visível quando `isProfessor && !isAdmin`.
+21. ✅ [P2] **Dashboard do professor.** `getTeacherDashboard` (turmas via `class_teachers`, entregas pendentes e média % por turma) + card "Minhas turmas" no `/app`, visível apenas quando `isProfessor && !isAdmin`, com link para Atividades.
 
 ### Fase 6 — Estabilização
 22. 🟡 [P0] **Rotas sem `errorComponent`/`notFoundComponent`.** `defaultErrorComponent` + `defaultNotFoundComponent` adicionados no `createRouter` — cobre todas as rotas sem override. Boundaries específicos por rota podem ser adicionados sob demanda.
