@@ -2,9 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FileText, FileSpreadsheet, Download, Loader2, Filter } from "lucide-react";
+import { FileText, FileSpreadsheet, Download, Loader2, Filter, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { listCourses, listClasses, listStudents, getReportData, getGradesReport } from "@/lib/tenant.functions";
+import { useSession } from "@/hooks/use-session";
+import { BoletimPrint } from "@/modules/reports/components/BoletimPrint";
 
 export const Route = createFileRoute("/_authenticated/app/relatorios")({
   component: RelatoriosPage,
@@ -38,6 +40,8 @@ function RelatoriosPage() {
   const [tab, setTab] = useState<Tab>("overview");
   const [gradeTab, setGradeTab] = useState<GradeTab>("byStudent");
   const [reportType, setReportType] = useState<ReportType>("attendance");
+  const [boletimOpen, setBoletimOpen] = useState(false);
+  const sessionQ = useSession();
 
   const reportQ = useQuery({
     queryKey: ["report", filters],
@@ -291,6 +295,12 @@ function RelatoriosPage() {
   const doExcel = isGrades ? exportGradesExcel : exportExcel;
   const doCSV = isGrades ? exportGradesCSV : exportCSV;
 
+  const selectedStudent = (studentsQ.data ?? []).find((s: any) => s.id === filters.student_id) as any;
+  const boletimRecords = ((grades?.records ?? []) as any[]).filter(
+    (r) => r.student_id === filters.student_id,
+  );
+  const canBoletim = isGrades && !!filters.student_id && !!grades;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-end gap-4 flex-wrap">
@@ -301,6 +311,21 @@ function RelatoriosPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          {isGrades && (
+            <button
+              onClick={() => {
+                if (!filters.student_id) {
+                  toast.info("Selecione um aluno para emitir o boletim.");
+                  return;
+                }
+                setBoletimOpen(true);
+              }}
+              disabled={!grades}
+              className="inline-flex items-center gap-2 px-4 h-10 bg-white border border-border-subtle rounded-sm font-semibold text-xs hover:bg-surface disabled:opacity-40"
+            >
+              <Printer className="size-3.5" /> Boletim
+            </button>
+          )}
           <button onClick={doPDF} disabled={!canExport} className="inline-flex items-center gap-2 px-4 h-10 bg-navy-900 text-paper rounded-sm font-semibold text-xs hover:bg-navy-800 disabled:opacity-40">
             <FileText className="size-3.5" /> PDF
           </button>
@@ -516,6 +541,16 @@ function RelatoriosPage() {
             </Card>
           )}
         </>
+      )}
+
+      {boletimOpen && canBoletim && (
+        <BoletimPrint
+          records={boletimRecords}
+          studentName={selectedStudent?.full_name ?? boletimRecords[0]?.student_name ?? "Aluno"}
+          periodLabel={periodLabel}
+          tenantName={sessionQ.data?.tenantName ?? "BitraHub"}
+          onClose={() => setBoletimOpen(false)}
+        />
       )}
     </div>
   );
