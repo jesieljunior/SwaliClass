@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, AlertTriangle, Loader2 } from "lucide-react";
-import { getDashboardStats } from "@/lib/tenant.functions";
+import { Link } from "@tanstack/react-router";
+import { ArrowUpRight, AlertTriangle, Loader2, ClipboardCheck } from "lucide-react";
+import { getDashboardStats, getTeacherDashboard } from "@/lib/tenant.functions";
+import { useSession } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
@@ -22,6 +24,8 @@ function Dashboard() {
       </div>
 
       {q.isLoading && <p className="text-navy-800/40"><Loader2 className="inline size-5 animate-spin" /></p>}
+
+      <TeacherPanel />
 
       {stats && (
       <div className="grid grid-cols-12 gap-4">
@@ -63,6 +67,79 @@ function Dashboard() {
           </div>
         </div>
       </div>
+      )}
+    </div>
+  );
+}
+
+function TeacherPanel() {
+  const session = useSession().data;
+  const fetchTeacher = useServerFn(getTeacherDashboard);
+  const enabled = !!session?.isProfessor && !session?.isAdmin;
+  const q = useQuery({
+    queryKey: ["dashboard", "teacher"],
+    queryFn: () => fetchTeacher(),
+    enabled,
+  });
+
+  if (!enabled || !q.data) return null;
+  const { classes, pendingTotal } = q.data;
+
+  return (
+    <div className="bg-white border border-border-subtle rounded-lg p-6">
+      <div className="flex items-end justify-between gap-3 flex-wrap mb-4">
+        <div>
+          <h3 className="font-display font-bold text-lg flex items-center gap-2">
+            <ClipboardCheck className="size-4" /> Minhas turmas
+          </h3>
+          <p className="text-xs text-navy-800/50">
+            {pendingTotal === 0
+              ? "Nenhuma entrega aguardando correção."
+              : `${pendingTotal} entrega${pendingTotal > 1 ? "s" : ""} aguardando correção`}
+          </p>
+        </div>
+        <Link
+          to="/app/atividades"
+          className="text-xs font-semibold text-navy-900 hover:underline inline-flex items-center gap-1"
+        >
+          Ir para atividades <ArrowUpRight className="size-3.5" />
+        </Link>
+      </div>
+
+      {classes.length === 0 ? (
+        <p className="text-xs text-navy-800/40">
+          Você ainda não está vinculado a nenhuma turma.
+        </p>
+      ) : (
+        <div className="grid grid-cols-12 gap-3">
+          {classes.map((c) => (
+            <div
+              key={c.id}
+              className="col-span-12 md:col-span-6 lg:col-span-4 p-4 rounded-sm bg-navy-900/5 flex flex-col gap-2"
+            >
+              <div className="min-w-0">
+                <p className="font-medium text-sm truncate">{c.name}</p>
+                {c.course && (
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-navy-800/40 truncate">
+                    {c.course}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span
+                  className={
+                    c.pending > 0 ? "font-semibold text-amber-600" : "text-navy-800/50"
+                  }
+                >
+                  {c.pending} p/ corrigir
+                </span>
+                <span className="font-mono text-navy-800/60">
+                  Média {c.avg === null ? "—" : `${c.avg}%`}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
