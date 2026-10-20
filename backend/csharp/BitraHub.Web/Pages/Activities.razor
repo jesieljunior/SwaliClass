@@ -1,0 +1,61 @@
+@page "/atividades"
+@using BitraHub.Application.DTOs
+
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-slate-900">Atividades & Avaliações</h1>
+            <p class="text-slate-500">Criação de tarefas com prazo, recebimento de arquivos e lançamento de notas.</p>
+        </div>
+        <button class="px-4 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-blue-800 transition">
+            + Nova Atividade
+        </button>
+    </div>
+
+    <!-- Activities Table -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-xs">
+                <tr>
+                    <th class="px-5 py-3">Título da Atividade</th>
+                    <th class="px-5 py-3">Turma</th>
+                    <th class="px-5 py-3">Prazo de Envio</th>
+                    <th class="px-5 py-3">Nota Máxima</th>
+                    <th class="px-5 py-3">Entregas / Corrigidas</th>
+                    <th class="px-5 py-3 text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @foreach (var act in Activities)
+                {
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-5 py-3 font-semibold text-slate-900">@act.Title</td>
+                        <td class="px-5 py-3 text-slate-600">@act.ClassName</td>
+                        <td class="px-5 py-3 font-mono text-slate-600">@act.DueDate.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="px-5 py-3 font-mono text-blue-900 font-bold">@act.MaxScore.ToString("F1")</td>
+                        <td class="px-5 py-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-800 rounded text-xs font-semibold">
+                                @act.SubmissionCount entregue(s) · @act.GradedCount corrigida(s)
+                            </span>
+                        </td>
+                        <td class="px-5 py-3 text-right">
+                            <button class="px-3 py-1 bg-blue-50 text-blue-800 hover:bg-blue-100 rounded text-xs font-semibold mr-2">
+                                Corrigir Entregas
+                            </button>
+                            <button class="text-slate-500 hover:text-slate-800 text-xs">Editar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<ActivityDto> Activities = new()
+    {
+        new ActivityDto(Guid.NewGuid(), Guid.NewGuid(), "3º Ano A - Matutino", "Redação Modelo ENEM: Desafios da IA na Educação", "Texto dissertativo-argumentativo com proposta de intervenção social. Envio em PDF.", DateTime.UtcNow.AddDays(4), 10.0m, 2.0m, "published", 28, 22, DateTime.UtcNow),
+        new ActivityDto(Guid.NewGuid(), Guid.NewGuid(), "2º Ano B - Vespertino", "Relatório de Laboratório: Soluções Químicas", "Entrega dos cálculos estequiométricos e discussão de resultados experimentais.", DateTime.UtcNow.AddDays(7), 10.0m, 1.5m, "published", 20, 5, DateTime.UtcNow),
+        new ActivityDto(Guid.NewGuid(), Guid.NewGuid(), "Turma Maker Avançada", "Projeto Prático: Sensor de Presença com ESP32", "Código fonte e esquemático no Wokwi ou Tinkercad.", DateTime.UtcNow.AddDays(10), 10.0m, 3.0m, "published", 12, 0, DateTime.UtcNow)
+    };
+}

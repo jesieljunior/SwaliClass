@@ -3,14 +3,11 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter, Link, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { routeTree } from "./routeTree.gen";
-import { reportLovableError } from "./lib/lovable-error-reporting";
 
 function DefaultErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_default_error_component" });
-
-    console.error(error);
+    console.error("Router error:", error);
   }, [error]);
   return (
     <div className="p-8 max-w-lg mx-auto text-center">

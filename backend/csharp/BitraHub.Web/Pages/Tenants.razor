@@ -1,0 +1,120 @@
+@page "/admin/tenants"
+@using BitraHub.Application.DTOs
+
+<div class="p-6 max-w-7xl mx-auto space-y-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-slate-900">Instituições de Ensino (SaaS)</h1>
+            <p class="text-slate-500">Gestão multi-tenant, planos contratados e rastreio de convites administrativos.</p>
+        </div>
+        <button class="px-4 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-blue-800 transition">
+            + Cadastrar Escola
+        </button>
+    </div>
+
+    <!-- Tenants Table -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-200">
+            <h2 class="font-bold text-slate-800">Escolas & Instituições Parceiras</h2>
+        </div>
+        <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-xs">
+                <tr>
+                    <th class="px-5 py-3">Instituição</th>
+                    <th class="px-5 py-3">Slug</th>
+                    <th class="px-5 py-3">Plano</th>
+                    <th class="px-5 py-3">Status</th>
+                    <th class="px-5 py-3">Usuários</th>
+                    <th class="px-5 py-3">Alunos</th>
+                    <th class="px-5 py-3 text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @foreach (var t in Tenants)
+                {
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-5 py-3 font-semibold text-slate-900">@t.Name</td>
+                        <td class="px-5 py-3 font-mono text-slate-500 text-xs">@t.Slug</td>
+                        <td class="px-5 py-3">
+                            <span class="px-2 py-0.5 bg-blue-50 text-blue-800 rounded font-semibold text-xs uppercase">@t.Plan</span>
+                        </td>
+                        <td class="px-5 py-3">
+                            <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-semibold text-xs">Ativo</span>
+                        </td>
+                        <td class="px-5 py-3 font-mono">@t.UserCount</td>
+                        <td class="px-5 py-3 font-mono">@t.StudentCount</td>
+                        <td class="px-5 py-3 text-right">
+                            <button class="text-blue-700 font-semibold hover:underline text-xs">Gerenciar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Invites with Status tracking -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-200 flex justify-between items-center">
+            <div>
+                <h2 class="font-bold text-slate-800">Convites Administrativos & Professores</h2>
+                <p class="text-xs text-slate-500 mt-1">Status em tempo real de cada link emitido antes da reemissão.</p>
+            </div>
+            <button class="px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition">
+                + Novo Convite
+            </button>
+        </div>
+        <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-xs">
+                <tr>
+                    <th class="px-5 py-3">E-mail Destinatário</th>
+                    <th class="px-5 py-3">Papel Previsto</th>
+                    <th class="px-5 py-3">Situação do Convite</th>
+                    <th class="px-5 py-3">Expiração</th>
+                    <th class="px-5 py-3 text-right">Ação</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @foreach (var inv in Invites)
+                {
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-5 py-3 font-medium text-slate-900">@inv.Email</td>
+                        <td class="px-5 py-3 text-slate-600 font-mono text-xs">@inv.Role</td>
+                        <td class="px-5 py-3">
+                            @if (inv.Status == "pending")
+                            {
+                                <span class="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-semibold">Pendente</span>
+                            }
+                            else if (inv.Status == "accepted")
+                            {
+                                <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">Aceito</span>
+                            }
+                            else
+                            {
+                                <span class="px-2.5 py-1 bg-red-50 text-red-700 rounded-full text-xs font-semibold">Expirado</span>
+                            }
+                        </td>
+                        <td class="px-5 py-3 text-slate-500 text-xs">@inv.ExpiresAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="px-5 py-3 text-right">
+                            <button class="text-xs text-blue-700 font-semibold hover:underline">Copiar Link</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<TenantDto> Tenants = new()
+    {
+        new TenantDto(Guid.NewGuid(), "Colégio Modelo Bitra", "colegio-modelo-bitra", "professional", "active", "contato@colegiomodelo.com.br", DateTime.UtcNow.AddMonths(-3), 12, 142),
+        new TenantDto(Guid.NewGuid(), "Instituto Educacional Alpha", "instituto-alpha", "enterprise", "active", "diretoria@alpha.edu.br", DateTime.UtcNow.AddMonths(-1), 25, 480)
+    };
+
+    private List<InviteDto> Invites = new()
+    {
+        new InviteDto(Guid.NewGuid(), "coordenacao@colegiomodelo.com.br", "coordinator", "pending", "tok1", "https://bitrahub.com/accept-invite?token=tok1", DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(6)),
+        new InviteDto(Guid.NewGuid(), "professor.silva@colegiomodelo.com.br", "teacher", "accepted", "tok2", "https://bitrahub.com/accept-invite?token=tok2", DateTime.UtcNow.AddDays(-5), DateTime.UtcNow.AddDays(2)),
+        new InviteDto(Guid.NewGuid(), "secretaria@colegiomodelo.com.br", "admin", "expired", "tok3", "https://bitrahub.com/accept-invite?token=tok3", DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(-3))
+    };
+}

@@ -1,0 +1,92 @@
+@page "/alunos"
+@using BitraHub.Application.DTOs
+@using BitraHub.Domain.Common
+
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-slate-900">Alunos & Matrículas</h1>
+            <p class="text-slate-500">Gestão de corpo discente, status de matrícula e importação em lote.</p>
+        </div>
+        <div class="flex gap-2">
+            <button class="px-4 py-2 border border-slate-300 bg-white text-slate-700 rounded-md font-medium hover:bg-slate-50 transition">
+                Importar CSV
+            </button>
+            <button class="px-4 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-blue-800 transition">
+                + Novo Aluno
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-4 items-center">
+        <input type="text" placeholder="Buscar por nome, e-mail ou matrícula..." class="flex-1 h-10 px-3 border border-slate-300 rounded-md text-sm" @bind="SearchQuery" />
+        <select class="h-10 px-3 border border-slate-300 rounded-md text-sm bg-white" @bind="SelectedStatus">
+            <option value="">Todos os Status</option>
+            <option value="active">Ativo</option>
+            <option value="inactive">Inativo (Histórico Preservado)</option>
+        </select>
+    </div>
+
+    <!-- Student List -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-xs">
+                <tr>
+                    <th class="px-5 py-3">Matrícula</th>
+                    <th class="px-5 py-3">Estudante</th>
+                    <th class="px-5 py-3">E-mail</th>
+                    <th class="px-5 py-3">Turmas</th>
+                    <th class="px-5 py-3">Frequência</th>
+                    <th class="px-5 py-3">Média</th>
+                    <th class="px-5 py-3">Situação</th>
+                    <th class="px-5 py-3 text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @foreach (var s in FilteredStudents)
+                {
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-5 py-3 font-mono text-slate-500">@s.EnrollmentNumber</td>
+                        <td class="px-5 py-3 font-medium text-slate-900">@s.FullName</td>
+                        <td class="px-5 py-3 text-slate-500">@s.Email</td>
+                        <td class="px-5 py-3">
+                            @foreach (var c in s.Classes)
+                            {
+                                <span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-xs mr-1">@c.Name</span>
+                            }
+                        </td>
+                        <td class="px-5 py-3 font-mono text-emerald-600 font-semibold">@s.AttendanceRate%</td>
+                        <td class="px-5 py-3 font-mono text-blue-900 font-semibold">@s.AverageGrade.ToString("F1")</td>
+                        <td class="px-5 py-3">
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold @(s.Status == "active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600")">
+                                @(s.Status == "active" ? "Ativo" : "Inativo")
+                            </span>
+                        </td>
+                        <td class="px-5 py-3 text-right">
+                            <button class="text-blue-700 hover:underline mr-3 text-xs">Editar</button>
+                            <button class="text-slate-500 hover:text-slate-800 text-xs">Histórico</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private string SearchQuery { get; set; } = "";
+    private string SelectedStatus { get; set; } = "";
+
+    private List<StudentDto> Students = new()
+    {
+        new StudentDto(Guid.NewGuid(), "Ana Clara Oliveira", "ana.clara@estudante.com.br", "(11) 98765-4321", "2026-001A", "active", null, "Mariana Oliveira", null, new List<StudentClassDto> { new(Guid.NewGuid(), "3º Ano A - Matutino", "Ensino Médio") }, 96.5, 9.2, DateTime.UtcNow),
+        new StudentDto(Guid.NewGuid(), "Lucas Mendes Ferreira", "lucas.mendes@estudante.com.br", "(11) 98765-1122", "2026-002A", "active", null, "Roberto Ferreira", null, new List<StudentClassDto> { new(Guid.NewGuid(), "3º Ano A - Matutino", "Ensino Médio") }, 91.0, 8.5, DateTime.UtcNow),
+        new StudentDto(Guid.NewGuid(), "Beatriz Souza Ramos", "beatriz.ramos@estudante.com.br", "(11) 98765-3344", "2026-003A", "active", null, "Carla Souza", null, new List<StudentClassDto> { new(Guid.NewGuid(), "3º Ano A - Matutino", "Ensino Médio") }, 82.4, 7.8, DateTime.UtcNow)
+    };
+
+    private IEnumerable<StudentDto> FilteredStudents =>
+        Students.Where(s =>
+            (string.IsNullOrWhiteSpace(SearchQuery) || s.FullName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(SelectedStatus) || s.Status == SelectedStatus));
+}

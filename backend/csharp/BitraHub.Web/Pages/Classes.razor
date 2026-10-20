@@ -1,0 +1,67 @@
+@page "/turmas"
+@using BitraHub.Application.DTOs
+
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-slate-900">Turmas</h1>
+            <p class="text-slate-500">Agrupamentos discentes, horários e professores responsáveis.</p>
+        </div>
+        <button class="px-4 py-2 bg-blue-900 text-white rounded-md font-medium hover:bg-blue-800 transition">
+            + Nova Turma
+        </button>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-4 items-center">
+        <input type="text" placeholder="Buscar turma ou professor..." class="flex-1 h-10 px-3 border border-slate-300 rounded-md text-sm" @bind="SearchQuery" />
+        <select class="h-10 px-3 border border-slate-300 rounded-md text-sm bg-white" @bind="SelectedCourse">
+            <option value="">Todos os Cursos</option>
+            <option value="Ensino Médio">Ensino Médio Integrado</option>
+            <option value="Extracurricular">Extracurricular de Robótica</option>
+        </select>
+    </div>
+
+    <!-- Classes Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        @foreach (var c in FilteredClasses)
+        {
+            <div class="p-5 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">@c.CourseName</span>
+                        <h2 class="text-lg font-bold text-slate-900 mt-2">@c.Name</h2>
+                    </div>
+                    <span class="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-1 rounded">@c.AcademicTerm</span>
+                </div>
+                <div class="mt-4 space-y-2 text-xs text-slate-600">
+                    <div>📅 Horário: <span class="font-medium text-slate-800">@c.Schedule</span></div>
+                    <div>👨‍🏫 Professor: <span class="font-medium text-slate-800">@(c.TeacherName ?? "A definir")</span></div>
+                    <div>👥 Alunos: <span class="font-semibold text-blue-900">@c.StudentCount / @(c.MaxCapacity ?? 40)</span></div>
+                </div>
+                <div class="mt-5 pt-3 border-t border-slate-100 flex justify-between">
+                    <a href="/chamada?turma=@c.Id" class="text-xs font-semibold text-blue-900 hover:underline">Chamada</a>
+                    <a href="/atividades?turma=@c.Id" class="text-xs font-semibold text-slate-600 hover:underline">Atividades</a>
+                    <button class="text-xs font-semibold text-slate-500 hover:text-slate-800">Gerenciar</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string SearchQuery { get; set; } = "";
+    private string SelectedCourse { get; set; } = "";
+
+    private List<ClassGroupDto> Classes = new()
+    {
+        new ClassGroupDto(Guid.NewGuid(), Guid.NewGuid(), "Ensino Médio Integrado", "3º Ano A - Matutino", "2026/1", "Seg-Sex 07:30 - 12:50", 35, Guid.NewGuid(), "Dra. Mariana Costa", 32, DateTime.UtcNow),
+        new ClassGroupDto(Guid.NewGuid(), Guid.NewGuid(), "Ensino Médio Integrado", "2º Ano B - Vespertino", "2026/1", "Seg-Sex 13:15 - 18:30", 35, Guid.NewGuid(), "Prof. Carlos Silveira", 28, DateTime.UtcNow),
+        new ClassGroupDto(Guid.NewGuid(), Guid.NewGuid(), "Extracurricular de Robótica", "Turma Maker Avançada", "2026/1", "Sábados 08:30 - 12:00", 20, Guid.NewGuid(), "Eng. Felipe Ramos", 18, DateTime.UtcNow)
+    };
+
+    private IEnumerable<ClassGroupDto> FilteredClasses =>
+        Classes.Where(c =>
+            (string.IsNullOrWhiteSpace(SearchQuery) || c.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) || (c.TeacherName != null && c.TeacherName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))) &&
+            (string.IsNullOrWhiteSpace(SelectedCourse) || (c.CourseName != null && c.CourseName.Contains(SelectedCourse, StringComparison.OrdinalIgnoreCase))));
+}

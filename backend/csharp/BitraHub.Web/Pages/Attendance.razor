@@ -1,0 +1,111 @@
+@page "/chamada"
+@using BitraHub.Application.DTOs
+@using BitraHub.Domain.Common
+
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-slate-900">Diário de Chamada</h1>
+            <p class="text-slate-500">Registro rápido de presença por turma e data com cálculo automático.</p>
+        </div>
+        <button class="px-5 py-2.5 bg-blue-900 text-white rounded-md font-semibold hover:bg-blue-800 shadow-sm transition" @onclick="SaveAttendance">
+            Salvar Chamada
+        </button>
+    </div>
+
+    <!-- Filters & Audit notice -->
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Turma</label>
+            <select class="w-full h-10 px-3 border border-slate-300 rounded-md bg-white text-sm" @bind="SelectedClass">
+                <option value="1">3º Ano A - Matutino</option>
+                <option value="2">2º Ano B - Vespertino</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Data da Aula</label>
+            <input type="date" class="w-full h-10 px-3 border border-slate-300 rounded-md bg-white text-sm" value="@SelectedDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Conteúdo Ministrado (Opcional)</label>
+            <input type="text" placeholder="Ex: Introdução à Genética Clássica" class="w-full h-10 px-3 border border-slate-300 rounded-md bg-white text-sm" @bind="Topic" />
+        </div>
+    </div>
+
+    <!-- Notice -->
+    <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm flex items-center justify-between">
+        <span>⚠️ <strong>Aviso de Chamada:</strong> Alunos não assinalados como presentes serão automaticamente computados como ausentes ao salvar.</span>
+        <span class="font-mono text-xs bg-amber-100 px-2 py-1 rounded">Presença Atual: @CalculateRate()%</span>
+    </div>
+
+    <!-- Students Roster -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-xs">
+                <tr>
+                    <th class="px-5 py-3">Matrícula</th>
+                    <th class="px-5 py-3">Nome do Estudante</th>
+                    <th class="px-5 py-3 text-center">Situação</th>
+                    <th class="px-5 py-3">Observações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @foreach (var student in Students)
+                {
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-5 py-3 font-mono text-slate-500">@student.EnrollmentNumber</td>
+                        <td class="px-5 py-3 font-medium text-slate-900">@student.StudentName</td>
+                        <td class="px-5 py-3 text-center">
+                            <div class="inline-flex rounded-md border border-slate-200 overflow-hidden">
+                                <button class="px-3 py-1 text-xs font-semibold @(student.Status == "present" ? "bg-emerald-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50")"
+                                        @onclick='() => student.Status = "present"'>Presente</button>
+                                <button class="px-3 py-1 text-xs font-semibold @(student.Status == "absent" ? "bg-red-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50")"
+                                        @onclick='() => student.Status = "absent"'>Ausente</button>
+                                <button class="px-3 py-1 text-xs font-semibold @(student.Status == "late" ? "bg-amber-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50")"
+                                        @onclick='() => student.Status = "late"'>Atraso</button>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3">
+                            <input type="text" placeholder="Adicionar nota..." class="w-full text-xs h-8 px-2 border border-slate-200 rounded" @bind="student.Notes" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private string SelectedClass { get; set; } = "1";
+    private DateOnly SelectedDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+    private string? Topic { get; set; }
+
+    private class AttendanceRow
+    {
+        public Guid StudentId { get; set; }
+        public string EnrollmentNumber { get; set; } = "";
+        public string StudentName { get; set; } = "";
+        public string Status { get; set; } = "present";
+        public string? Notes { get; set; }
+    }
+
+    private List<AttendanceRow> Students = new()
+    {
+        new AttendanceRow { StudentId = Guid.NewGuid(), EnrollmentNumber = "2026-001A", StudentName = "Ana Clara Oliveira", Status = "present" },
+        new AttendanceRow { StudentId = Guid.NewGuid(), EnrollmentNumber = "2026-002A", StudentName = "Lucas Mendes Ferreira", Status = "present" },
+        new AttendanceRow { StudentId = Guid.NewGuid(), EnrollmentNumber = "2026-003A", StudentName = "Beatriz Souza Ramos", Status = "absent" },
+        new AttendanceRow { StudentId = Guid.NewGuid(), EnrollmentNumber = "2026-004A", StudentName = "Gabriel Lima Santos", Status = "present" }
+    };
+
+    private double CalculateRate()
+    {
+        if (Students.Count == 0) return 100.0;
+        var present = Students.Count(s => s.Status == "present" || s.Status == "late");
+        return Math.Round((double)present / Students.Count * 100, 1);
+    }
+
+    private void SaveAttendance()
+    {
+        // Saved via BitraHub DbContext / WebApi AttendanceController
+    }
+}

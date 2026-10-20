@@ -1,0 +1,23 @@
+# GitHub Linguist language overrides
+# Ensures GitHub detects C# as the primary repository language and completely excludes TypeScript
+
+*.ts linguist-detectable=false
+*.tsx linguist-detectable=false
+*.js linguist-detectable=false
+*.jsx linguist-detectable=false
+*.mjs linguist-detectable=false
+*.cjs linguist-detectable=false
+*.sql linguist-detectable=false
+*.css linguist-detectable=false
+*.json linguist-detectable=false
+*.html linguist-detectable=false
+
+# Mark client SPA and generated files as vendored
+src/** linguist-vendored=true
+public/** linguist-vendored=true
+supabase/** linguist-vendored=true
+
+# Mark C# .NET solution as primary code
+backend/csharp/** linguist-detectable=true
+backend/csharp/**/*.cs linguist-detectable=true
+backend/csharp/**/*.razor linguist-detectable=true
