@@ -85,16 +85,13 @@ export function BoletimPrint({
                 <strong>Período:</strong> {periodLabel}
               </p>
               <p>
-                <strong>Média geral:</strong>{" "}
-                {overall === null ? "—" : `${overall}%`}
+                <strong>Média geral:</strong> {overall === null ? "—" : `${overall}%`}
               </p>
             </div>
           </header>
 
           {groups.length === 0 && (
-            <p className="text-sm text-navy-800/50">
-              Nenhuma atividade no período selecionado.
-            </p>
+            <p className="text-sm text-navy-800/50">Nenhuma atividade no período selecionado.</p>
           )}
 
           {groups.map((g) => (

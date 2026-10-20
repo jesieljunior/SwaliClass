@@ -5,9 +5,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "BitraHub — Gestão de presença e turmas | Bitra Tech" },
-      { name: "description", content: "SaaS para escolas e cursos: chamada em segundos, frequência em tempo real e relatórios prontos. Por Bitra Tech." },
+      {
+        name: "description",
+        content:
+          "SaaS para escolas e cursos: chamada em segundos, frequência em tempo real e relatórios prontos. Por Bitra Tech.",
+      },
       { property: "og:title", content: "BitraHub — Gestão de presença com precisão" },
-      { property: "og:description", content: "Transforme o diário de classe em inteligência estratégica." },
+      {
+        property: "og:description",
+        content: "Transforme o diário de classe em inteligência estratégica.",
+      },
     ],
   }),
   component: Landing,
@@ -32,13 +39,21 @@ function Nav() {
     <nav className="sticky top-0 z-50 bg-paper/80 backdrop-blur-md border-b border-border-subtle px-6 py-4">
       <div className="max-w-7xl mx-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:justify-between">
         <Link to="/" className="flex min-w-0 items-center gap-2">
-          <div className="size-8 bg-navy-900 rounded-sm flex items-center justify-center text-paper font-display font-extrabold shrink-0">B</div>
+          <div className="size-8 bg-navy-900 rounded-sm flex items-center justify-center text-paper font-display font-extrabold shrink-0">
+            B
+          </div>
           <span className="font-display font-bold tracking-tight text-xl truncate">BitraHub</span>
         </Link>
         <div className="hidden md:flex gap-8 text-sm font-medium text-navy-800/70">
-          <a href="#funcionalidades" className="hover:text-navy-900 transition-colors">Funcionalidades</a>
-          <a href="#dashboard" className="hover:text-navy-900 transition-colors">Plataforma</a>
-          <a href="#precos" className="hover:text-navy-900 transition-colors">Preços</a>
+          <a href="#funcionalidades" className="hover:text-navy-900 transition-colors">
+            Funcionalidades
+          </a>
+          <a href="#dashboard" className="hover:text-navy-900 transition-colors">
+            Plataforma
+          </a>
+          <a href="#precos" className="hover:text-navy-900 transition-colors">
+            Preços
+          </a>
         </div>
         <Link
           to="/app"
@@ -58,11 +73,13 @@ function Hero() {
         Padrão Bitra Tech
       </span>
       <h1 className="font-display text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 text-balance">
-        Gestão de presença com<br />
+        Gestão de presença com
+        <br />
         <span className="text-navy-600">precisão cirúrgica.</span>
       </h1>
       <p className="max-w-2xl mx-auto text-lg text-navy-800/60 mb-10 leading-relaxed">
-        O BitraHub transforma o diário de classe em uma ferramenta de inteligência estratégica. Menos burocracia, mais foco no aprendizado.
+        O BitraHub transforma o diário de classe em uma ferramenta de inteligência estratégica.
+        Menos burocracia, mais foco no aprendizado.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Link
@@ -92,7 +109,9 @@ function DashboardPreview() {
             <span className="size-2.5 rounded-full bg-amber-400/70" />
             <span className="size-2.5 rounded-full bg-emerald-400/70" />
           </div>
-          <span className="text-[10px] font-mono uppercase tracking-widest text-navy-800/40 ml-3">bitrahub.app/dashboard</span>
+          <span className="text-[10px] font-mono uppercase tracking-widest text-navy-800/40 ml-3">
+            bitrahub.app/dashboard
+          </span>
         </div>
         <div className="grid grid-cols-12 gap-4 p-6 lg:p-8 bg-surface">
           <Kpi label="Total alunos" value="1.248" />
@@ -103,7 +122,9 @@ function DashboardPreview() {
           <div className="col-span-12 md:col-span-8 bg-white p-6 border border-border-subtle rounded-lg">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-display font-bold text-lg">Chamada rápida — 3º Ano B</h3>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-navy-800/50">18 / 24</span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-navy-800/50">
+                18 / 24
+              </span>
             </div>
             <div className="space-y-2">
               {[
@@ -112,7 +133,10 @@ function DashboardPreview() {
                 { n: "Daniela Moreira", s: "presente" },
                 { n: "Eduardo Lima", s: "atrasado" },
               ].map((r) => (
-                <div key={r.n} className="flex items-center justify-between p-3 bg-navy-900/[0.03] rounded-sm">
+                <div
+                  key={r.n}
+                  className="flex items-center justify-between p-3 bg-navy-900/[0.03] rounded-sm"
+                >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="size-8 rounded bg-navy-900/10 shrink-0" />
                     <span className="text-sm font-medium truncate">{r.n}</span>
@@ -141,13 +165,27 @@ function DashboardPreview() {
   );
 }
 
-function Kpi({ label, value, dark, valueClass }: { label: string; value: string; dark?: boolean; valueClass?: string }) {
-  const base = dark
-    ? "bg-navy-900 border-navy-800 text-paper"
-    : "bg-white border-border-subtle";
+function Kpi({
+  label,
+  value,
+  dark,
+  valueClass,
+}: {
+  label: string;
+  value: string;
+  dark?: boolean;
+  valueClass?: string;
+}) {
+  const base = dark ? "bg-navy-900 border-navy-800 text-paper" : "bg-white border-border-subtle";
   return (
-    <div className={`col-span-12 md:col-span-3 p-5 border rounded-lg flex flex-col justify-between gap-6 ${base}`}>
-      <span className={`text-[10px] font-mono font-bold uppercase tracking-widest ${dark ? "text-white/40" : "text-navy-600"}`}>{label}</span>
+    <div
+      className={`col-span-12 md:col-span-3 p-5 border rounded-lg flex flex-col justify-between gap-6 ${base}`}
+    >
+      <span
+        className={`text-[10px] font-mono font-bold uppercase tracking-widest ${dark ? "text-white/40" : "text-navy-600"}`}
+      >
+        {label}
+      </span>
       <span className={`text-3xl font-display font-extrabold ${valueClass ?? ""}`}>{value}</span>
     </div>
   );
@@ -161,7 +199,11 @@ function StatusPill({ status }: { status: "presente" | "ausente" | "atrasado" | 
     justificado: "bg-navy-600/15 text-navy-600",
   } as const;
   return (
-    <span className={`px-3 py-1 text-[10px] font-bold rounded-sm uppercase tracking-wider ${map[status]}`}>{status}</span>
+    <span
+      className={`px-3 py-1 text-[10px] font-bold rounded-sm uppercase tracking-wider ${map[status]}`}
+    >
+      {status}
+    </span>
   );
 }
 
@@ -174,10 +216,18 @@ function MiniChart() {
         fill="none"
         stroke="#3b6fa0"
         strokeWidth="2.5"
-        points={data.map((v, i) => `${(i / (data.length - 1)) * 200},${90 - (v / max) * 80}`).join(" ")}
+        points={data
+          .map((v, i) => `${(i / (data.length - 1)) * 200},${90 - (v / max) * 80}`)
+          .join(" ")}
       />
       {data.map((v, i) => (
-        <circle key={i} cx={(i / (data.length - 1)) * 200} cy={90 - (v / max) * 80} r="2.5" fill="#0f1b3d" />
+        <circle
+          key={i}
+          cx={(i / (data.length - 1)) * 200}
+          cy={90 - (v / max) * 80}
+          r="2.5"
+          fill="#0f1b3d"
+        />
       ))}
     </svg>
   );
@@ -185,13 +235,32 @@ function MiniChart() {
 
 function Features() {
   const items = [
-    { icon: Clock, title: "Chamada em segundos", desc: "Marcação rápida, seleção em massa e atalhos para uso na sala de aula." },
-    { icon: BarChart3, title: "Inteligência de frequência", desc: "Identifique alunos com baixa presença antes da evasão acontecer." },
-    { icon: Users, title: "Multi-tenant nativo", desc: "Cada instituição com seus dados isolados — pronto para escala." },
-    { icon: ShieldCheck, title: "Auditoria e permissões", desc: "Perfis Super Admin, Administrador e Professor com logs completos." },
+    {
+      icon: Clock,
+      title: "Chamada em segundos",
+      desc: "Marcação rápida, seleção em massa e atalhos para uso na sala de aula.",
+    },
+    {
+      icon: BarChart3,
+      title: "Inteligência de frequência",
+      desc: "Identifique alunos com baixa presença antes da evasão acontecer.",
+    },
+    {
+      icon: Users,
+      title: "Multi-tenant nativo",
+      desc: "Cada instituição com seus dados isolados — pronto para escala.",
+    },
+    {
+      icon: ShieldCheck,
+      title: "Auditoria e permissões",
+      desc: "Perfis Super Admin, Administrador e Professor com logs completos.",
+    },
   ];
   return (
-    <section id="funcionalidades" className="max-w-7xl mx-auto px-6 py-24 border-t border-border-subtle">
+    <section
+      id="funcionalidades"
+      className="max-w-7xl mx-auto px-6 py-24 border-t border-border-subtle"
+    >
       <div className="grid md:grid-cols-2 gap-8">
         {items.map((f) => (
           <div key={f.title} className="p-8 bg-white border border-border-subtle rounded-lg">
@@ -209,41 +278,87 @@ function Features() {
 
 function Pricing() {
   const plans = [
-    { name: "Starter", price: "Grátis", desc: "Até 100 alunos. Ideal para professores particulares.", features: ["1 instituição", "Chamada e frequência", "Relatórios básicos"] },
-    { name: "Professional", price: "R$ 299", suffix: "/mês", desc: "Até 500 alunos. Para escolas em crescimento.", features: ["Multi-professores", "Relatórios PDF/Excel", "Suporte por email"], highlight: true },
-    { name: "Business", price: "R$ 599", suffix: "/mês", desc: "Até 2.000 alunos. Para redes consolidadas.", features: ["API de integração", "Auditoria completa", "Suporte prioritário"] },
-    { name: "Enterprise", price: "Custom", desc: "Volume ilimitado e SLA dedicado.", features: ["SSO e SAML", "Sucesso do cliente", "Consultoria Bitra"] },
+    {
+      name: "Starter",
+      price: "Grátis",
+      desc: "Até 100 alunos. Ideal para professores particulares.",
+      features: ["1 instituição", "Chamada e frequência", "Relatórios básicos"],
+    },
+    {
+      name: "Professional",
+      price: "R$ 299",
+      suffix: "/mês",
+      desc: "Até 500 alunos. Para escolas em crescimento.",
+      features: ["Multi-professores", "Relatórios PDF/Excel", "Suporte por email"],
+      highlight: true,
+    },
+    {
+      name: "Business",
+      price: "R$ 599",
+      suffix: "/mês",
+      desc: "Até 2.000 alunos. Para redes consolidadas.",
+      features: ["API de integração", "Auditoria completa", "Suporte prioritário"],
+    },
+    {
+      name: "Enterprise",
+      price: "Custom",
+      desc: "Volume ilimitado e SLA dedicado.",
+      features: ["SSO e SAML", "Sucesso do cliente", "Consultoria Bitra"],
+    },
   ];
   return (
     <section id="precos" className="max-w-7xl mx-auto px-6 py-24 border-t border-border-subtle">
       <div className="text-center max-w-2xl mx-auto mb-14">
-        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-navy-600">Planos</span>
-        <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight mt-3">Preços diretos. Sem letras miúdas.</h2>
+        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-navy-600">
+          Planos
+        </span>
+        <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight mt-3">
+          Preços diretos. Sem letras miúdas.
+        </h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {plans.map((p) => (
           <div
             key={p.name}
             className={`p-7 rounded-lg border flex flex-col ${
-              p.highlight ? "bg-navy-900 text-paper border-navy-900" : "bg-white border-border-subtle"
+              p.highlight
+                ? "bg-navy-900 text-paper border-navy-900"
+                : "bg-white border-border-subtle"
             }`}
           >
-            <h4 className={`text-xs font-mono font-bold uppercase tracking-widest ${p.highlight ? "text-paper/70" : "text-navy-600"}`}>{p.name}</h4>
+            <h4
+              className={`text-xs font-mono font-bold uppercase tracking-widest ${p.highlight ? "text-paper/70" : "text-navy-600"}`}
+            >
+              {p.name}
+            </h4>
             <p className="mt-4 font-display font-extrabold text-3xl">
               {p.price}
-              {p.suffix && <span className={`text-xs font-normal ${p.highlight ? "text-paper/50" : "text-navy-800/40"}`}>{p.suffix}</span>}
+              {p.suffix && (
+                <span
+                  className={`text-xs font-normal ${p.highlight ? "text-paper/50" : "text-navy-800/40"}`}
+                >
+                  {p.suffix}
+                </span>
+              )}
             </p>
-            <p className={`mt-2 text-sm ${p.highlight ? "text-paper/70" : "text-navy-800/60"}`}>{p.desc}</p>
+            <p className={`mt-2 text-sm ${p.highlight ? "text-paper/70" : "text-navy-800/60"}`}>
+              {p.desc}
+            </p>
             <ul className="mt-6 space-y-2 flex-1">
               {p.features.map((f) => (
-                <li key={f} className={`flex gap-2 text-sm ${p.highlight ? "text-paper/85" : "text-navy-800/75"}`}>
+                <li
+                  key={f}
+                  className={`flex gap-2 text-sm ${p.highlight ? "text-paper/85" : "text-navy-800/75"}`}
+                >
                   <Check className="size-4 shrink-0 mt-0.5" /> {f}
                 </li>
               ))}
             </ul>
             <button
               className={`mt-6 py-2.5 rounded-sm text-sm font-bold transition-colors ${
-                p.highlight ? "bg-paper text-navy-900 hover:bg-white" : "bg-navy-900 text-paper hover:bg-navy-800"
+                p.highlight
+                  ? "bg-paper text-navy-900 hover:bg-white"
+                  : "bg-navy-900 text-paper hover:bg-navy-800"
               }`}
             >
               Começar
@@ -265,7 +380,10 @@ function CTA() {
         <p className="text-paper/70 max-w-xl mx-auto mb-8">
           Experimente o BitraHub com dados de demonstração. Sem cartão, sem amarras.
         </p>
-        <Link to="/app" className="inline-flex items-center gap-2 bg-paper text-navy-900 px-7 py-3.5 rounded-sm font-bold hover:bg-white transition-colors">
+        <Link
+          to="/app"
+          className="inline-flex items-center gap-2 bg-paper text-navy-900 px-7 py-3.5 rounded-sm font-bold hover:bg-white transition-colors"
+        >
           Abrir o app demo <ArrowRight className="size-4" />
         </Link>
       </div>

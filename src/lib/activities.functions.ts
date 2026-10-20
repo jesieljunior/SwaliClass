@@ -16,7 +16,7 @@ export const listActivities = createServerFn({ method: "GET" })
     const { data: acts, error } = await context.supabase
       .from("activities")
       .select(
-        "id, title, description, due_at, type, class_id, student_id, max_grade, created_at, classes(id, name), students(id, full_name)"
+        "id, title, description, due_at, type, class_id, student_id, max_grade, created_at, classes(id, name), students(id, full_name)",
       )
       .order("due_at", { ascending: true });
     if (error) throw new Error(error.message);
@@ -26,7 +26,9 @@ export const listActivities = createServerFn({ method: "GET" })
     if (ids.length) {
       const { data, error: e2 } = await context.supabase
         .from("submissions")
-        .select("id, activity_id, student_id, status, note, submitted_at, grade, feedback, graded_at, students(id, full_name)")
+        .select(
+          "id, activity_id, student_id, status, note, submitted_at, grade, feedback, graded_at, students(id, full_name)",
+        )
         .in("activity_id", ids);
       if (e2) throw new Error(e2.message);
       subs = data ?? [];
@@ -172,9 +174,7 @@ export const gradeSubmission = createServerFn({ method: "POST" })
       .eq("id", data.submission_id)
       .maybeSingle();
     if (subErr) throw new Error(subErr.message);
-    const maxGrade = Number(
-      (sub as any)?.activities?.max_grade ?? 10,
-    );
+    const maxGrade = Number((sub as any)?.activities?.max_grade ?? 10);
     if (data.grade > maxGrade) {
       throw new Error(`Nota acima do máximo permitido (${maxGrade}).`);
     }
@@ -199,7 +199,9 @@ export const listStudentGrades = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("submissions")
-      .select("id, status, grade, feedback, graded_at, activities(id, title, type, max_grade, classes(name))")
+      .select(
+        "id, status, grade, feedback, graded_at, activities(id, title, type, max_grade, classes(name))",
+      )
       .eq("student_id", data.student_id)
       .eq("status", "corrigida")
       .order("graded_at", { ascending: false });

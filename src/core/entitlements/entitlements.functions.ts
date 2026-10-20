@@ -38,11 +38,7 @@ export const entitlementsList = createServerFn({ method: "GET" })
 
     const tenantType = (profile as { tenants: { type: string } }).tenants.type;
     const plan =
-      tenantType === "personal"
-        ? "free"
-        : tenantType === "teacher"
-          ? "teacher"
-          : "institution";
+      tenantType === "personal" ? "free" : tenantType === "teacher" ? "teacher" : "institution";
 
     const { data: rows } = await supabase
       .from("plan_entitlements")

@@ -15,13 +15,18 @@ export const listCourses = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("courses")
-      .select("id, name, description, category, workload_hours, classes(id, students:enrollments(id))")
+      .select(
+        "id, name, description, category, workload_hours, classes(id, students:enrollments(id))",
+      )
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []).map((c: any) => ({
       ...c,
       class_count: c.classes?.length ?? 0,
-      student_count: (c.classes ?? []).reduce((s: number, cl: any) => s + (cl.students?.length ?? 0), 0),
+      student_count: (c.classes ?? []).reduce(
+        (s: number, cl: any) => s + (cl.students?.length ?? 0),
+        0,
+      ),
     }));
   });
 
@@ -51,6 +56,15 @@ export const deleteCourse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    const { data: linkedClasses } = await context.supabase
+      .from("classes")
+      .select("id")
+      .eq("course_id", data.id);
+    if (linkedClasses && linkedClasses.length > 0) {
+      throw new Error(
+        `Não é possível excluir este curso pois existem ${linkedClasses.length} turma(s) vinculada(s). Exclua ou transfira as turmas antes de remover o curso.`,
+      );
+    }
     const { error } = await context.supabase.from("courses").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -62,7 +76,9 @@ export const listClasses = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("classes")
-      .select("id, name, schedule, start_date, end_date, room, course_id, courses(name), enrollments(id)")
+      .select(
+        "id, name, schedule, start_date, end_date, room, course_id, courses(name), enrollments(id)",
+      )
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []).map((c: any) => ({
@@ -111,12 +127,17 @@ export const listStudents = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("students")
-      .select("id, full_name, email, phone, document, birth_date, guardian_name, guardian_phone, notes, enrollments(class_id, classes(name))")
+      .select(
+        "id, full_name, email, phone, document, birth_date, guardian_name, guardian_phone, notes, enrollments(class_id, classes(name))",
+      )
       .order("full_name");
     if (error) throw new Error(error.message);
     return (data ?? []).map((s: any) => ({
       ...s,
-      class_names: (s.enrollments ?? []).map((e: any) => e.classes?.name).filter(Boolean).join(", "),
+      class_names: (s.enrollments ?? [])
+        .map((e: any) => e.classes?.name)
+        .filter(Boolean)
+        .join(", "),
     }));
   });
 
@@ -200,9 +221,7 @@ export const bulkImportStudents = createServerFn({ method: "POST" })
       byName.set(String(s.full_name).toLowerCase().trim(), s.id);
     }
 
-    const { data: classes } = await context.supabase
-      .from("classes")
-      .select("id, name");
+    const { data: classes } = await context.supabase.from("classes").select("id, name");
     const classByName = new Map<string, string>();
     for (const c of classes ?? []) classByName.set(String(c.name).toLowerCase().trim(), c.id);
 
@@ -266,7 +285,13 @@ const attachFileSchema = z.object({
   storage_path: z.string().min(1).max(500),
   file_name: z.string().min(1).max(200),
   mime_type: z.string().max(100).optional().nullable(),
-  size_bytes: z.number().int().min(0).max(50 * 1024 * 1024).optional().nullable(),
+  size_bytes: z
+    .number()
+    .int()
+    .min(0)
+    .max(50 * 1024 * 1024)
+    .optional()
+    .nullable(),
 });
 
 export const attachSubmissionFile = createServerFn({ method: "POST" })
@@ -344,7 +369,9 @@ export const deleteSubmissionFile = createServerFn({ method: "POST" })
 // ============ ENROLLMENTS ============
 export const enrollStudent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ student_id: z.string().uuid(), class_id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({ student_id: z.string().uuid(), class_id: z.string().uuid() }).parse(d),
+  )
   .handler(async ({ data, context }) => {
     const tenant_id = await getTenantId(context.supabase);
     const { error } = await context.supabase
@@ -357,7 +384,9 @@ export const enrollStudent = createServerFn({ method: "POST" })
 
 export const unenrollStudent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ student_id: z.string().uuid(), class_id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({ student_id: z.string().uuid(), class_id: z.string().uuid() }).parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("enrollments")
@@ -366,6 +395,62 @@ export const unenrollStudent = createServerFn({ method: "POST" })
       .eq("class_id", data.class_id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const toggleEnrollmentStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({ student_id: z.string().uuid(), class_id: z.string().uuid(), active: z.boolean() })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("enrollments")
+      .update({ active: data.active })
+      .eq("student_id", data.student_id)
+      .eq("class_id", data.class_id);
+    if (error) throw new Error(error.message);
+    return { ok: true, active: data.active };
+  });
+
+export const getStudentInviteStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ student_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: student } = await context.supabase
+      .from("students")
+      .select("email, user_id")
+      .eq("id", data.student_id)
+      .maybeSingle();
+
+    if (!student || !student.email) {
+      return { status: "no_email" as const, invite: null };
+    }
+    if (student.user_id) {
+      return { status: "accepted" as const, invite: null };
+    }
+
+    const { data: invite } = await context.supabase
+      .from("invites")
+      .select("id, status, token, expires_at, created_at")
+      .eq("email", student.email)
+      .eq("role", "aluno")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!invite) {
+      return { status: "not_invited" as const, invite: null };
+    }
+
+    const isExpired = new Date(invite.expires_at) < new Date();
+    const effectiveStatus =
+      isExpired && invite.status === "pending"
+        ? ("expired" as const)
+        : (invite.status as "pending" | "accepted" | "revoked");
+
+    return { status: effectiveStatus, invite };
   });
 
 // ============ ATTENDANCE ============
@@ -434,7 +519,11 @@ export const saveAttendance = createServerFn({ method: "POST" })
     if (sessionId) {
       await context.supabase
         .from("attendance_sessions")
-        .update({ topic: data.topic ?? null, notes: data.notes ?? null, updated_at: new Date().toISOString() })
+        .update({
+          topic: data.topic ?? null,
+          notes: data.notes ?? null,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", sessionId);
     } else {
       const { data: s, error } = await context.supabase
@@ -471,6 +560,119 @@ export const saveAttendance = createServerFn({ method: "POST" })
 export const getDashboardStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const { data: rolesR } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId);
+    const roles = ((rolesR ?? []) as any[]).map((r) => r.role);
+    const isOnlyTeacher =
+      roles.includes("professor") &&
+      !roles.includes("super_admin") &&
+      !roles.includes("admin_instituicao");
+
+    if (isOnlyTeacher) {
+      const { data: teacherLinks } = await context.supabase
+        .from("class_teachers")
+        .select("class_id, classes(id, course_id)")
+        .eq("teacher_id", context.userId);
+
+      const classIds = (teacherLinks ?? []).map((tl: any) => tl.class_id);
+      const courseIds = Array.from(
+        new Set((teacherLinks ?? []).map((tl: any) => tl.classes?.course_id).filter(Boolean)),
+      );
+
+      const { data: enrolledData } = classIds.length
+        ? await context.supabase
+            .from("enrollments")
+            .select("student_id")
+            .in("class_id", classIds)
+            .eq("active", true)
+        : { data: [] };
+      const studentIds = Array.from(new Set((enrolledData ?? []).map((e: any) => e.student_id)));
+
+      const { data: teacherSessions } = classIds.length
+        ? await context.supabase
+            .from("attendance_sessions")
+            .select("id, session_date")
+            .in("class_id", classIds)
+            .gte("session_date", new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10))
+        : { data: [] };
+
+      const sessIds = (teacherSessions ?? []).map((s: any) => s.id);
+      const sessMap = new Map((teacherSessions ?? []).map((s: any) => [s.id, s.session_date]));
+
+      const { data: teacherRecords } = sessIds.length
+        ? await context.supabase
+            .from("attendance_records")
+            .select("status, student_id, session_id")
+            .in("session_id", sessIds)
+        : { data: [] };
+
+      const records = (teacherRecords ?? []) as any[];
+      const total = records.length;
+      const present = records.filter(
+        (r) => r.status === "presente" || r.status === "atrasado",
+      ).length;
+      const avgAttendance = total ? Math.round((present / total) * 100) : 0;
+
+      const perStudent: Record<string, { ok: number; total: number }> = {};
+      for (const r of records) {
+        perStudent[r.student_id] ??= { ok: 0, total: 0 };
+        perStudent[r.student_id].total++;
+        if (r.status === "presente" || r.status === "atrasado") perStudent[r.student_id].ok++;
+      }
+      const lowFreqIds = Object.entries(perStudent)
+        .filter(([, v]) => v.total >= 2 && v.ok / v.total < 0.75)
+        .map(([id]) => id);
+
+      let lowFreq: any[] = [];
+      if (lowFreqIds.length) {
+        const { data: studs } = await context.supabase
+          .from("students")
+          .select("id, full_name")
+          .in("id", lowFreqIds)
+          .limit(6);
+        lowFreq = (studs ?? []).map((s: any) => ({
+          ...s,
+          attendance: Math.round((perStudent[s.id].ok / perStudent[s.id].total) * 100),
+        }));
+      }
+
+      const byDay: Record<string, { ok: number; total: number }> = {};
+      for (const r of records) {
+        const d = sessMap.get(r.session_id);
+        if (!d) continue;
+        byDay[d] ??= { ok: 0, total: 0 };
+        byDay[d].total++;
+        if (r.status === "presente" || r.status === "atrasado") byDay[d].ok++;
+      }
+      const weekly = Array.from({ length: 7 }).map((_, i) => {
+        const d = new Date(Date.now() - (6 - i) * 86400000);
+        const key = d.toISOString().slice(0, 10);
+        const b = byDay[key];
+        return {
+          day: d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", ""),
+          value: b && b.total ? Math.round((b.ok / b.total) * 100) : 0,
+        };
+      });
+
+      const sessionsThisWeek = (teacherSessions ?? []).filter(
+        (s: any) =>
+          s.session_date >= new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
+      ).length;
+
+      return {
+        totalStudents: studentIds.length,
+        totalClasses: classIds.length,
+        totalCourses: courseIds.length,
+        sessionsThisWeek,
+        avgAttendance,
+        lowFreq,
+        weekly,
+        isTeacherView: true,
+      };
+    }
+
     const [studentsR, classesR, coursesR, sessionsR, recordsR] = await Promise.all([
       context.supabase.from("students").select("id", { count: "exact", head: true }),
       context.supabase.from("classes").select("id", { count: "exact", head: true }),
@@ -482,12 +684,17 @@ export const getDashboardStats = createServerFn({ method: "GET" })
       context.supabase
         .from("attendance_records")
         .select("status, student_id, attendance_sessions!inner(session_date)")
-        .gte("attendance_sessions.session_date", new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)),
+        .gte(
+          "attendance_sessions.session_date",
+          new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10),
+        ),
     ]);
 
     const records = (recordsR.data ?? []) as any[];
     const total = records.length;
-    const present = records.filter((r) => r.status === "presente" || r.status === "atrasado").length;
+    const present = records.filter(
+      (r) => r.status === "presente" || r.status === "atrasado",
+    ).length;
     const avgAttendance = total ? Math.round((present / total) * 100) : 0;
 
     // Per-student attendance %
@@ -541,6 +748,7 @@ export const getDashboardStats = createServerFn({ method: "GET" })
       avgAttendance,
       lowFreq,
       weekly,
+      isTeacherView: false,
     };
   });
 
@@ -649,7 +857,14 @@ export const getReportData = createServerFn({ method: "POST" })
     }
     const sessionIds = filteredSessions.map((s) => s.id);
     if (sessionIds.length === 0) {
-      return { sessions: [], records: [], byStudent: [], byClass: [], byCourse: [], totals: { sessions: 0, students: 0, present: 0, absent: 0, late: 0, justified: 0, rate: 0 } };
+      return {
+        sessions: [],
+        records: [],
+        byStudent: [],
+        byClass: [],
+        byCourse: [],
+        totals: { sessions: 0, students: 0, present: 0, absent: 0, late: 0, justified: 0, rate: 0 },
+      };
     }
 
     // 2. Fetch records for those sessions
@@ -664,24 +879,63 @@ export const getReportData = createServerFn({ method: "POST" })
     const recs = (records ?? []) as any[];
     const sessById = new Map(filteredSessions.map((s) => [s.id, s]));
 
-    const aggKey = <T,>(map: Map<string, T>, k: string, init: () => T) => {
+    const aggKey = <T>(map: Map<string, T>, k: string, init: () => T) => {
       if (!map.has(k)) map.set(k, init());
       return map.get(k)!;
     };
-    type Agg = { id: string; name: string; present: number; absent: number; late: number; justified: number; total: number };
+    type Agg = {
+      id: string;
+      name: string;
+      present: number;
+      absent: number;
+      late: number;
+      justified: number;
+      total: number;
+    };
     const byStudent = new Map<string, Agg>();
     const byClass = new Map<string, Agg>();
     const byCourse = new Map<string, Agg>();
-    let totalPresent = 0, totalAbsent = 0, totalLate = 0, totalJustified = 0;
+    let totalPresent = 0,
+      totalAbsent = 0,
+      totalLate = 0,
+      totalJustified = 0;
 
     for (const r of recs) {
       const sess = sessById.get(r.session_id);
       if (!sess) continue;
       const cls = sess.classes;
       const course = cls?.courses;
-      const st = aggKey(byStudent, r.student_id, () => ({ id: r.student_id, name: r.students?.full_name ?? "—", present: 0, absent: 0, late: 0, justified: 0, total: 0 }));
-      const cl = cls ? aggKey(byClass, cls.id, () => ({ id: cls.id, name: cls.name, present: 0, absent: 0, late: 0, justified: 0, total: 0 })) : null;
-      const co = course ? aggKey(byCourse, course.id, () => ({ id: course.id, name: course.name, present: 0, absent: 0, late: 0, justified: 0, total: 0 })) : null;
+      const st = aggKey(byStudent, r.student_id, () => ({
+        id: r.student_id,
+        name: r.students?.full_name ?? "—",
+        present: 0,
+        absent: 0,
+        late: 0,
+        justified: 0,
+        total: 0,
+      }));
+      const cl = cls
+        ? aggKey(byClass, cls.id, () => ({
+            id: cls.id,
+            name: cls.name,
+            present: 0,
+            absent: 0,
+            late: 0,
+            justified: 0,
+            total: 0,
+          }))
+        : null;
+      const co = course
+        ? aggKey(byCourse, course.id, () => ({
+            id: course.id,
+            name: course.name,
+            present: 0,
+            absent: 0,
+            late: 0,
+            justified: 0,
+            total: 0,
+          }))
+        : null;
       const buckets = [st, cl, co].filter(Boolean) as Agg[];
       for (const b of buckets) {
         b.total++;
@@ -719,9 +973,15 @@ export const getReportData = createServerFn({ method: "POST" })
         student_name: r.students?.full_name ?? "—",
         status: r.status,
       })),
-      byStudent: Array.from(byStudent.values()).map(finish).sort((a, b) => a.rate - b.rate),
-      byClass: Array.from(byClass.values()).map(finish).sort((a, b) => b.rate - a.rate),
-      byCourse: Array.from(byCourse.values()).map(finish).sort((a, b) => b.rate - a.rate),
+      byStudent: Array.from(byStudent.values())
+        .map(finish)
+        .sort((a, b) => a.rate - b.rate),
+      byClass: Array.from(byClass.values())
+        .map(finish)
+        .sort((a, b) => b.rate - a.rate),
+      byCourse: Array.from(byCourse.values())
+        .map(finish)
+        .sort((a, b) => b.rate - a.rate),
       totals: {
         sessions: filteredSessions.length,
         students: byStudent.size,
@@ -749,7 +1009,9 @@ export const getGradesReport = createServerFn({ method: "POST" })
 
     let actQ = context.supabase
       .from("activities")
-      .select("id, title, due_at, max_grade, type, class_id, student_id, classes(id, name, course_id, courses(id, name))")
+      .select(
+        "id, title, due_at, max_grade, type, class_id, student_id, classes(id, name, course_id, courses(id, name))",
+      )
       .gte("due_at", `${data.start_date}T00:00:00Z`)
       .lte("due_at", `${data.end_date}T23:59:59Z`)
       .order("due_at", { ascending: true });
@@ -764,7 +1026,9 @@ export const getGradesReport = createServerFn({ method: "POST" })
     const actIds = acts.map((a) => a.id);
     let subQ = context.supabase
       .from("submissions")
-      .select("id, activity_id, student_id, grade, status, submitted_at, graded_at, students(id, full_name)")
+      .select(
+        "id, activity_id, student_id, grade, status, submitted_at, graded_at, students(id, full_name)",
+      )
       .in("activity_id", actIds);
     if (data.student_id) subQ = subQ.eq("student_id", data.student_id);
     const { data: submissions, error: e2 } = await subQ;
@@ -782,7 +1046,15 @@ export const getGradesReport = createServerFn({ method: "POST" })
       sumPct: number;
       average: number;
     };
-    const mk = (id: string, name: string): Agg => ({ id, name, graded: 0, delivered: 0, pending: 0, sumPct: 0, average: 0 });
+    const mk = (id: string, name: string): Agg => ({
+      id,
+      name,
+      graded: 0,
+      delivered: 0,
+      pending: 0,
+      sumPct: 0,
+      average: 0,
+    });
     const get = (map: Map<string, Agg>, id: string, name: string) => {
       if (!map.has(id)) map.set(id, mk(id, name));
       return map.get(id)!;
@@ -792,7 +1064,10 @@ export const getGradesReport = createServerFn({ method: "POST" })
     const byClass = new Map<string, Agg>();
     const byActivity = new Map<string, Agg>();
 
-    let graded = 0, delivered = 0, pending = 0, sumPct = 0;
+    let graded = 0,
+      delivered = 0,
+      pending = 0,
+      sumPct = 0;
     const records: any[] = [];
 
     for (const s of subs) {
@@ -814,8 +1089,10 @@ export const getGradesReport = createServerFn({ method: "POST" })
         } else if (s.status === "entregue") b.delivered++;
         else b.pending++;
       }
-      if (s.status === "corrigida" && pct !== null) { graded++; sumPct += pct; }
-      else if (s.status === "entregue") delivered++;
+      if (s.status === "corrigida" && pct !== null) {
+        graded++;
+        sumPct += pct;
+      } else if (s.status === "entregue") delivered++;
       else pending++;
 
       records.push({
@@ -834,13 +1111,22 @@ export const getGradesReport = createServerFn({ method: "POST" })
       });
     }
 
-    const finish = (a: Agg) => ({ ...a, average: a.graded ? Math.round((a.sumPct / a.graded) * 10) / 10 : 0 });
+    const finish = (a: Agg) => ({
+      ...a,
+      average: a.graded ? Math.round((a.sumPct / a.graded) * 10) / 10 : 0,
+    });
 
     return {
       records: records.sort((a, b) => String(a.due_at).localeCompare(String(b.due_at))),
-      byStudent: Array.from(byStudent.values()).map(finish).sort((a, b) => a.average - b.average),
-      byClass: Array.from(byClass.values()).map(finish).sort((a, b) => b.average - a.average),
-      byActivity: Array.from(byActivity.values()).map(finish).sort((a, b) => b.average - a.average),
+      byStudent: Array.from(byStudent.values())
+        .map(finish)
+        .sort((a, b) => a.average - b.average),
+      byClass: Array.from(byClass.values())
+        .map(finish)
+        .sort((a, b) => b.average - a.average),
+      byActivity: Array.from(byActivity.values())
+        .map(finish)
+        .sort((a, b) => b.average - a.average),
       totals: {
         activities: acts.length,
         students: byStudent.size,

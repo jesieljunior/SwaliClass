@@ -1,5 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, GraduationCap, ClipboardCheck, BarChart3, FileText, Award, UserCircle2 } from "lucide-react";
+import {
+  LayoutDashboard,
+  GraduationCap,
+  ClipboardCheck,
+  BarChart3,
+  FileText,
+  Award,
+  UserCircle2,
+} from "lucide-react";
 import { useViewMode } from "@/lib/view-mode";
 import { useSession } from "@/hooks/use-session";
 

@@ -9,7 +9,7 @@ function DefaultErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_default_error_component" });
-    // eslint-disable-next-line no-console
+
     console.error(error);
   }, [error]);
   return (
@@ -45,7 +45,10 @@ function DefaultNotFoundComponent() {
       <h2 className="text-lg font-semibold">Página não encontrada</h2>
       <p className="mt-2 text-sm text-muted-foreground">O recurso solicitado não existe.</p>
       <div className="mt-4">
-        <Link to="/app" className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+        <Link
+          to="/app"
+          className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
           Ir para o app
         </Link>
       </div>

@@ -18,11 +18,15 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
 
   const setMode = (m: ViewMode) => {
     setModeState(m);
-    try { localStorage.setItem(KEY, m); } catch {}
+    try {
+      localStorage.setItem(KEY, m);
+    } catch {}
   };
 
   return (
-    <ViewModeContext.Provider value={{ mode, setMode, toggle: () => setMode(mode === "teacher" ? "student" : "teacher") }}>
+    <ViewModeContext.Provider
+      value={{ mode, setMode, toggle: () => setMode(mode === "teacher" ? "student" : "teacher") }}
+    >
       {children}
     </ViewModeContext.Provider>
   );

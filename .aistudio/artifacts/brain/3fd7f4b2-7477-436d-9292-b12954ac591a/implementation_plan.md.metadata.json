@@ -1,0 +1,6 @@
+{
+  "summary":  "Plano de migração e arquitetura do BitraHub para desacoplamento de frontend React e backend corporativo em C# (.NET 9) ou Java (Spring Boot 3) com PostgreSQL multi-tenant.",
+  "updatedAt":  "2026-10-20T16:27:46.254072346Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

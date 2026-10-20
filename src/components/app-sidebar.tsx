@@ -29,14 +29,30 @@ type NavItem = {
 };
 
 const nav: NavItem[] = [
-  { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true, require: PERMISSIONS.CLASS_VIEW },
+  {
+    to: "/app",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    exact: true,
+    require: PERMISSIONS.CLASS_VIEW,
+  },
   { to: "/app/portal", label: "Meu Portal", icon: UserCircle2, studentOnly: true },
-  { to: "/app/chamada", label: "Chamada", icon: ClipboardCheck, require: PERMISSIONS.ATTENDANCE_TAKE },
+  {
+    to: "/app/chamada",
+    label: "Chamada",
+    icon: ClipboardCheck,
+    require: PERMISSIONS.ATTENDANCE_TAKE,
+  },
   { to: "/app/atividades", label: "Atividades", icon: FileText },
   { to: "/app/alunos", label: "Alunos", icon: Users, require: PERMISSIONS.STUDENT_MANAGE },
   { to: "/app/turmas", label: "Turmas", icon: GraduationCap, require: PERMISSIONS.CLASS_VIEW },
   { to: "/app/cursos", label: "Cursos", icon: BookOpen, require: PERMISSIONS.CLASS_MANAGE },
-  { to: "/app/relatorios", label: "Relatórios", icon: BarChart3, require: PERMISSIONS.REPORTS_VIEW },
+  {
+    to: "/app/relatorios",
+    label: "Relatórios",
+    icon: BarChart3,
+    require: PERMISSIONS.REPORTS_VIEW,
+  },
 ];
 
 const admin: { to: string; label: string; icon: typeof LayoutDashboard }[] = [
@@ -68,15 +84,21 @@ export function AppSidebar() {
   return (
     <aside className="hidden lg:flex w-64 shrink-0 bg-navy-900 text-paper flex-col">
       <div className="px-6 py-6 flex items-center gap-3 border-b border-white/5">
-        <div className="size-9 bg-navy-600 rounded-md flex items-center justify-center font-display font-extrabold text-paper">B</div>
+        <div className="size-9 bg-navy-600 rounded-md flex items-center justify-center font-display font-extrabold text-paper">
+          B
+        </div>
         <div className="min-w-0">
           <p className="font-display font-bold text-sm tracking-wide truncate">{tenantName}</p>
-          <p className="text-[10px] font-mono uppercase text-paper/40 tracking-widest">Tenant ativo</p>
+          <p className="text-[10px] font-mono uppercase text-paper/40 tracking-widest">
+            Tenant ativo
+          </p>
         </div>
       </div>
 
       <nav className="px-3 py-5 space-y-0.5">
-        <p className="px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-paper/30">Operação</p>
+        <p className="px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-paper/30">
+          Operação
+        </p>
         {visibleNav.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.to, item.exact);
@@ -85,7 +107,9 @@ export function AppSidebar() {
               key={item.to}
               to={item.to as never}
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-                active ? "bg-paper/10 text-paper font-semibold" : "text-paper/55 hover:text-paper hover:bg-paper/5"
+                active
+                  ? "bg-paper/10 text-paper font-semibold"
+                  : "text-paper/55 hover:text-paper hover:bg-paper/5"
               }`}
             >
               <Icon className="size-4 shrink-0" />
@@ -96,22 +120,26 @@ export function AppSidebar() {
 
         {isSuper && (
           <>
-            <p className="px-3 pt-6 pb-2 text-[10px] font-mono uppercase tracking-widest text-paper/30">Super Admin</p>
+            <p className="px-3 pt-6 pb-2 text-[10px] font-mono uppercase tracking-widest text-paper/30">
+              Super Admin
+            </p>
             {admin.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.to);
-          return (
-            <Link
-              key={item.to}
-              to={item.to as never}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-                active ? "bg-paper/10 text-paper font-semibold" : "text-paper/55 hover:text-paper hover:bg-paper/5"
-              }`}
-            >
-              <Icon className="size-4 shrink-0" />
-              <span className="truncate">{item.label}</span>
-            </Link>
-          );
+              const Icon = item.icon;
+              const active = isActive(item.to);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to as never}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                    active
+                      ? "bg-paper/10 text-paper font-semibold"
+                      : "text-paper/55 hover:text-paper hover:bg-paper/5"
+                  }`}
+                >
+                  <Icon className="size-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              );
             })}
           </>
         )}
@@ -122,7 +150,9 @@ export function AppSidebar() {
           <p className="text-[10px] text-paper/40 font-mono uppercase tracking-wider truncate">
             {isSuper ? "Super Admin" : "Conta"}
           </p>
-          <p className="text-xs text-paper font-semibold truncate mt-1">{fullName || user?.email || "—"}</p>
+          <p className="text-xs text-paper font-semibold truncate mt-1">
+            {fullName || user?.email || "—"}
+          </p>
           <p className="text-[10px] text-paper/50 truncate">{user?.email}</p>
           <button
             onClick={handleLogout}

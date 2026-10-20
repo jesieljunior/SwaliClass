@@ -3,11 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type SessionRole =
-  | "super_admin"
-  | "admin_instituicao"
-  | "coordenador"
-  | "professor"
-  | "aluno";
+  "super_admin" | "admin_instituicao" | "coordenador" | "professor" | "aluno";
 
 /**
  * Returns the effective session for the currently authenticated user:
@@ -18,8 +14,16 @@ export const getMySession = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const [rolesR, profileR, studentR] = await Promise.all([
       context.supabase.from("user_roles").select("role, tenant_id").eq("user_id", context.userId),
-      context.supabase.from("profiles").select("tenant_id, full_name, email").eq("id", context.userId).maybeSingle(),
-      context.supabase.from("students").select("id, tenant_id, full_name, email").eq("user_id", context.userId).maybeSingle(),
+      context.supabase
+        .from("profiles")
+        .select("tenant_id, full_name, email")
+        .eq("id", context.userId)
+        .maybeSingle(),
+      context.supabase
+        .from("students")
+        .select("id, tenant_id, full_name, email")
+        .eq("user_id", context.userId)
+        .maybeSingle(),
     ]);
     const roles = ((rolesR.data ?? []) as any[]).map((r) => r.role as SessionRole);
     const isStaff = roles.some(
@@ -73,7 +77,9 @@ export const inviteStudent = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ student_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     // Must be tenant staff
-    const { data: isStaff } = await context.supabase.rpc("is_tenant_staff", { _user_id: context.userId });
+    const { data: isStaff } = await context.supabase.rpc("is_tenant_staff", {
+      _user_id: context.userId,
+    });
     if (!isStaff) throw new Error("Somente professores ou administradores podem convidar alunos.");
 
     const { data: student, error: sErr } = await context.supabase
@@ -83,7 +89,10 @@ export const inviteStudent = createServerFn({ method: "POST" })
       .maybeSingle();
     if (sErr) throw new Error(sErr.message);
     if (!student) throw new Error("Aluno não encontrado.");
-    if (!student.email) throw new Error("Este aluno não tem e-mail cadastrado. Edite o aluno para adicionar o e-mail antes de convidar.");
+    if (!student.email)
+      throw new Error(
+        "Este aluno não tem e-mail cadastrado. Edite o aluno para adicionar o e-mail antes de convidar.",
+      );
     if (student.user_id) throw new Error("Este aluno já tem acesso ativo ao portal.");
 
     // Revoke previous pending invites for the same email so a new token is issued

@@ -8,6 +8,7 @@
 ## 1. Personas
 
 ### P1 — Estudante Individual ("Bia, 17, 3º ano / ENEM")
+
 - **Quem é**: aluno do ensino médio, cursinho, faculdade ou concurseiro. Estuda sozinho, com PDFs, videoaulas e cadernos espalhados.
 - **Dor real**:
   - Não sabe o que estudar hoje.
@@ -20,6 +21,7 @@
 - **Não usa**: chamada, notas, gestão de turma, relatórios institucionais.
 
 ### P2 — Professor Particular ("Rafael, prof. de matemática, 40 alunos avulsos")
+
 - **Como trabalha**: dá aula 1:1 ou em micro-turmas (3-8 alunos), online e presencial. Cobra por hora ou pacote. Gerencia tudo em WhatsApp + planilha.
 - **Dor real**:
   - Perde tempo montando material repetido.
@@ -33,6 +35,7 @@
 - **Não precisa**: hierarquia coordenador, boletim oficial, SSO, relatórios acadêmicos densos.
 
 ### P3 — Instituição ("Colégio São Lucas — 800 alunos, 60 professores")
+
 - **Quem administra**: diretor pedagógico + TI.
 - **Quem usa diariamente**: coordenadores, professores, alunos, pais (futuro).
 - **Métricas que importam**: frequência, desempenho por turma/série, taxa de entrega, engajamento no portal, uso da IA por aluno.
@@ -41,9 +44,11 @@
 - **Por que contrata**: gestão acadêmica **+** IA pedagógica **+** portal moderno, num só produto, com preço por aluno competitivo.
 
 ### P4 (secundária) — Aluno da Instituição
+
 Não escolhe o produto, mas **valida retenção**. Portal ruim = escola cancela.
 
 ### P5 (futura) — Responsável/Pai
+
 Consulta boletim, frequência, comunicados. Pesa na decisão da escola.
 
 ---
@@ -51,6 +56,7 @@ Consulta boletim, frequência, comunicados. Pesa na decisão da escola.
 ## 2. Jornadas
 
 ### Estudante Individual
+
 ```text
 Landing → cadastro grátis → onboarding (curso/série/objetivo)
   → cria matéria (ex: Matemática ENEM)
@@ -63,6 +69,7 @@ Landing → cadastro grátis → onboarding (curso/série/objetivo)
 ```
 
 ### Professor Particular
+
 ```text
 Landing "sou professor" → cadastro → workspace pessoal
   → wizard: cria 1ª turma + convida 3 alunos por link
@@ -75,6 +82,7 @@ Landing "sou professor" → cadastro → workspace pessoal
 ```
 
 ### Instituição
+
 ```text
 Comercial fecha contrato → admin recebe workspace provisionado
   → importa alunos (CSV) + professores + turmas
@@ -90,38 +98,41 @@ Comercial fecha contrato → admin recebe workspace provisionado
 
 ## 3. Catálogo de Módulos
 
-| Módulo | Objetivo | Personas | Depende de | Vende separado? |
-|---|---|---|---|---|
-| **Gestão Acadêmica** | Cursos, turmas, matrículas, chamada, atividades, notas | P2, P3 | Core, RBAC | Não |
-| **Portal do Aluno** | O que fazer, o que entregar, como estou | P1, P4 | Academic (P3) / standalone (P1) | Sim (Free tier) |
-| **Portal do Professor** | Painel de turmas, correção assistida, comunicação | P2, P3 | Academic | Não (embutido) |
-| **Bitra AI** | Transformar material em estudo + tutor com memória | P1, P2, P3 | Créditos, Entitlements | **Sim** (add-on) |
-| **Biblioteca** | Material coletivo buscável, com reputação | Todos | Storage, Reputação | Sim (Student+/Teacher) |
-| **Créditos** | Moeda interna para IA e serviços premium | Todos | Billing | Sim (avulso) |
-| **Dashboards** | Métricas por turma/aluno/instituição | P2, P3 | Academic, Portal | Não |
-| **Relatórios** | Boletim PDF, frequência, exports CSV | P3 | Academic | Não |
-| **Comunidade** (v2) | Q&A entre alunos, bounties em créditos | P1 | Créditos, Reputação | Não (retenção) |
-| **Marketplace** (v3) | Professor vende curso; split de receita | P2, P3 criadores | Billing avançado, Library | Sim (take rate) |
+| Módulo                  | Objetivo                                               | Personas         | Depende de                      | Vende separado?        |
+| ----------------------- | ------------------------------------------------------ | ---------------- | ------------------------------- | ---------------------- |
+| **Gestão Acadêmica**    | Cursos, turmas, matrículas, chamada, atividades, notas | P2, P3           | Core, RBAC                      | Não                    |
+| **Portal do Aluno**     | O que fazer, o que entregar, como estou                | P1, P4           | Academic (P3) / standalone (P1) | Sim (Free tier)        |
+| **Portal do Professor** | Painel de turmas, correção assistida, comunicação      | P2, P3           | Academic                        | Não (embutido)         |
+| **Bitra AI**            | Transformar material em estudo + tutor com memória     | P1, P2, P3       | Créditos, Entitlements          | **Sim** (add-on)       |
+| **Biblioteca**          | Material coletivo buscável, com reputação              | Todos            | Storage, Reputação              | Sim (Student+/Teacher) |
+| **Créditos**            | Moeda interna para IA e serviços premium               | Todos            | Billing                         | Sim (avulso)           |
+| **Dashboards**          | Métricas por turma/aluno/instituição                   | P2, P3           | Academic, Portal                | Não                    |
+| **Relatórios**          | Boletim PDF, frequência, exports CSV                   | P3               | Academic                        | Não                    |
+| **Comunidade** (v2)     | Q&A entre alunos, bounties em créditos                 | P1               | Créditos, Reputação             | Não (retenção)         |
+| **Marketplace** (v3)    | Professor vende curso; split de receita                | P2, P3 criadores | Billing avançado, Library       | Sim (take rate)        |
 
 ---
 
 ## 4. Modelo Comercial
 
 ### Estudante (B2C)
-| Plano | Preço alvo | Inclui |
-|---|---|---|
-| **Free** | R$ 0 | Portal, IA (créditos free/mês), Biblioteca leitura, 1 matéria ativa |
-| **Student+** | R$ 19–29/mês | Créditos ampliados, matérias ilimitadas, upload Biblioteca, export, memória longa |
-| **Boost** | R$ 9–49 avulso | Pacote de créditos extra (não expira) |
+
+| Plano        | Preço alvo     | Inclui                                                                            |
+| ------------ | -------------- | --------------------------------------------------------------------------------- |
+| **Free**     | R$ 0           | Portal, IA (créditos free/mês), Biblioteca leitura, 1 matéria ativa               |
+| **Student+** | R$ 19–29/mês   | Créditos ampliados, matérias ilimitadas, upload Biblioteca, export, memória longa |
+| **Boost**    | R$ 9–49 avulso | Pacote de créditos extra (não expira)                                             |
 
 ### Professor Particular (B2B leve)
-| Plano | Preço alvo | Inclui |
-|---|---|---|
-| **Teacher Start** | R$ 49/mês | até 20 alunos, 5 GB, créditos médios, 1 workspace |
-| **Teacher Pro** | R$ 99/mês | até 100 alunos, 50 GB, créditos altos, marca própria leve |
-| **Anual** | -20% | mesmo pacote com desconto |
+
+| Plano             | Preço alvo | Inclui                                                    |
+| ----------------- | ---------- | --------------------------------------------------------- |
+| **Teacher Start** | R$ 49/mês  | até 20 alunos, 5 GB, créditos médios, 1 workspace         |
+| **Teacher Pro**   | R$ 99/mês  | até 100 alunos, 50 GB, créditos altos, marca própria leve |
+| **Anual**         | -20%       | mesmo pacote com desconto                                 |
 
 ### Instituição (B2B)
+
 - **Licenciamento por aluno ativo/mês** (R$ 8–15/aluno, tier por volume).
 - **Módulos opcionais**: Bitra AI (add-on por aluno), Biblioteca Premium, Portal do Responsável.
 - Contrato anual, faturamento mensal, onboarding assistido.
@@ -132,14 +143,14 @@ Comercial fecha contrato → admin recebe workspace provisionado
 
 ## 5. Sistema de Créditos
 
-| Pergunta | Resposta |
-|---|---|
-| Como ganha | (a) renovação mensal do plano (bucket `free`, expira), (b) contribuição aprovada na Biblioteca / respostas votadas (bucket `earned`, não expira). |
-| Como compra | Pacotes avulsos via Stripe/Paddle → bucket `purchased`, não expira. |
-| Como gasta | Ordem fixa: `free` → `earned` → `purchased`. Consumo atômico via ledger append-only. |
-| Quando expira | Só o bucket `free`. `earned` e `purchased` vitalícios enquanto a conta existir. |
-| Anti-abuso | Rate limit por ação, verificação de e-mail, limite diário de "earned", moderação de contribuições, device fingerprint em Free. |
-| Incentivo | Upload aprovado (créditos + reputação), resposta bem votada, streak semanal, indicação de amigo. |
+| Pergunta      | Resposta                                                                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Como ganha    | (a) renovação mensal do plano (bucket `free`, expira), (b) contribuição aprovada na Biblioteca / respostas votadas (bucket `earned`, não expira). |
+| Como compra   | Pacotes avulsos via Stripe/Paddle → bucket `purchased`, não expira.                                                                               |
+| Como gasta    | Ordem fixa: `free` → `earned` → `purchased`. Consumo atômico via ledger append-only.                                                              |
+| Quando expira | Só o bucket `free`. `earned` e `purchased` vitalícios enquanto a conta existir.                                                                   |
+| Anti-abuso    | Rate limit por ação, verificação de e-mail, limite diário de "earned", moderação de contribuições, device fingerprint em Free.                    |
+| Incentivo     | Upload aprovado (créditos + reputação), resposta bem votada, streak semanal, indicação de amigo.                                                  |
 
 ---
 
@@ -163,18 +174,20 @@ Comercial fecha contrato → admin recebe workspace provisionado
 
 ## 7. Bitra AI — Proposta de valor
 
-| Persona | Por que usaria |
-|---|---|
-| Aluno | Vira material bruto em rota de estudo. Lembra dos meus pontos fracos. Simula prova. Não esquece. |
-| Professor | Gera exercícios, gabaritos e variações em segundos. Sugere feedback. Corrige rascunhos. |
-| Escola | Reduz custo de produção, aumenta engajamento, entrega métrica real de aprendizado. |
+| Persona   | Por que usaria                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------ |
+| Aluno     | Vira material bruto em rota de estudo. Lembra dos meus pontos fracos. Simula prova. Não esquece. |
+| Professor | Gera exercícios, gabaritos e variações em segundos. Sugere feedback. Corrige rascunhos.          |
+| Escola    | Reduz custo de produção, aumenta engajamento, entrega métrica real de aprendizado.               |
 
 **Problemas que resolve**:
+
 - Aluno perdido no "por onde começar".
 - Professor gastando fim de semana produzindo prova.
 - Escola sem insight de onde cada aluno trava.
 
 **Diferenciais vs ChatGPT genérico**:
+
 1. **Memória persistente por aluno** (fraquezas, metas, histórico).
 2. **Ancorado no material real** da turma/instituição (RAG na Biblioteca privada).
 3. **Integrado ao fluxo**: nasce dentro de atividade, nota, PDF — não numa janela vazia.
@@ -187,6 +200,7 @@ Comercial fecha contrato → admin recebe workspace provisionado
 ## 8. Roadmap de Produto (por valor, não por técnica)
 
 ### MVP — "O professor particular tem onde trabalhar"
+
 - Cadastro P2, workspace, 1 turma, convite de alunos.
 - Atividades com upload de entrega, correção manual, nota.
 - Portal do aluno (P4) simples: minhas atividades, minhas notas.
@@ -195,24 +209,28 @@ Comercial fecha contrato → admin recebe workspace provisionado
 - **Sucesso**: 100 professores pagantes.
 
 ### v1.1 — "O estudante individual tem produto próprio"
+
 - Cadastro P1 (tenant pessoal), onboarding leve.
 - Upload PDF → resumo → flashcards → quiz.
 - Plano Student+ + compra de créditos avulsos.
 - **Sucesso**: 1.000 estudantes ativos/mês.
 
 ### v1.2 — "A instituição pequena entra"
+
 - Import CSV alunos/professores/turmas, papel coordenador.
 - Chamada, boletim PDF, relatórios básicos.
 - Contrato anual manual, cobrança por aluno.
 - **Sucesso**: 3 escolas pagantes.
 
 ### v2.0 — "Biblioteca vira diferencial"
+
 - Upload público, moderação, reputação, busca híbrida.
 - Comunidade Q&A com bounties em créditos.
 - IA com RAG na biblioteca da instituição.
 - **Sucesso**: 10k itens curados, NPS > 50.
 
 ### v3.0 — "BitraHub vira plataforma"
+
 - Marketplace: professor vende curso, split de receita.
 - Portal do responsável, integrações (Google Classroom import, SSO).
 - API pública / SDK para parceiros.
@@ -223,16 +241,19 @@ Comercial fecha contrato → admin recebe workspace provisionado
 ## 9. Crítica honesta ao projeto
 
 **Complexo demais para agora**
+
 - 3 personas + 3 tipos de tenant + créditos + biblioteca mundial + gamificação **no mesmo MVP**. 18 meses antes do primeiro real. Precisa cortar.
 - Event bus / outbox / pgvector / HNSW antes de ter usuário. Adiar para v2.
 - Coordenador, boletim oficial, responsável, SSO — só fazem sentido a partir de v1.2.
 
 **Não faz sentido (ainda)**
+
 - Gamificação completa (XP, níveis, conquistas, streaks, leaderboard) no MVP. Streak simples basta.
 - Marketplace "próximo" — só após oferta e demanda comprovadas.
 - Biblioteca mundial pública antes de ter usuários que produzam conteúdo (vazia = morta).
 
 **Falta**
+
 - **Definição de ICP inicial**: escolher **uma** persona para atacar primeiro (recomendo **P2 — Professor Particular**: pagam rápido, ciclo curto, viralizam via alunos).
 - **Métrica-norte** por fase (professores pagantes ativos no MVP).
 - **Estratégia de aquisição** (SEO conteúdo, indicação, comunidade de professores).
@@ -241,16 +262,19 @@ Comercial fecha contrato → admin recebe workspace provisionado
 - **Política de dados de menores** (LGPD, consentimento de responsável) — bloqueia vender à escola.
 
 **Riscos de adoção**
+
 - Professor não migra de WhatsApp+planilha se setup levar > 10 min.
 - Escola não troca de sistema no meio do ano letivo — janela de venda curta (out–jan).
 - Aluno individual não paga sem sentir valor nos 3 primeiros usos → onboarding é vida ou morte.
 - IA cara sem cobrança inteligente = queima de caixa.
 
 **Riscos de venda**
+
 - Discurso "faz tudo" confunde. Precisa de **um pitch por persona**.
 - Sem cases, escola não compra. Começar por 2–3 escolas parceiras com desconto agressivo em troca de case.
 
 **Corte recomendado para o MVP real**
+
 1. Foco único: **P2 (Professor Particular)**.
 2. Módulos: Turmas, Atividades, Portal do Aluno (visão simples), Bitra AI básico, Billing Free/Teacher.
 3. Adiar: Biblioteca pública, Comunidade, Gamificação, Coordenador, Marketplace, Portal do Responsável, SSO, pgvector.

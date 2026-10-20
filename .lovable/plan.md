@@ -1,4 +1,3 @@
-
 # Sprint MVP Acadêmico — Fluxo Ponta-a-Ponta
 
 Entendido e alinhado. Direção estratégica **sua**; arquitetura **minha**. Nada de reescrita. Vamos consolidar o que já existe até o fluxo abaixo funcionar sem falhas em produção:
@@ -117,6 +116,7 @@ Legenda: **[P0]** trava o fluxo. **[P1]** UX quebrada mas fluxo funciona. **[P2]
 Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MVP fechar.
 
 ### Fase 1 — Fundamentos do workspace
+
 1. ✅ [P0] **AppLayout redireciona aluno para longe do próprio portal.**
    `alunoAllowed` = `/app/(atividades|notas|perfil)` mas a sidebar oferece `/app/portal`. Aluno é jogado em `/app/atividades` toda vez. Incluir `portal` no regex e revisar a lista canônica de rotas do aluno num único lugar.
 2. ✅ [P0] **Sidebar tenant hardcoded "COLÉGIO ALPHA"** e topbar avatar hardcoded "JD". Puxar `tenant.name` e iniciais do usuário via `useSession`.
@@ -125,6 +125,7 @@ Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MV
 5. [P2] **Dashboard não filtra por professor.** Professor vê números do tenant inteiro. `getDashboardStats` deve escopar por `teaches_class` quando o usuário for professor (não admin).
 
 ### Fase 2 — Estrutura acadêmica
+
 6. [P1] **Cursos**: sem confirmação clara ao excluir curso com turmas dentro. Verificar `class_count > 0` no server e bloquear com mensagem explícita.
 7. [P1] **Turmas**: filtro por curso ausente; lista vira ruim com > 20 turmas. Adicionar seletor de curso + busca por nome.
 8. [P1] **Turmas ↔ Professor**: o vínculo funciona no diálogo, mas não existe visão inversa "turmas deste professor". Adicionar seção simples em `perfil` do professor / ou aba na lista de professores. (Se ficar grande, adiar para Fase 5.)
@@ -132,6 +133,7 @@ Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MV
 10. [P2] **Matrícula histórico**: `enrollments.active` existe mas UI só permite matricular/remover — sem "desativar mantendo histórico". Trocar botão "Remover" por "Desativar matrícula" (soft) e um "Excluir matrícula" secundário.
 
 ### Fase 3 — Operação diária
+
 11. ✅ [P0] **Entrega de atividade com arquivo real.** Aluno anexa arquivos (até 20 MB) no drawer da atividade; upload direto ao bucket `submissions` + `attachSubmissionFile`. Professor vê e baixa via signed URL (10 min) no drawer de correção. Sem preview embutido.
 12. ✅ [P1] **Atividades — rubrica mínima.** Coluna `activities.max_grade numeric` (default 10, check > 0). `createActivity` aceita `maxGrade`, `gradeSubmission` valida no servidor. UI mostra "X / max" no professor, portal, drawer de correção e página de notas.
 13. ✅ [P1] **Chamada — edição de sessão passada.** Trigger `updated_at` na `attendance_sessions`; server fn expõe `created_at/updated_at`; UI mostra "Registrada em / Editada em <data>" e dispara toast `Chamada atualizada` (ou `Chamada salva` no primeiro registro).
@@ -139,22 +141,26 @@ Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MV
 15. ✅ [P2] **Atividades — filtro por turma/status** para o professor com muitas turmas. Selector simples no header.
 
 ### Fase 4 — Portal do aluno
+
 16. ✅ [P1] **Portal sem frequência.** `getMyPortalOverview` não retorna % de presença por turma. Somar via `attendance_records` do próprio aluno e mostrar barra por turma.
 17. ✅ [P1] **Portal — próximos prazos vs atividades já entregues** não distingue. Buscar submissão do aluno para cada atividade upcoming e esconder as entregues.
 18. [P2] **Aluno — página `/app/notas`** duplica parcialmente o portal. Manter, mas linkar do Portal ("Ver todas as notas").
 
 ### Fase 5 — Relatórios + Dashboard
+
 19. ✅ [P1] **Relatório de notas.** `getGradesReport(period, course_id?, class_id?, student_id?)` em `tenant.functions.ts`; tela de Relatórios ganhou alternador Frequência/Notas, KPIs (atividades, alunos, corrigidas, pendentes, média) e abas por aluno / turma / atividade / detalhado, com export PDF, Excel e CSV. Boletim formatado fica no item 20.
 20. ✅ [P2] **Boletim simples do aluno (HTML imprimível).** Botão "Boletim" no modo Notas (exige aluno selecionado) abre `BoletimPrint`: cabeçalho com tenant/aluno/período/média geral, seções agrupadas por curso+turma com média por grupo e tabela de atividades. Impressão via `window.print()` com CSS `@media print` (`.print-area` / `.no-print`).
 21. ✅ [P2] **Dashboard do professor.** `getTeacherDashboard` (turmas via `class_teachers`, entregas pendentes e média % por turma) + card "Minhas turmas" no `/app`, visível apenas quando `isProfessor && !isAdmin`, com link para Atividades.
 
 ### Fase 6 — Estabilização
+
 22. 🟡 [P0] **Rotas sem `errorComponent`/`notFoundComponent`.** `defaultErrorComponent` + `defaultNotFoundComponent` adicionados no `createRouter` — cobre todas as rotas sem override. Boundaries específicos por rota podem ser adicionados sob demanda.
 23. [P1] **`session.isAdmin` e `isAluno` espalhados** ainda existem em `alunos.tsx`, `chamada.tsx`, `notas.tsx`. Migrar para `usePermission` conforme os arquivos forem tocados.
 24. [P1] **Empty/loading/error states padronizados** — extrair `<EmptyState/>`, `<LoadingBlock/>`, `<ErrorBlock/>` em `src/components/ui/`.
 25. [P2] **`.lovable/architecture.md`** documentando decisões, RLS por tabela, matriz RBAC e feature flags atuais.
 
 ### Achados de banco (não bloqueantes, mas registrados)
+
 - Todas as tabelas do fluxo já têm RLS + GRANT ao `authenticated` e políticas por tenant/role. OK.
 - `activities` não tem `max_grade` (item 12).
 - `enrollments.active` existe mas UI ignora (item 10).
@@ -162,4 +168,5 @@ Cada item vira commit próprio, na ordem abaixo. Nada fora dessa lista até o MV
 - Storage `submissions` já é privado com signed URLs (10min). Já pronto para item 11.
 
 ### Fora do MVP (roadmap.md)
+
 Bitra AI · Biblioteca · Créditos · Comunidade · Gamificação · Marketplace · Portal do responsável · SSO · Boletim PDF elaborado · Professor Particular UI · Estudante Individual UI.

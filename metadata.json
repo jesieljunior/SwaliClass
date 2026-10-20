@@ -1,0 +1,6 @@
+{
+  "name": "BitraHub",
+  "description": "SaaS de gestão de presença, turmas e alunos com inteligência estratégica para instituições de ensino e professores.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

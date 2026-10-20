@@ -12,10 +12,7 @@ const searchSchema = z.object({ token: z.string().optional() });
 export const Route = createFileRoute("/accept-invite")({
   validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
-    meta: [
-      { title: "Aceitar convite — BitraHub" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Aceitar convite — BitraHub" }, { name: "robots", content: "noindex" }],
   }),
   component: AcceptInvitePage,
 });
@@ -43,8 +40,18 @@ function AcceptInvitePage() {
     },
   });
 
-  if (!token) return <Centered><p className="text-rose-700">Token ausente.</p></Centered>;
-  if (q.isLoading) return <Centered><Loader2 className="size-5 animate-spin" /></Centered>;
+  if (!token)
+    return (
+      <Centered>
+        <p className="text-rose-700">Token ausente.</p>
+      </Centered>
+    );
+  if (q.isLoading)
+    return (
+      <Centered>
+        <Loader2 className="size-5 animate-spin" />
+      </Centered>
+    );
   if (!q.data?.ok) {
     const reasons: Record<string, string> = {
       not_found: "Convite não encontrado.",
@@ -52,7 +59,11 @@ function AcceptInvitePage() {
       revoked: "Este convite foi revogado.",
       expired: "Este convite expirou.",
     };
-    return <Centered><p className="text-rose-700">{reasons[q.data?.reason as string] ?? "Convite inválido."}</p></Centered>;
+    return (
+      <Centered>
+        <p className="text-rose-700">{reasons[q.data?.reason as string] ?? "Convite inválido."}</p>
+      </Centered>
+    );
   }
 
   const invite = q.data.invite;
@@ -60,16 +71,53 @@ function AcceptInvitePage() {
   return (
     <Centered>
       <div className="w-full max-w-md bg-white border border-border-subtle rounded-lg p-8">
-        <p className="text-[10px] font-mono uppercase tracking-widest text-navy-600 mb-2">BitraHub · Convite</p>
-        <h1 className="text-2xl font-display font-extrabold mb-1">Bem-vindo a {invite.tenants?.name ?? "sua instituição"}</h1>
-        <p className="text-sm text-navy-800/60 mb-6">Configure sua senha para acessar como <strong>{invite.role}</strong>.</p>
+        <p className="text-[10px] font-mono uppercase tracking-widest text-navy-600 mb-2">
+          BitraHub · Convite
+        </p>
+        <h1 className="text-2xl font-display font-extrabold mb-1">
+          Bem-vindo a {invite.tenants?.name ?? "sua instituição"}
+        </h1>
+        <p className="text-sm text-navy-800/60 mb-6">
+          Configure sua senha para acessar como <strong>{invite.role}</strong>.
+        </p>
 
-        <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); m.mutate(); }}>
-          <Field label="E-mail"><input disabled value={invite.email} className="w-full h-10 px-3 border border-border-subtle rounded-sm bg-surface" /></Field>
-          <Field label="Nome completo"><input required value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full h-10 px-3 border border-border-subtle rounded-sm bg-white" /></Field>
-          <Field label="Senha (mín. 8 caracteres)"><input required type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full h-10 px-3 border border-border-subtle rounded-sm bg-white" /></Field>
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            m.mutate();
+          }}
+        >
+          <Field label="E-mail">
+            <input
+              disabled
+              value={invite.email}
+              className="w-full h-10 px-3 border border-border-subtle rounded-sm bg-surface"
+            />
+          </Field>
+          <Field label="Nome completo">
+            <input
+              required
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full h-10 px-3 border border-border-subtle rounded-sm bg-white"
+            />
+          </Field>
+          <Field label="Senha (mín. 8 caracteres)">
+            <input
+              required
+              type="password"
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full h-10 px-3 border border-border-subtle rounded-sm bg-white"
+            />
+          </Field>
           {m.error && <p className="text-xs text-rose-700">{(m.error as Error).message}</p>}
-          <button disabled={m.isPending} className="w-full h-11 bg-navy-900 text-paper font-bold rounded-sm hover:bg-navy-800 inline-flex items-center justify-center gap-2">
+          <button
+            disabled={m.isPending}
+            className="w-full h-11 bg-navy-900 text-paper font-bold rounded-sm hover:bg-navy-800 inline-flex items-center justify-center gap-2"
+          >
             {m.isPending && <Loader2 className="size-4 animate-spin" />} Aceitar e entrar
           </button>
         </form>
@@ -79,13 +127,17 @@ function AcceptInvitePage() {
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-surface flex items-center justify-center p-4">{children}</div>;
+  return (
+    <div className="min-h-screen bg-surface flex items-center justify-center p-4">{children}</div>
+  );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-navy-600 block mb-1">{label}</span>
+      <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-navy-600 block mb-1">
+        {label}
+      </span>
       {children}
     </label>
   );

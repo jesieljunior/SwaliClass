@@ -37,8 +37,10 @@ export const listTenants = createServerFn({ method: "GET" })
         supabaseAdmin.from("profiles").select("tenant_id").in("tenant_id", ids),
         supabaseAdmin.from("students").select("tenant_id").in("tenant_id", ids),
       ]);
-      for (const p of profs ?? []) if (p.tenant_id) userCounts[p.tenant_id] = (userCounts[p.tenant_id] ?? 0) + 1;
-      for (const s of studs ?? []) studentCounts[s.tenant_id] = (studentCounts[s.tenant_id] ?? 0) + 1;
+      for (const p of profs ?? [])
+        if (p.tenant_id) userCounts[p.tenant_id] = (userCounts[p.tenant_id] ?? 0) + 1;
+      for (const s of studs ?? [])
+        studentCounts[s.tenant_id] = (studentCounts[s.tenant_id] ?? 0) + 1;
     }
     return (tenants ?? []).map((t) => ({
       ...t,
@@ -64,13 +66,23 @@ export const createTenant = createServerFn({ method: "POST" })
     const baseSlug = slugify(data.name) || "tenant";
     let slug = baseSlug;
     for (let i = 2; i < 20; i++) {
-      const { data: ex } = await supabaseAdmin.from("tenants").select("id").eq("slug", slug).maybeSingle();
+      const { data: ex } = await supabaseAdmin
+        .from("tenants")
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
       if (!ex) break;
       slug = `${baseSlug}-${i}`;
     }
     const { data: tenant, error } = await supabaseAdmin
       .from("tenants")
-      .insert({ name: data.name, slug, plan: data.plan, contact_email: data.contact_email, status: "trial" })
+      .insert({
+        name: data.name,
+        slug,
+        plan: data.plan,
+        contact_email: data.contact_email,
+        status: "trial",
+      })
       .select()
       .single();
     if (error) throw new Error(error.message);
@@ -97,7 +109,9 @@ export const listInvites = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("invites")
-      .select("id, tenant_id, email, role, status, expires_at, accepted_at, created_at, token, tenants(name)")
+      .select(
+        "id, tenant_id, email, role, status, expires_at, accepted_at, created_at, token, tenants(name)",
+      )
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
@@ -132,7 +146,8 @@ export const getInviteByToken = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!invite) return { ok: false as const, reason: "not_found" as const };
     if (invite.status !== "pending") return { ok: false as const, reason: invite.status };
-    if (new Date(invite.expires_at) < new Date()) return { ok: false as const, reason: "expired" as const };
+    if (new Date(invite.expires_at) < new Date())
+      return { ok: false as const, reason: "expired" as const };
     return { ok: true as const, invite };
   });
 

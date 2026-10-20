@@ -4,10 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
-    meta: [
-      { title: "Nova senha — BitraHub" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Nova senha — BitraHub" }, { name: "robots", content: "noindex" }],
   }),
   component: ResetPasswordPage,
 });
@@ -47,7 +44,9 @@ function ResetPasswordPage() {
             className="w-full h-11 px-3 bg-surface border border-border-subtle rounded-md text-sm focus:outline-none focus:border-navy-900"
           />
           {error && (
-            <p className="text-xs bg-red-50 border border-red-200 text-red-700 p-3 rounded-md">{error}</p>
+            <p className="text-xs bg-red-50 border border-red-200 text-red-700 p-3 rounded-md">
+              {error}
+            </p>
           )}
           <button
             disabled={loading}

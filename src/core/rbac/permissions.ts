@@ -5,12 +5,7 @@
  * Papéis (do enum `app_role`): super_admin, admin_instituicao, coordenador, professor, aluno.
  */
 
-export type AppRole =
-  | "super_admin"
-  | "admin_instituicao"
-  | "coordenador"
-  | "professor"
-  | "aluno";
+export type AppRole = "super_admin" | "admin_instituicao" | "coordenador" | "professor" | "aluno";
 
 export const PERMISSIONS = {
   CLASS_MANAGE: "class.manage",

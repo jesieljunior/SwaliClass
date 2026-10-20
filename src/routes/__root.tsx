@@ -79,10 +79,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "BitraHub — Gestão de presença e turmas para instituições de ensino" },
-      { name: "description", content: "SaaS de gestão de frequência, turmas e alunos. Chamada em segundos, relatórios em tempo real. Por Bitra Tech." },
+      {
+        name: "description",
+        content:
+          "SaaS de gestão de frequência, turmas e alunos. Chamada em segundos, relatórios em tempo real. Por Bitra Tech.",
+      },
       { name: "author", content: "Bitra Tech" },
       { property: "og:title", content: "BitraHub — Gestão de presença com precisão" },
-      { property: "og:description", content: "Transforme o diário de classe em inteligência estratégica." },
+      {
+        property: "og:description",
+        content: "Transforme o diário de classe em inteligência estratégica.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@BitraTech" },

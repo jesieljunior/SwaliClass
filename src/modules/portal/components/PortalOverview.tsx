@@ -16,11 +16,7 @@ export function PortalOverview() {
   }
 
   if (q.error) {
-    return (
-      <p className="text-sm text-red-600">
-        Não foi possível carregar seu portal.
-      </p>
-    );
+    return <p className="text-sm text-red-600">Não foi possível carregar seu portal.</p>;
   }
 
   const data = q.data!;
@@ -30,8 +26,8 @@ export function PortalOverview() {
       <div className="rounded-lg border border-border-subtle bg-white p-6">
         <h2 className="font-display font-bold text-lg">Portal do Aluno</h2>
         <p className="text-sm text-navy-800/60 mt-2">
-          Sua conta ainda não está vinculada a um cadastro de aluno. Peça ao
-          administrador ou professor para vincular seu perfil.
+          Sua conta ainda não está vinculada a um cadastro de aluno. Peça ao administrador ou
+          professor para vincular seu perfil.
         </p>
       </div>
     );
@@ -57,16 +53,11 @@ export function PortalOverview() {
         >
           <ul className="space-y-2">
             {data.classes.map((c) => (
-              <li
-                key={c.id}
-                className="text-sm p-3 bg-navy-900/5 rounded-sm"
-              >
+              <li key={c.id} className="text-sm p-3 bg-navy-900/5 rounded-sm">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium truncate">{c.name}</span>
                   <span className="text-xs font-mono text-navy-800/60 shrink-0">
-                    {c.attendance.rate === null
-                      ? "sem chamada"
-                      : `${c.attendance.rate}% presença`}
+                    {c.attendance.rate === null ? "sem chamada" : `${c.attendance.rate}% presença`}
                   </span>
                 </div>
                 {c.attendance.rate !== null && (
@@ -121,9 +112,7 @@ export function PortalOverview() {
           title="Notas recentes"
           icon={<GraduationCap className="size-4" />}
           className="col-span-12 lg:col-span-4"
-          empty={
-            data.recentGrades.length === 0 ? "Sem notas ainda." : null
-          }
+          empty={data.recentGrades.length === 0 ? "Sem notas ainda." : null}
         >
           <ul className="space-y-2">
             {data.recentGrades.map((g) => (
@@ -132,9 +121,7 @@ export function PortalOverview() {
                 className="text-sm p-3 bg-white border border-border-subtle rounded-sm flex justify-between items-center"
               >
                 <span className="font-medium truncate">{g.title}</span>
-                <span className="font-display font-bold text-lg">
-                  {g.grade}
-                </span>
+                <span className="font-display font-bold text-lg">{g.grade}</span>
               </li>
             ))}
           </ul>
@@ -158,17 +145,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={`bg-white border border-border-subtle rounded-lg p-5 ${className ?? ""}`}
-    >
+    <div className={`bg-white border border-border-subtle rounded-lg p-5 ${className ?? ""}`}>
       <h3 className="font-display font-bold text-base flex items-center gap-2 mb-4">
         {icon} {title}
       </h3>
-      {empty ? (
-        <p className="text-xs text-navy-800/40">{empty}</p>
-      ) : (
-        children
-      )}
+      {empty ? <p className="text-xs text-navy-800/40">{empty}</p> : children}
     </div>
   );
 }

@@ -3,6 +3,7 @@
 Cada módulo é auto-contido: componentes e server functions.
 
 **Estrutura de pastas por módulo:**
+
 - `components/` — UI do módulo
 - `*.functions.ts` — server functions (NÃO usar pasta `server/` — bloqueada pelo import-protection do TanStack Start)
 - `*.server.ts` — helpers 100% server-only (bloqueados no bundle client)

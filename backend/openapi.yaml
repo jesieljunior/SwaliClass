@@ -1,0 +1,375 @@
+openapi: 3.0.3
+info:
+  title: BitraHub Academic Management API
+  description: Multi-tenant corporate academic management REST API for institutions, teachers, and students.
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: Current Environment API Server
+paths:
+  /auth/login:
+    post:
+      summary: User authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+
+  /auth/me:
+    get:
+      summary: Get logged user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+
+  /courses:
+    get:
+      summary: List all courses in the tenant
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseDto'
+    post:
+      summary: Create or update course
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertCourseRequest'
+      responses:
+        '200':
+          description: Saved course
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDto'
+
+  /courses/{id}:
+    delete:
+      summary: Delete course (protected against linked classes)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Course deleted
+        '400':
+          description: Cannot delete course with linked classes
+
+  /classes:
+    get:
+      summary: List classes with optional course filter and search
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: courseId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of classes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClassGroupDto'
+    post:
+      summary: Create or update class
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertClassRequest'
+      responses:
+        '200':
+          description: Saved class
+
+  /students:
+    get:
+      summary: List students with classes, status and attendance rate
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: classId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: status
+          in: query
+          schema: { type: string, enum: [active, inactive, transferred, graduated] }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudentDto'
+    post:
+      summary: Create or update student
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertStudentRequest'
+      responses:
+        '200':
+          description: Saved student
+
+  /students/import-csv:
+    post:
+      summary: Import students from CSV with preview and validation
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                students:
+                  type: array
+                  items:
+                    type: object
+                    required: [fullName, email]
+                    properties:
+                      fullName: { type: string }
+                      email: { type: string }
+                      enrollmentNumber: { type: string }
+      responses:
+        '200':
+          description: Batch import summary
+
+  /attendance/roster:
+    get:
+      summary: Get student attendance roster for a class and date
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: classId
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+        - name: date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Roster with present/absent counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceSessionDto'
+
+  /attendance/save:
+    post:
+      summary: Save attendance session with audit trail
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [classGroupId, sessionDate, records]
+              properties:
+                classGroupId: { type: string, format: uuid }
+                sessionDate: { type: string, format: date }
+                topic: { type: string }
+                records:
+                  type: array
+                  items:
+                    type: object
+                    required: [studentId, status]
+                    properties:
+                      studentId: { type: string, format: uuid }
+                      status: { type: string, enum: [present, absent, late, excused] }
+                      notes: { type: string }
+      responses:
+        '200':
+          description: Attendance saved
+
+  /dashboard/stats:
+    get:
+      summary: Admin dashboard metrics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Aggregated institution statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStatsDto'
+
+  /dashboard/teacher:
+    get:
+      summary: Teacher-specific dashboard metrics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Teacher classes and pending submissions
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        token: { type: string }
+        user: { $ref: '#/components/schemas/UserDto' }
+        tenant:
+          type: object
+          properties:
+            id: { type: string }
+            name: { type: string }
+            plan: { type: string }
+    UserDto:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        fullName: { type: string }
+        role: { type: string }
+        tenantId: { type: string }
+    CourseDto:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        workloadHours: { type: integer }
+        classCount: { type: integer }
+        studentCount: { type: integer }
+    ClassGroupDto:
+      type: object
+      properties:
+        id: { type: string }
+        courseId: { type: string }
+        courseName: { type: string }
+        name: { type: string }
+        schedule: { type: string }
+        maxCapacity: { type: integer }
+        teacherName: { type: string }
+        studentCount: { type: integer }
+    StudentDto:
+      type: object
+      properties:
+        id: { type: string }
+        fullName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        enrollmentNumber: { type: string }
+        status: { type: string }
+        attendanceRate: { type: number }
+        averageGrade: { type: number }
+    AttendanceSessionDto:
+      type: object
+      properties:
+        id: { type: string }
+        classGroupId: { type: string }
+        className: { type: string }
+        sessionDate: { type: string }
+        topic: { type: string }
+        totalStudents: { type: integer }
+        presentCount: { type: integer }
+        absentCount: { type: integer }
+        attendanceRate: { type: number }
+    DashboardStatsDto:
+      type: object
+      properties:
+        totalStudents: { type: integer }
+        totalClasses: { type: integer }
+        totalCourses: { type: integer }
+        attendanceAverage30d: { type: number }
+        pendingGradingCount: { type: integer }
+    UpsertCourseRequest:
+      type: object
+      required: [name]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        workloadHours: { type: integer }
+    UpsertClassRequest:
+      type: object
+      required: [courseId, name]
+      properties:
+        id: { type: string }
+        courseId: { type: string }
+        name: { type: string }
+        academicTerm: { type: string }
+        schedule: { type: string }
+        maxCapacity: { type: integer }
+        teacherId: { type: string }
+    UpsertStudentRequest:
+      type: object
+      required: [fullName, email]
+      properties:
+        id: { type: string }
+        fullName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        enrollmentNumber: { type: string }
+        status: { type: string }
+        classIds:
+          type: array
+          items: { type: string }

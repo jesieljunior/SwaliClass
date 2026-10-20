@@ -13,7 +13,8 @@ async function assertTenantAdmin(supabase: any, userId: string): Promise<string>
     _tenant_id: tenantId,
   });
   if (aErr) throw new Error(aErr.message);
-  if (!isAdmin) throw new Error("Somente administradores da instituição podem gerenciar professores.");
+  if (!isAdmin)
+    throw new Error("Somente administradores da instituição podem gerenciar professores.");
   return tenantId as string;
 }
 

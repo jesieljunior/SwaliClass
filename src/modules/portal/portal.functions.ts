@@ -32,9 +32,7 @@ export const getMyPortalOverview = createServerFn({ method: "GET" })
       .eq("student_id", student.id)
       .eq("active", true);
 
-    const classIds = (enrollments ?? [])
-      .map((e) => e.class_id)
-      .filter(Boolean) as string[];
+    const classIds = (enrollments ?? []).map((e) => e.class_id).filter(Boolean) as string[];
 
     const nowIso = new Date().toISOString();
     const { data: upcomingRaw } = classIds.length
@@ -68,8 +66,8 @@ export const getMyPortalOverview = createServerFn({ method: "GET" })
 
     const attByClass = new Map<string, { present: number; total: number }>();
     for (const r of attRecords ?? []) {
-      const cid = (r as { attendance_sessions: { class_id: string } | null })
-        .attendance_sessions?.class_id;
+      const cid = (r as { attendance_sessions: { class_id: string } | null }).attendance_sessions
+        ?.class_id;
       if (!cid) continue;
       const cur = attByClass.get(cid) ?? { present: 0, total: 0 };
       cur.total += 1;
@@ -80,9 +78,7 @@ export const getMyPortalOverview = createServerFn({ method: "GET" })
 
     const { data: recentGrades } = await supabase
       .from("submissions")
-      .select(
-        "id, grade, feedback, graded_at, activity_id, activities:activity_id (title)",
-      )
+      .select("id, grade, feedback, graded_at, activity_id, activities:activity_id (title)")
       .eq("student_id", student.id)
       .not("grade", "is", null)
       .order("graded_at", { ascending: false })
@@ -99,8 +95,7 @@ export const getMyPortalOverview = createServerFn({ method: "GET" })
         return {
           id: e.id,
           class_id: e.class_id,
-          name:
-            (e as { classes: { name: string } | null }).classes?.name ?? "Turma",
+          name: (e as { classes: { name: string } | null }).classes?.name ?? "Turma",
           attendance: {
             present: att.present,
             total: att.total,
@@ -111,9 +106,7 @@ export const getMyPortalOverview = createServerFn({ method: "GET" })
       upcoming: upcoming ?? [],
       recentGrades: (recentGrades ?? []).map((g) => ({
         id: g.id,
-        title:
-          (g as { activities: { title: string } | null }).activities?.title ??
-          "Atividade",
+        title: (g as { activities: { title: string } | null }).activities?.title ?? "Atividade",
         grade: g.grade,
         graded_at: g.graded_at,
         feedback: g.feedback,
