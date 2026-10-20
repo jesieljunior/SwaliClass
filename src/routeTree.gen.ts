@@ -9,32 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated.app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated.app.index'
-import { Route as AuthenticatedAppTurmasRouteImport } from './routes/_authenticated.app.turmas'
-import { Route as AuthenticatedAppRelatoriosRouteImport } from './routes/_authenticated.app.relatorios'
-import { Route as AuthenticatedAppPortalRouteImport } from './routes/_authenticated.app.portal'
-import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated.app.perfil'
-import { Route as AuthenticatedAppNotasRouteImport } from './routes/_authenticated.app.notas'
-import { Route as AuthenticatedAppCursosRouteImport } from './routes/_authenticated.app.cursos'
-import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated.app.clientes'
-import { Route as AuthenticatedAppChamadaRouteImport } from './routes/_authenticated.app.chamada'
-import { Route as AuthenticatedAppAtividadesRouteImport } from './routes/_authenticated.app.atividades'
 import { Route as AuthenticatedAppAlunosRouteImport } from './routes/_authenticated.app.alunos'
+import { Route as AuthenticatedAppAtividadesRouteImport } from './routes/_authenticated.app.atividades'
+import { Route as AuthenticatedAppChamadaRouteImport } from './routes/_authenticated.app.chamada'
+import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated.app.clientes'
+import { Route as AuthenticatedAppCursosRouteImport } from './routes/_authenticated.app.cursos'
+import { Route as AuthenticatedAppNotasRouteImport } from './routes/_authenticated.app.notas'
+import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated.app.perfil'
+import { Route as AuthenticatedAppPortalRouteImport } from './routes/_authenticated.app.portal'
+import { Route as AuthenticatedAppRelatoriosRouteImport } from './routes/_authenticated.app.relatorios'
+import { Route as AuthenticatedAppTurmasRouteImport } from './routes/_authenticated.app.turmas'
 
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AcceptInviteRoute = AcceptInviteRouteImport.update({
@@ -42,13 +41,14 @@ const AcceptInviteRoute = AcceptInviteRouteImport.update({
   path: '/accept-invite',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
@@ -61,46 +61,9 @@ const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AuthenticatedAppTurmasRoute = AuthenticatedAppTurmasRouteImport.update({
-  id: '/turmas',
-  path: '/turmas',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppRelatoriosRoute =
-  AuthenticatedAppRelatoriosRouteImport.update({
-    id: '/relatorios',
-    path: '/relatorios',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppPortalRoute = AuthenticatedAppPortalRouteImport.update({
-  id: '/portal',
-  path: '/portal',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppPerfilRoute = AuthenticatedAppPerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppNotasRoute = AuthenticatedAppNotasRouteImport.update({
-  id: '/notas',
-  path: '/notas',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppCursosRoute = AuthenticatedAppCursosRouteImport.update({
-  id: '/cursos',
-  path: '/cursos',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppClientesRoute =
-  AuthenticatedAppClientesRouteImport.update({
-    id: '/clientes',
-    path: '/clientes',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppChamadaRoute = AuthenticatedAppChamadaRouteImport.update({
-  id: '/chamada',
-  path: '/chamada',
+const AuthenticatedAppAlunosRoute = AuthenticatedAppAlunosRouteImport.update({
+  id: '/alunos',
+  path: '/alunos',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 const AuthenticatedAppAtividadesRoute =
@@ -109,9 +72,46 @@ const AuthenticatedAppAtividadesRoute =
     path: '/atividades',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAppAlunosRoute = AuthenticatedAppAlunosRouteImport.update({
-  id: '/alunos',
-  path: '/alunos',
+const AuthenticatedAppChamadaRoute = AuthenticatedAppChamadaRouteImport.update({
+  id: '/chamada',
+  path: '/chamada',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppClientesRoute =
+  AuthenticatedAppClientesRouteImport.update({
+    id: '/clientes',
+    path: '/clientes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCursosRoute = AuthenticatedAppCursosRouteImport.update({
+  id: '/cursos',
+  path: '/cursos',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppNotasRoute = AuthenticatedAppNotasRouteImport.update({
+  id: '/notas',
+  path: '/notas',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppPerfilRoute = AuthenticatedAppPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppPortalRoute = AuthenticatedAppPortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppRelatoriosRoute =
+  AuthenticatedAppRelatoriosRouteImport.update({
+    id: '/relatorios',
+    path: '/relatorios',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppTurmasRoute = AuthenticatedAppTurmasRouteImport.update({
+  id: '/turmas',
+  path: '/turmas',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 
@@ -237,25 +237,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/accept-invite': {
-      id: '/accept-invite'
-      path: '/accept-invite'
-      fullPath: '/accept-invite'
-      preLoaderRoute: typeof AcceptInviteRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -265,11 +251,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/accept-invite': {
+      id: '/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof AcceptInviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/app': {
@@ -286,60 +286,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/app/turmas': {
-      id: '/_authenticated/app/turmas'
-      path: '/turmas'
-      fullPath: '/app/turmas'
-      preLoaderRoute: typeof AuthenticatedAppTurmasRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/relatorios': {
-      id: '/_authenticated/app/relatorios'
-      path: '/relatorios'
-      fullPath: '/app/relatorios'
-      preLoaderRoute: typeof AuthenticatedAppRelatoriosRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/portal': {
-      id: '/_authenticated/app/portal'
-      path: '/portal'
-      fullPath: '/app/portal'
-      preLoaderRoute: typeof AuthenticatedAppPortalRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/perfil': {
-      id: '/_authenticated/app/perfil'
-      path: '/perfil'
-      fullPath: '/app/perfil'
-      preLoaderRoute: typeof AuthenticatedAppPerfilRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/notas': {
-      id: '/_authenticated/app/notas'
-      path: '/notas'
-      fullPath: '/app/notas'
-      preLoaderRoute: typeof AuthenticatedAppNotasRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/cursos': {
-      id: '/_authenticated/app/cursos'
-      path: '/cursos'
-      fullPath: '/app/cursos'
-      preLoaderRoute: typeof AuthenticatedAppCursosRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/clientes': {
-      id: '/_authenticated/app/clientes'
-      path: '/clientes'
-      fullPath: '/app/clientes'
-      preLoaderRoute: typeof AuthenticatedAppClientesRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/chamada': {
-      id: '/_authenticated/app/chamada'
-      path: '/chamada'
-      fullPath: '/app/chamada'
-      preLoaderRoute: typeof AuthenticatedAppChamadaRouteImport
+    '/_authenticated/app/alunos': {
+      id: '/_authenticated/app/alunos'
+      path: '/alunos'
+      fullPath: '/app/alunos'
+      preLoaderRoute: typeof AuthenticatedAppAlunosRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/atividades': {
@@ -349,11 +300,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAtividadesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_authenticated/app/alunos': {
-      id: '/_authenticated/app/alunos'
-      path: '/alunos'
-      fullPath: '/app/alunos'
-      preLoaderRoute: typeof AuthenticatedAppAlunosRouteImport
+    '/_authenticated/app/chamada': {
+      id: '/_authenticated/app/chamada'
+      path: '/chamada'
+      fullPath: '/app/chamada'
+      preLoaderRoute: typeof AuthenticatedAppChamadaRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/clientes': {
+      id: '/_authenticated/app/clientes'
+      path: '/clientes'
+      fullPath: '/app/clientes'
+      preLoaderRoute: typeof AuthenticatedAppClientesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/cursos': {
+      id: '/_authenticated/app/cursos'
+      path: '/cursos'
+      fullPath: '/app/cursos'
+      preLoaderRoute: typeof AuthenticatedAppCursosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/notas': {
+      id: '/_authenticated/app/notas'
+      path: '/notas'
+      fullPath: '/app/notas'
+      preLoaderRoute: typeof AuthenticatedAppNotasRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/perfil': {
+      id: '/_authenticated/app/perfil'
+      path: '/perfil'
+      fullPath: '/app/perfil'
+      preLoaderRoute: typeof AuthenticatedAppPerfilRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/portal': {
+      id: '/_authenticated/app/portal'
+      path: '/portal'
+      fullPath: '/app/portal'
+      preLoaderRoute: typeof AuthenticatedAppPortalRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/relatorios': {
+      id: '/_authenticated/app/relatorios'
+      path: '/relatorios'
+      fullPath: '/app/relatorios'
+      preLoaderRoute: typeof AuthenticatedAppRelatoriosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/turmas': {
+      id: '/_authenticated/app/turmas'
+      path: '/turmas'
+      fullPath: '/app/turmas'
+      preLoaderRoute: typeof AuthenticatedAppTurmasRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
   }
