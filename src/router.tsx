@@ -16,7 +16,7 @@ function DefaultErrorComponent({ error, reset }: ErrorComponentProps) {
     <div className="p-8 max-w-lg mx-auto text-center">
       <h2 className="text-lg font-semibold">Não foi possível carregar esta página</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        {error?.message || "Ocorreu um erro inesperado."}
+        {(error instanceof Error && error.message) || "Ocorreu um erro inesperado."}
       </p>
       <div className="mt-4 flex justify-center gap-2">
         <button
