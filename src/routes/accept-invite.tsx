@@ -12,7 +12,7 @@ const searchSchema = z.object({ token: z.string().optional() });
 export const Route = createFileRoute("/accept-invite")({
   validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
-    meta: [{ title: "Aceitar convite — BitraHub" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Aceitar convite — SwaliClass" }, { name: "robots", content: "noindex" }],
   }),
   component: AcceptInvitePage,
 });
@@ -72,7 +72,7 @@ function AcceptInvitePage() {
     <Centered>
       <div className="w-full max-w-md bg-white border border-border-subtle rounded-lg p-8">
         <p className="text-[10px] font-mono uppercase tracking-widest text-navy-600 mb-2">
-          BitraHub · Convite
+          SwaliClass · Convite
         </p>
         <h1 className="text-2xl font-display font-extrabold mb-1">
           Bem-vindo a {invite.tenants?.name ?? "sua instituição"}

@@ -130,7 +130,7 @@ export function BoletimPrint({
           ))}
 
           <footer className="mt-8 pt-4 border-t border-border-subtle text-[10px] font-mono uppercase tracking-widest text-navy-800/40">
-            Emitido em {new Date().toLocaleDateString("pt-BR")} · BitraHub
+            Emitido em {new Date().toLocaleDateString("pt-BR")} · SwaliClass
           </footer>
         </div>
       </div>

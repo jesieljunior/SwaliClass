@@ -9,7 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/_authenticated/app/perfil")({
-  head: () => ({ meta: [{ title: "Perfil — BitraHub" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Perfil — SwaliClass" }, { name: "robots", content: "noindex" }],
+  }),
   component: PerfilPage,
 });
 

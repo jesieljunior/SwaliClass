@@ -49,7 +49,7 @@ function ClientesPage() {
         <div>
           <h1 className="text-3xl font-display font-extrabold tracking-tight">Clientes SaaS</h1>
           <p className="text-xs text-navy-800/40 font-mono uppercase mt-1 tracking-widest">
-            Painel exclusivo Super Admin · Bitra Tech
+            Painel exclusivo Super Admin · SwaliClass Core
           </p>
         </div>
         <button

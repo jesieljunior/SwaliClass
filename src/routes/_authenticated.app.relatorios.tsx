@@ -193,7 +193,7 @@ function RelatoriosPage() {
     const doc = new jsPDF();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("BitraHub — Relatório de Frequência", 14, 18);
+    doc.text("SwaliClass — Relatório de Frequência", 14, 18);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Período: ${periodLabel}`, 14, 26);
@@ -358,7 +358,7 @@ function RelatoriosPage() {
     const doc = new jsPDF();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("BitraHub — Relatório de Notas", 14, 18);
+    doc.text("SwaliClass — Relatório de Notas", 14, 18);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Período: ${periodLabel}`, 14, 26);
@@ -811,7 +811,7 @@ function RelatoriosPage() {
           records={boletimRecords}
           studentName={selectedStudent?.full_name ?? boletimRecords[0]?.student_name ?? "Aluno"}
           periodLabel={periodLabel}
-          tenantName={sessionQ.data?.tenantName ?? "BitraHub"}
+          tenantName={sessionQ.data?.tenantName ?? "SwaliClass"}
           onClose={() => setBoletimOpen(false)}
         />
       )}

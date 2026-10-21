@@ -79,9 +79,9 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "BitraHub Academic REST API",
+        Title = "SwaliClass Academic REST API",
         Version = "v1",
-        Description = "API Corporativa multi-tenant em C# .NET 9 para gestão de cursos, turmas, alunos, presença e notas."
+        Description = "API Corporativa multi-tenant em C# .NET 9 para gestão de cursos, turmas, alunos, presença e notas. Evolução do ClassCheck."
     });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -131,7 +131,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "BitraHub API v1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwaliClass API v1");
     c.RoutePrefix = "swagger";
 });
 

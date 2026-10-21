@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: BitraHub Academic Management API
-  description: Multi-tenant corporate academic management REST API for institutions, teachers, and students.
+  title: SwaliClass Academic Management API
+  description: Multi-tenant corporate academic management REST API for institutions, teachers, and students. Evolution of ClassCheck.
   version: 1.0.0
 servers:
   - url: /api/v1

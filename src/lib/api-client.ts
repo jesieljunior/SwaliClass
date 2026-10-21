@@ -1,4 +1,4 @@
-// BitraHub REST API Client
+// SwaliClass REST API Client
 // Connects to external C# (.NET 9) / Java 21 (Spring Boot 3) backend,
 // with graceful in-memory mock fallback for offline and preview modes.
 
@@ -18,7 +18,7 @@ import {
 import { mockSupabase, DEMO_USER } from "@/integrations/supabase/mock-client";
 
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || "";
-const AUTH_TOKEN_KEY = "bitrahub_auth_token";
+const AUTH_TOKEN_KEY = "swaliclass_auth_token";
 
 export class ApiError extends Error {
   status: number;
@@ -101,7 +101,7 @@ async function handleMockRequest<T>(endpoint: string, options: RequestInit): Pro
       },
       tenant: {
         id: "tenant-demo-1",
-        name: "Colégio Modelo Bitra",
+        name: "Colégio Modelo Swali",
         plan: "professional",
       },
     } as unknown as T;

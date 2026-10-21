@@ -64,7 +64,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { user, roles, fullName } = useAuth();
   const session = useSession();
-  const tenantName = session.data?.tenantName?.trim() || "BitraHub";
+  const tenantName = session.data?.tenantName?.trim() || "SwaliClass";
   const isSuper = roles.includes("super_admin");
   const { can, roles: sessionRoles } = usePermissions();
   const isStudent = sessionRoles.includes("aluno");

@@ -10,7 +10,7 @@ import { Bell, Search } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
-    meta: [{ title: "BitraHub — App" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "SwaliClass — App" }, { name: "robots", content: "noindex" }],
   }),
   component: AppLayout,
 });
@@ -70,9 +70,9 @@ function Topbar({ pathname, isAluno }: { pathname: string; isAluno: boolean }) {
     <header className="h-16 border-b border-border-subtle bg-white/80 backdrop-blur-md px-4 lg:px-8 flex items-center gap-4">
       <Link to="/" className={`${isAluno ? "" : "lg:hidden"} flex items-center gap-2 shrink-0`}>
         <div className="size-8 bg-navy-900 rounded-sm flex items-center justify-center text-paper font-display font-extrabold">
-          B
+          S
         </div>
-        <span className="font-display font-bold">BitraHub</span>
+        <span className="font-display font-bold">SwaliClass</span>
       </Link>
       {!isAluno && (
         <div className="flex-1 min-w-0 hidden sm:flex items-center gap-2 max-w-md">

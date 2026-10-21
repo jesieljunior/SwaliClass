@@ -16,7 +16,7 @@ Módulos planejados:
 - `academic/` — cursos, turmas, chamada, atividades, notas
 - `portal/` — visão do aluno (módulo piloto da refatoração)
 - `library/` — biblioteca colaborativa
-- `ai/` — Bitra AI
+- `ai/` — Swali AI
 - `community/` — Q&A, grupos, ranking
 - `billing/` — planos e faturas
 - `reports/` — dashboards e exports

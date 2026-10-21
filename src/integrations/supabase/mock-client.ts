@@ -7,8 +7,8 @@ import {
 
 export const DEMO_USER = {
   id: "demo-user-123",
-  email: "admin@bitratech.com",
-  user_metadata: { full_name: "Admin Bitra" },
+  email: "admin@swaliclass.com",
+  user_metadata: { full_name: "Admin SwaliClass" },
   app_metadata: {},
   aud: "authenticated",
   created_at: new Date().toISOString(),

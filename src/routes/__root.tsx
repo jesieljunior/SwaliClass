@@ -74,25 +74,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BitraHub — Gestão de presença e turmas para instituições de ensino" },
+      { title: "SwaliClass — Gestão Acadêmica e Inteligência Pedagógica" },
       {
         name: "description",
         content:
-          "SaaS de gestão de frequência, turmas e alunos. Chamada em segundos, relatórios em tempo real. Por Bitra Tech.",
+          "SaaS de gestão acadêmica multi-tenant, chamada com histórico, atividades, notas e boletim escolar.",
       },
-      { name: "author", content: "Bitra Tech" },
-      { property: "og:title", content: "BitraHub — Gestão de presença com precisão" },
+      { name: "author", content: "Jesiel Amaro Junior" },
+      { property: "og:title", content: "SwaliClass — Gestão Acadêmica com Inteligência" },
       {
         property: "og:description",
-        content: "Transforme o diário de classe em inteligência estratégica.",
+        content:
+          "Evolução do ClassCheck: controle de presença, notas, portal do aluno e gestão escolar estratégica.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@BitraTech" },
+      { name: "twitter:site", content: "@jesieljunior" },
       { name: "theme-color", content: "#0a1628" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "BitraHub" },
+      { name: "apple-mobile-web-app-title", content: "SwaliClass" },
       { name: "mobile-web-app-capable", content: "yes" },
     ],
     links: [

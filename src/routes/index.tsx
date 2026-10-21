@@ -4,16 +4,17 @@ import { ArrowRight, Check, Clock, BarChart3, ShieldCheck, Users } from "lucide-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "BitraHub — Gestão de presença e turmas | Bitra Tech" },
+      { title: "SwaliClass — Gestão Acadêmica e Inteligência Pedagógica" },
       {
         name: "description",
         content:
-          "SaaS para escolas e cursos: chamada em segundos, frequência em tempo real e relatórios prontos. Por Bitra Tech.",
+          "SaaS de gestão acadêmica: frequência em tempo real, notas, atividades e inteligência pedagógica. Evolução do ClassCheck.",
       },
-      { property: "og:title", content: "BitraHub — Gestão de presença com precisão" },
+      { property: "og:title", content: "SwaliClass — Gestão Acadêmica com Inteligência" },
       {
         property: "og:description",
-        content: "Transforme o diário de classe em inteligência estratégica.",
+        content:
+          "Transforme a gestão escolar e o diário de classe em inteligência pedagógica estratégica.",
       },
     ],
   }),
@@ -40,9 +41,9 @@ function Nav() {
       <div className="max-w-7xl mx-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:justify-between">
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <div className="size-8 bg-navy-900 rounded-sm flex items-center justify-center text-paper font-display font-extrabold shrink-0">
-            B
+            S
           </div>
-          <span className="font-display font-bold tracking-tight text-xl truncate">BitraHub</span>
+          <span className="font-display font-bold tracking-tight text-xl truncate">SwaliClass</span>
         </Link>
         <div className="hidden md:flex gap-8 text-sm font-medium text-navy-800/70">
           <a href="#funcionalidades" className="hover:text-navy-900 transition-colors">
@@ -70,7 +71,7 @@ function Hero() {
   return (
     <section className="max-w-7xl mx-auto px-6 pt-20 pb-16 text-center">
       <span className="inline-block py-1 px-3 bg-navy-600/10 text-navy-600 text-[10px] font-mono font-bold uppercase tracking-widest rounded-full mb-6">
-        Padrão Bitra Tech
+        Evolução do ClassCheck · SwaliClass
       </span>
       <h1 className="font-display text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 text-balance">
         Gestão de presença com
@@ -78,8 +79,8 @@ function Hero() {
         <span className="text-navy-600">precisão cirúrgica.</span>
       </h1>
       <p className="max-w-2xl mx-auto text-lg text-navy-800/60 mb-10 leading-relaxed">
-        O BitraHub transforma o diário de classe em uma ferramenta de inteligência estratégica.
-        Menos burocracia, mais foco no aprendizado.
+        O SwaliClass transforma a rotina acadêmica e o diário de classe em uma plataforma de
+        inteligência estratégica. Menos burocracia, mais foco no aprendizado.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Link
@@ -303,7 +304,7 @@ function Pricing() {
       name: "Enterprise",
       price: "Custom",
       desc: "Volume ilimitado e SLA dedicado.",
-      features: ["SSO e SAML", "Sucesso do cliente", "Consultoria Bitra"],
+      features: ["SSO e SAML", "Sucesso do cliente", "Consultoria Swali"],
     },
   ];
   return (
@@ -378,7 +379,7 @@ function CTA() {
           Pronto para deixar a chamada no automático?
         </h2>
         <p className="text-paper/70 max-w-xl mx-auto mb-8">
-          Experimente o BitraHub com dados de demonstração. Sem cartão, sem amarras.
+          Experimente o SwaliClass com dados de demonstração. Sem cartão, sem amarras.
         </p>
         <Link
           to="/app"
@@ -394,7 +395,8 @@ function CTA() {
 function Footer() {
   return (
     <footer className="py-12 px-6 border-t border-border-subtle text-center text-[10px] font-mono text-navy-800/40 uppercase tracking-[0.2em]">
-      BitraHub por Bitra Tech &copy; 2026 — Plataforma SaaS de gestão escolar
+      SwaliClass &copy; 2026 — Plataforma de Gestão Acadêmica Multi-tenant · Criada por Jesiel Amaro
+      Junior
     </footer>
   );
 }

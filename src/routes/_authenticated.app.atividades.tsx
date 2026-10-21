@@ -60,7 +60,7 @@ import { Paperclip, Download, X } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/atividades")({
   head: () => ({
-    meta: [{ title: "Atividades — BitraHub" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Atividades — SwaliClass" }, { name: "robots", content: "noindex" }],
   }),
   component: AtividadesPage,
 });

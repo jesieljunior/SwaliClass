@@ -1,6 +1,6 @@
 {
-  "name": "BitraHub — Gestão de presença",
-  "short_name": "BitraHub",
+  "name": "SwaliClass — Gestão Acadêmica e Inteligência Pedagógica",
+  "short_name": "SwaliClass",
   "description": "Chamada, turmas e relatórios em tempo real para instituições de ensino.",
   "start_url": "/app",
   "scope": "/",

@@ -5,8 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar — BitraHub" },
-      { name: "description", content: "Acesse sua conta BitraHub." },
+      { title: "Entrar — SwaliClass" },
+      { name: "description", content: "Acesse sua conta SwaliClass." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -71,12 +71,12 @@ function AuthPage() {
       <aside className="hidden lg:flex flex-col justify-between bg-navy-900 text-paper p-12">
         <Link to="/" className="flex items-center gap-3">
           <div className="size-10 bg-navy-600 rounded-md grid place-items-center font-display font-extrabold">
-            B
+            S
           </div>
           <div>
-            <p className="font-display font-bold tracking-wide">BITRAHUB</p>
+            <p className="font-display font-bold tracking-wide">SWALICLASS</p>
             <p className="text-[10px] font-mono uppercase tracking-widest text-paper/40">
-              by Bitra Tech
+              Gestão Acadêmica & IA
             </p>
           </div>
         </Link>
@@ -88,11 +88,11 @@ function AuthPage() {
           </h2>
           <p className="mt-4 text-paper/60 max-w-md">
             Chamada em segundos, frequência calculada em tempo real, relatórios prontos para
-            auditoria.
+            auditoria e inteligência pedagógica.
           </p>
         </div>
         <p className="text-[11px] font-mono uppercase tracking-widest text-paper/30">
-          © {new Date().getFullYear()} Bitra Tech
+          © {new Date().getFullYear()} SwaliClass · Por Jesiel Amaro Junior
         </p>
       </aside>
 
@@ -100,9 +100,9 @@ function AuthPage() {
         <div className="w-full max-w-md">
           <Link to="/" className="lg:hidden flex items-center gap-2 mb-8">
             <div className="size-8 bg-navy-900 rounded-md grid place-items-center text-paper font-display font-extrabold">
-              B
+              S
             </div>
-            <span className="font-display font-bold">BitraHub</span>
+            <span className="font-display font-bold">SwaliClass</span>
           </Link>
 
           <h1 className="font-display text-3xl font-bold text-navy-900">
@@ -112,7 +112,7 @@ function AuthPage() {
             {mode === "login"
               ? "Acesse o painel da sua instituição."
               : mode === "signup"
-                ? "Crie a conta inicial (super admin para a equipe Bitra)."
+                ? "Crie a conta inicial de administrador da plataforma."
                 : "Enviaremos um link de recuperação por e-mail."}
           </p>
 

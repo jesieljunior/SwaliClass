@@ -1,0 +1,53 @@
+name: SwaliClass CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  backend-test-and-build:
+    name: Backend CI (.NET 9 & xUnit Tests)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore backend/csharp/SwaliClass.sln
+
+      - name: Build Solution (Clean Architecture)
+        run: dotnet build backend/csharp/SwaliClass.sln --configuration Release --no-restore
+
+      - name: Run xUnit Test Suite (Tenant Isolation, Auth & Attendance Rules)
+        run: dotnet test backend/csharp/SwaliClass.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+
+  frontend-lint-and-build:
+    name: Frontend CI (React, TypeScript & Vite)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Build
+        run: npm run build

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
-    meta: [{ title: "Nova senha — BitraHub" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Nova senha — SwaliClass" }, { name: "robots", content: "noindex" }],
   }),
   component: ResetPasswordPage,
 });

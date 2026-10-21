@@ -16,7 +16,7 @@ import { listStudentGrades } from "@/lib/activities.functions";
 import { useSession } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/_authenticated/app/notas")({
-  head: () => ({ meta: [{ title: "Notas — BitraHub" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Notas — SwaliClass" }, { name: "robots", content: "noindex" }] }),
   component: NotasPage,
 });
 

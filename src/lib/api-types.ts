@@ -1,4 +1,4 @@
-// Contract types for the BitraHub RESTful API (C# .NET 9 / Java 21 / React)
+// Contract types for the SwaliClass RESTful API (C# .NET 9 / Java 21 / React)
 
 export type UserRole = "super_admin" | "admin" | "coordinator" | "teacher" | "student";
 
