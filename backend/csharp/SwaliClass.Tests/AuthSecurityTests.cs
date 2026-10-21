@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BitraHub.Application.Common.Interfaces;
 using BitraHub.Domain.Common;
 using BitraHub.Domain.Entities;
 using BitraHub.Infrastructure.Auth;

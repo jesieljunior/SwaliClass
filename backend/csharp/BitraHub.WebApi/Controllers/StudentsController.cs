@@ -29,7 +29,7 @@ public class StudentsController : ControllerBase
         var query = _context.Students
             .Include(s => s.Enrollments)
                 .ThenInclude(e => e.ClassGroup)
-                    .ThenInclude(cg => cg.Course)
+                    .ThenInclude(cg => cg!.Course)
             .Include(s => s.AttendanceRecords)
             .Include(s => s.Submissions)
             .AsQueryable();
