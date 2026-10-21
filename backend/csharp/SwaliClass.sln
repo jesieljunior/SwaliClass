@@ -1,0 +1,42 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitraHub.Domain", "BitraHub.Domain\BitraHub.Domain.csproj", "{4B376E64-B9F8-4DF2-AC77-0FA7BB00486F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitraHub.Application", "BitraHub.Application\BitraHub.Application.csproj", "{99C2CEAA-C085-48EE-91C7-1ED94E92FDE7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitraHub.Infrastructure", "BitraHub.Infrastructure\BitraHub.Infrastructure.csproj", "{3C8DFF97-E15E-4B0F-8700-11100D019184}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitraHub.WebApi", "BitraHub.WebApi\BitraHub.WebApi.csproj", "{90473347-1DE8-41C1-8761-9E2B6016D41A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SwaliClass.Tests", "SwaliClass.Tests\SwaliClass.Tests.csproj", "{46D654E7-817D-4F7D-B66A-91C9A132C7F1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4B376E64-B9F8-4DF2-AC77-0FA7BB00486F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B376E64-B9F8-4DF2-AC77-0FA7BB00486F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B376E64-B9F8-4DF2-AC77-0FA7BB00486F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B376E64-B9F8-4DF2-AC77-0FA7BB00486F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99C2CEAA-C085-48EE-91C7-1ED94E92FDE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99C2CEAA-C085-48EE-91C7-1ED94E92FDE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99C2CEAA-C085-48EE-91C7-1ED94E92FDE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99C2CEAA-C085-48EE-91C7-1ED94E92FDE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C8DFF97-E15E-4B0F-8700-11100D019184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C8DFF97-E15E-4B0F-8700-11100D019184}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C8DFF97-E15E-4B0F-8700-11100D019184}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C8DFF97-E15E-4B0F-8700-11100D019184}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90473347-1DE8-41C1-8761-9E2B6016D41A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90473347-1DE8-41C1-8761-9E2B6016D41A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90473347-1DE8-41C1-8761-9E2B6016D41A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90473347-1DE8-41C1-8761-9E2B6016D41A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46D654E7-817D-4F7D-B66A-91C9A132C7F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46D654E7-817D-4F7D-B66A-91C9A132C7F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46D654E7-817D-4F7D-B66A-91C9A132C7F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46D654E7-817D-4F7D-B66A-91C9A132C7F1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

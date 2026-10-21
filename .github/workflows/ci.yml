@@ -20,14 +20,29 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
+      - name: Resolve Solution File
+        id: resolve_sln
+        run: |
+          if [ -f "backend/csharp/SwaliClass.sln" ]; then
+            echo "sln=backend/csharp/SwaliClass.sln" >> $GITHUB_OUTPUT
+            echo "Found SwaliClass.sln"
+          elif [ -f "backend/csharp/BitraHub.sln" ]; then
+            echo "sln=backend/csharp/BitraHub.sln" >> $GITHUB_OUTPUT
+            echo "Found BitraHub.sln"
+          else
+            FOUND_SLN=$(find backend -name "*.sln" | head -n 1)
+            echo "sln=$FOUND_SLN" >> $GITHUB_OUTPUT
+            echo "Found $FOUND_SLN"
+          fi
+
       - name: Restore Dependencies
-        run: dotnet restore backend/csharp/SwaliClass.sln
+        run: dotnet restore ${{ steps.resolve_sln.outputs.sln }}
 
       - name: Build Solution (Clean Architecture)
-        run: dotnet build backend/csharp/SwaliClass.sln --configuration Release --no-restore
+        run: dotnet build ${{ steps.resolve_sln.outputs.sln }} --configuration Release --no-restore
 
       - name: Run xUnit Test Suite (Tenant Isolation, Auth & Attendance Rules)
-        run: dotnet test backend/csharp/SwaliClass.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+        run: dotnet test ${{ steps.resolve_sln.outputs.sln }} --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
 
   frontend-lint-and-build:
     name: Frontend CI (React, TypeScript & Vite)
@@ -41,10 +56,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
 
       - name: Install Node Dependencies
-        run: npm ci
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci || npm install
+          else
+            npm install
+          fi
 
       - name: Run ESLint
         run: npm run lint
