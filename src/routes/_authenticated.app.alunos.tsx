@@ -22,6 +22,7 @@ import {
   listClasses,
   enrollStudent,
   unenrollStudent,
+  toggleEnrollmentStatus,
   bulkImportStudents,
 } from "@/lib/tenant.functions";
 import { inviteStudent } from "@/lib/session.functions";
@@ -293,42 +294,47 @@ function ExportCsvButton({ students }: { students: any[] }) {
 function ImportCsvButton({ onDone }: { onDone: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const imp = useServerFn(bulkImportStudents);
+  const [previewRows, setPreviewRows] = useState<any[] | null>(null);
+
   const m = useMutation({
     mutationFn: (rows: any[]) => imp({ data: { rows } }),
     onSuccess: (r: any) => {
-      toast.success("Importação concluída", {
+      toast.success("Importação concluída com sucesso!", {
         description: `${r.created} criados · ${r.skipped} já existiam · ${r.enrolled} matriculados${r.errors?.length ? ` · ${r.errors.length} erros` : ""}`,
       });
+      setPreviewRows(null);
       onDone();
     },
     onError: (e: any) => toast.error("Falha na importação", { description: e.message }),
   });
+
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
     const text = await file.text();
-    const rows = parseCsv(text)
-      .map((r) => ({
-        full_name: r.full_name || r.nome || "",
-        email: r.email || null,
-        phone: r.phone || r.telefone || null,
-        document: r.document || r.documento || null,
-        birth_date: r.birth_date || r.nascimento || null,
-        guardian_name: r.guardian_name || r.responsavel || null,
-        guardian_phone: r.guardian_phone || null,
-        notes: r.notes || r.observacoes || null,
-        class_name: r.class_name || r.turma || null,
-      }))
-      .filter((r) => r.full_name.trim().length >= 2);
+    const rows = parseCsv(text).map((r) => ({
+      full_name: (r.full_name || r.nome || "").trim(),
+      email: (r.email || "").trim() || null,
+      phone: (r.phone || r.telefone || "").trim() || null,
+      document: (r.document || r.documento || "").trim() || null,
+      birth_date: (r.birth_date || r.nascimento || "").trim() || null,
+      guardian_name: (r.guardian_name || r.responsavel || "").trim() || null,
+      guardian_phone: (r.guardian_phone || "").trim() || null,
+      notes: (r.notes || r.observacoes || "").trim() || null,
+      class_name: (r.class_name || r.turma || "").trim() || null,
+    }));
+
     if (!rows.length) {
       toast.error("CSV vazio ou inválido", {
         description: `Cabeçalhos esperados: ${CSV_HEADERS.join(", ")}`,
       });
       return;
     }
-    m.mutate(rows);
+    // Abre modal de prévia para revisão do usuário
+    setPreviewRows(rows);
   };
+
   return (
     <>
       <input
@@ -341,12 +347,166 @@ function ImportCsvButton({ onDone }: { onDone: () => void }) {
       <button
         onClick={() => inputRef.current?.click()}
         disabled={m.isPending}
-        className="inline-flex items-center gap-2 px-3 h-10 border border-border-subtle rounded-sm text-sm hover:bg-surface"
+        className="inline-flex items-center gap-2 px-3 h-10 border border-border-subtle rounded-sm text-sm hover:bg-surface font-semibold"
       >
-        {m.isPending ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+        <Upload className="size-4" />
         Importar CSV
       </button>
+
+      {previewRows && (
+        <CsvPreviewModal
+          rows={previewRows}
+          isLoading={m.isPending}
+          onConfirm={(validRows) => m.mutate(validRows)}
+          onClose={() => setPreviewRows(null)}
+        />
+      )}
     </>
+  );
+}
+
+function CsvPreviewModal({
+  rows,
+  isLoading,
+  onConfirm,
+  onClose,
+}: {
+  rows: any[];
+  isLoading: boolean;
+  onConfirm: (validRows: any[]) => void;
+  onClose: () => void;
+}) {
+  const analyzed = useMemo(() => {
+    return rows.map((r, index) => {
+      const errors: string[] = [];
+      const warnings: string[] = [];
+
+      if (!r.full_name || r.full_name.length < 2) {
+        errors.push("Nome incompleto ou ausente");
+      }
+      if (r.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email)) {
+        warnings.push("Formato de e-mail inválido");
+      }
+      if (!r.class_name) {
+        warnings.push("Sem turma atribuída (cadastro avulso)");
+      }
+
+      return {
+        ...r,
+        line: index + 1,
+        errors,
+        warnings,
+        isValid: errors.length === 0,
+      };
+    });
+  }, [rows]);
+
+  const validRows = analyzed.filter((a) => a.isValid);
+  const errorCount = analyzed.filter((a) => !a.isValid).length;
+  const warningCount = analyzed.filter((a) => a.warnings.length > 0).length;
+
+  return (
+    <Modal onClose={onClose} title="Prévia de Importação de Alunos (CSV)">
+      <div className="space-y-4">
+        {/* Banner de Resumo da Validação */}
+        <div className="grid grid-cols-3 gap-3 p-3 bg-surface border border-border-subtle rounded-md text-xs">
+          <div>
+            <span className="text-navy-800/50 block font-mono">Linhas no arquivo</span>
+            <strong className="text-base font-bold text-navy-900">{rows.length}</strong>
+          </div>
+          <div>
+            <span className="text-navy-800/50 block font-mono">Prontos para importar</span>
+            <strong className="text-base font-bold text-emerald-600">{validRows.length}</strong>
+          </div>
+          <div>
+            <span className="text-navy-800/50 block font-mono">Linhas com erro</span>
+            <strong
+              className={`text-base font-bold ${errorCount > 0 ? "text-rose-600" : "text-navy-800/60"}`}
+            >
+              {errorCount}
+            </strong>
+          </div>
+        </div>
+
+        {errorCount > 0 && (
+          <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 p-2.5 rounded-sm">
+            {errorCount} linha(s) com erro serão ignoradas. Apenas os {validRows.length} registros
+            válidos serão importados.
+          </p>
+        )}
+
+        {/* Tabela de Prévia Linha a Linha */}
+        <div className="border border-border-subtle rounded-md overflow-hidden max-h-72 overflow-y-auto">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-surface sticky top-0 border-b border-border-subtle font-mono text-[10px] uppercase text-navy-800/50">
+              <tr>
+                <th className="px-3 py-2">Linha</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Nome</th>
+                <th className="px-3 py-2">E-mail</th>
+                <th className="px-3 py-2">Turma</th>
+                <th className="px-3 py-2">Observações / Validação</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle">
+              {analyzed.map((r) => (
+                <tr key={r.line} className={r.isValid ? "hover:bg-surface/50" : "bg-rose-50/40"}>
+                  <td className="px-3 py-2 font-mono text-navy-800/50">{r.line}</td>
+                  <td className="px-3 py-2">
+                    {r.isValid ? (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                        Válido
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
+                        Inválido
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 font-medium">
+                    {r.full_name || <em className="text-rose-500">vazio</em>}
+                  </td>
+                  <td className="px-3 py-2 text-navy-800/70">{r.email || "—"}</td>
+                  <td className="px-3 py-2 text-navy-800/70">{r.class_name || "—"}</td>
+                  <td className="px-3 py-2">
+                    {r.errors.length > 0 ? (
+                      <span className="text-rose-600 font-semibold">{r.errors.join(", ")}</span>
+                    ) : r.warnings.length > 0 ? (
+                      <span className="text-amber-600">{r.warnings.join(", ")}</span>
+                    ) : (
+                      <span className="text-navy-800/40 font-mono">OK</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Rodapé de Confirmação */}
+        <div className="flex justify-end gap-2 pt-2 border-t border-border-subtle">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isLoading}
+            className="px-4 h-9 border border-border-subtle rounded-sm font-semibold text-xs hover:bg-surface"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onConfirm(validRows.map(({ line, errors, warnings, isValid, ...rest }) => rest))
+            }
+            disabled={isLoading || validRows.length === 0}
+            className="px-4 h-9 bg-navy-900 text-paper rounded-sm font-bold text-xs hover:bg-navy-800 inline-flex items-center gap-2 disabled:opacity-50"
+          >
+            {isLoading ? <Loader2 className="size-4 animate-spin" /> : null}
+            Confirmar e Importar {validRows.length} Aluno(s)
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 
@@ -510,58 +670,159 @@ function EnrollmentDialog({
 }) {
   const enroll = useServerFn(enrollStudent);
   const unenroll = useServerFn(unenrollStudent);
-  const enrolledIds = new Set((student.enrollments ?? []).map((e: any) => e.class_id));
+  const toggleStatus = useServerFn(toggleEnrollmentStatus);
+
+  const enrollmentMap = useMemo(() => {
+    const map = new Map<string, { active: boolean }>();
+    (student.enrollments ?? []).forEach((e: any) => {
+      map.set(e.class_id, { active: e.active !== false });
+    });
+    return map;
+  }, [student.enrollments]);
+
   const enrollM = useMutation({
     mutationFn: (cid: string) => enroll({ data: { student_id: student.id, class_id: cid } }),
     onSuccess: () => {
+      toast.success("Aluno matriculado com sucesso!");
       onChange();
-      onClose();
     },
+    onError: (e: any) => toast.error("Falha ao matricular", { description: e.message }),
   });
+
   const unM = useMutation({
     mutationFn: (cid: string) => unenroll({ data: { student_id: student.id, class_id: cid } }),
     onSuccess: () => {
+      toast.success("Matrícula desfeita!");
       onChange();
-      onClose();
     },
+    onError: (e: any) => toast.error("Falha ao remover", { description: e.message }),
   });
+
+  const toggleM = useMutation({
+    mutationFn: ({ cid, active }: { cid: string; active: boolean }) =>
+      toggleStatus({ data: { student_id: student.id, class_id: cid, active } }),
+    onSuccess: (_, vars) => {
+      toast.success(
+        vars.active ? "Matrícula reativada!" : "Matrícula trancada! Histórico mantido.",
+      );
+      onChange();
+    },
+    onError: (e: any) => toast.error("Falha ao atualizar situação", { description: e.message }),
+  });
+
+  const isBusy = enrollM.isPending || unM.isPending || toggleM.isPending;
+
   return (
     <Modal onClose={onClose} title={`Matrículas — ${student.full_name}`}>
-      {classes.length === 0 && (
-        <p className="text-sm text-navy-800/50">Nenhuma turma cadastrada.</p>
-      )}
-      <ul className="divide-y divide-border-subtle">
-        {classes.map((c) => {
-          const ok = enrolledIds.has(c.id);
-          return (
-            <li key={c.id} className="flex items-center justify-between py-2.5">
-              <div className="min-w-0">
-                <p className="font-semibold text-sm truncate">{c.name}</p>
-                <p className="text-[11px] text-navy-800/50 truncate">
-                  {c.course_name} {c.schedule && `· ${c.schedule}`}
-                </p>
-              </div>
-              {ok ? (
-                <button
-                  onClick={() => unM.mutate(c.id)}
-                  disabled={unM.isPending}
-                  className="px-3 h-8 text-xs font-bold border border-rose-300 text-rose-700 rounded-sm hover:bg-rose-50"
-                >
-                  Remover
-                </button>
-              ) : (
-                <button
-                  onClick={() => enrollM.mutate(c.id)}
-                  disabled={enrollM.isPending}
-                  className="px-3 h-8 text-xs font-bold bg-navy-900 text-paper rounded-sm hover:bg-navy-800"
-                >
-                  Matricular
-                </button>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      <div className="space-y-3">
+        <p className="text-xs text-navy-800/60">
+          Gerencie as turmas do aluno. Você pode <strong>trancar</strong> para suspender sem perder
+          o histórico de frequência e notas, ou desmatricular.
+        </p>
+
+        {classes.length === 0 && (
+          <p className="text-sm text-navy-800/50 p-6 text-center border border-dashed rounded-md">
+            Nenhuma turma cadastrada.
+          </p>
+        )}
+
+        <ul className="divide-y divide-border-subtle max-h-80 overflow-y-auto">
+          {classes.map((c) => {
+            const enrollment = enrollmentMap.get(c.id);
+            const isEnrolled = !!enrollment;
+            const isActive = enrollment?.active ?? false;
+
+            return (
+              <li key={c.id} className="flex items-center justify-between py-3 gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-sm truncate">{c.name}</p>
+                    {isEnrolled &&
+                      (isActive ? (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700">
+                          Ativa
+                        </span>
+                      ) : (
+                        <span
+                          className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-zinc-200 text-zinc-700"
+                          title="Matrícula trancada (histórico preservado)"
+                        >
+                          Trancada
+                        </span>
+                      ))}
+                  </div>
+                  <p className="text-[11px] text-navy-800/50 truncate mt-0.5">
+                    {c.course_name} {c.schedule && `· ${c.schedule}`}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {isEnrolled ? (
+                    <>
+                      {isActive ? (
+                        <button
+                          type="button"
+                          onClick={() => toggleM.mutate({ cid: c.id, active: false })}
+                          disabled={isBusy}
+                          className="px-2.5 h-8 text-xs font-semibold border border-amber-300 text-amber-800 rounded-sm hover:bg-amber-50"
+                          title="Trancar matrícula preservando notas e presença"
+                        >
+                          Trancar
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => toggleM.mutate({ cid: c.id, active: true })}
+                          disabled={isBusy}
+                          className="px-2.5 h-8 text-xs font-semibold border border-emerald-300 text-emerald-800 rounded-sm hover:bg-emerald-50"
+                          title="Reativar matrícula"
+                        >
+                          Reativar
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Remover definitivamente a matrícula de ${student.full_name} na turma ${c.name}?`,
+                            )
+                          ) {
+                            unM.mutate(c.id);
+                          }
+                        }}
+                        disabled={isBusy}
+                        className="px-2.5 h-8 text-xs font-semibold border border-rose-300 text-rose-700 rounded-sm hover:bg-rose-50"
+                      >
+                        Remover
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => enrollM.mutate(c.id)}
+                      disabled={isBusy}
+                      className="px-3 h-8 text-xs font-bold bg-navy-900 text-paper rounded-sm hover:bg-navy-800"
+                    >
+                      Matricular
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="pt-2 text-right border-t border-border-subtle">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 h-9 bg-navy-900 text-paper rounded-sm text-xs font-bold hover:bg-navy-800"
+          >
+            Concluir
+          </button>
+        </div>
+      </div>
     </Modal>
   );
 }

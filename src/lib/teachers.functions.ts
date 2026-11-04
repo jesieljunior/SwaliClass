@@ -148,3 +148,34 @@ export const inviteProfessor = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { token: invite.token as string, email: data.email };
   });
+
+// ---------- LIST tenant invites (admin) ----------
+export const listTenantInvites = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const tenantId = await assertTenantAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: invites, error } = await supabaseAdmin
+      .from("invites")
+      .select("id, email, role, status, expires_at, created_at, token")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return invites ?? [];
+  });
+
+// ---------- REVOKE tenant invite (admin) ----------
+export const revokeTenantInvite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const tenantId = await assertTenantAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("invites")
+      .update({ status: "revoked" })
+      .eq("id", data.id)
+      .eq("tenant_id", tenantId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

@@ -18,9 +18,13 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated.ap
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated.app.index'
 import { Route as AuthenticatedAppAlunosRouteImport } from './routes/_authenticated.app.alunos'
 import { Route as AuthenticatedAppAtividadesRouteImport } from './routes/_authenticated.app.atividades'
+import { Route as AuthenticatedAppBibliotecaRouteImport } from './routes/_authenticated.app.biblioteca'
 import { Route as AuthenticatedAppChamadaRouteImport } from './routes/_authenticated.app.chamada'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated.app.clientes'
+import { Route as AuthenticatedAppCobrancaRouteImport } from './routes/_authenticated.app.cobranca'
+import { Route as AuthenticatedAppComunidadeRouteImport } from './routes/_authenticated.app.comunidade'
 import { Route as AuthenticatedAppCursosRouteImport } from './routes/_authenticated.app.cursos'
+import { Route as AuthenticatedAppIaRouteImport } from './routes/_authenticated.app.ia'
 import { Route as AuthenticatedAppNotasRouteImport } from './routes/_authenticated.app.notas'
 import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated.app.perfil'
 import { Route as AuthenticatedAppPortalRouteImport } from './routes/_authenticated.app.portal'
@@ -72,6 +76,12 @@ const AuthenticatedAppAtividadesRoute =
     path: '/atividades',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppBibliotecaRoute =
+  AuthenticatedAppBibliotecaRouteImport.update({
+    id: '/biblioteca',
+    path: '/biblioteca',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppChamadaRoute = AuthenticatedAppChamadaRouteImport.update({
   id: '/chamada',
   path: '/chamada',
@@ -83,9 +93,26 @@ const AuthenticatedAppClientesRoute =
     path: '/clientes',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppCobrancaRoute =
+  AuthenticatedAppCobrancaRouteImport.update({
+    id: '/cobranca',
+    path: '/cobranca',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppComunidadeRoute =
+  AuthenticatedAppComunidadeRouteImport.update({
+    id: '/comunidade',
+    path: '/comunidade',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppCursosRoute = AuthenticatedAppCursosRouteImport.update({
   id: '/cursos',
   path: '/cursos',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppIaRoute = AuthenticatedAppIaRouteImport.update({
+  id: '/ia',
+  path: '/ia',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 const AuthenticatedAppNotasRoute = AuthenticatedAppNotasRouteImport.update({
@@ -123,9 +150,13 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/app/alunos': typeof AuthenticatedAppAlunosRoute
   '/app/atividades': typeof AuthenticatedAppAtividadesRoute
+  '/app/biblioteca': typeof AuthenticatedAppBibliotecaRoute
   '/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
+  '/app/cobranca': typeof AuthenticatedAppCobrancaRoute
+  '/app/comunidade': typeof AuthenticatedAppComunidadeRoute
   '/app/cursos': typeof AuthenticatedAppCursosRoute
+  '/app/ia': typeof AuthenticatedAppIaRoute
   '/app/notas': typeof AuthenticatedAppNotasRoute
   '/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/app/portal': typeof AuthenticatedAppPortalRoute
@@ -140,9 +171,13 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/app/alunos': typeof AuthenticatedAppAlunosRoute
   '/app/atividades': typeof AuthenticatedAppAtividadesRoute
+  '/app/biblioteca': typeof AuthenticatedAppBibliotecaRoute
   '/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
+  '/app/cobranca': typeof AuthenticatedAppCobrancaRoute
+  '/app/comunidade': typeof AuthenticatedAppComunidadeRoute
   '/app/cursos': typeof AuthenticatedAppCursosRoute
+  '/app/ia': typeof AuthenticatedAppIaRoute
   '/app/notas': typeof AuthenticatedAppNotasRoute
   '/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/app/portal': typeof AuthenticatedAppPortalRoute
@@ -160,9 +195,13 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/app/alunos': typeof AuthenticatedAppAlunosRoute
   '/_authenticated/app/atividades': typeof AuthenticatedAppAtividadesRoute
+  '/_authenticated/app/biblioteca': typeof AuthenticatedAppBibliotecaRoute
   '/_authenticated/app/chamada': typeof AuthenticatedAppChamadaRoute
   '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRoute
+  '/_authenticated/app/cobranca': typeof AuthenticatedAppCobrancaRoute
+  '/_authenticated/app/comunidade': typeof AuthenticatedAppComunidadeRoute
   '/_authenticated/app/cursos': typeof AuthenticatedAppCursosRoute
+  '/_authenticated/app/ia': typeof AuthenticatedAppIaRoute
   '/_authenticated/app/notas': typeof AuthenticatedAppNotasRoute
   '/_authenticated/app/perfil': typeof AuthenticatedAppPerfilRoute
   '/_authenticated/app/portal': typeof AuthenticatedAppPortalRoute
@@ -180,9 +219,13 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/alunos'
     | '/app/atividades'
+    | '/app/biblioteca'
     | '/app/chamada'
     | '/app/clientes'
+    | '/app/cobranca'
+    | '/app/comunidade'
     | '/app/cursos'
+    | '/app/ia'
     | '/app/notas'
     | '/app/perfil'
     | '/app/portal'
@@ -197,9 +240,13 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/app/alunos'
     | '/app/atividades'
+    | '/app/biblioteca'
     | '/app/chamada'
     | '/app/clientes'
+    | '/app/cobranca'
+    | '/app/comunidade'
     | '/app/cursos'
+    | '/app/ia'
     | '/app/notas'
     | '/app/perfil'
     | '/app/portal'
@@ -216,9 +263,13 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/_authenticated/app/alunos'
     | '/_authenticated/app/atividades'
+    | '/_authenticated/app/biblioteca'
     | '/_authenticated/app/chamada'
     | '/_authenticated/app/clientes'
+    | '/_authenticated/app/cobranca'
+    | '/_authenticated/app/comunidade'
     | '/_authenticated/app/cursos'
+    | '/_authenticated/app/ia'
     | '/_authenticated/app/notas'
     | '/_authenticated/app/perfil'
     | '/_authenticated/app/portal'
@@ -300,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAtividadesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/biblioteca': {
+      id: '/_authenticated/app/biblioteca'
+      path: '/biblioteca'
+      fullPath: '/app/biblioteca'
+      preLoaderRoute: typeof AuthenticatedAppBibliotecaRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/chamada': {
       id: '/_authenticated/app/chamada'
       path: '/chamada'
@@ -314,11 +372,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppClientesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/cobranca': {
+      id: '/_authenticated/app/cobranca'
+      path: '/cobranca'
+      fullPath: '/app/cobranca'
+      preLoaderRoute: typeof AuthenticatedAppCobrancaRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/comunidade': {
+      id: '/_authenticated/app/comunidade'
+      path: '/comunidade'
+      fullPath: '/app/comunidade'
+      preLoaderRoute: typeof AuthenticatedAppComunidadeRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/cursos': {
       id: '/_authenticated/app/cursos'
       path: '/cursos'
       fullPath: '/app/cursos'
       preLoaderRoute: typeof AuthenticatedAppCursosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/ia': {
+      id: '/_authenticated/app/ia'
+      path: '/ia'
+      fullPath: '/app/ia'
+      preLoaderRoute: typeof AuthenticatedAppIaRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/notas': {
@@ -362,9 +441,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAlunosRoute: typeof AuthenticatedAppAlunosRoute
   AuthenticatedAppAtividadesRoute: typeof AuthenticatedAppAtividadesRoute
+  AuthenticatedAppBibliotecaRoute: typeof AuthenticatedAppBibliotecaRoute
   AuthenticatedAppChamadaRoute: typeof AuthenticatedAppChamadaRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
+  AuthenticatedAppCobrancaRoute: typeof AuthenticatedAppCobrancaRoute
+  AuthenticatedAppComunidadeRoute: typeof AuthenticatedAppComunidadeRoute
   AuthenticatedAppCursosRoute: typeof AuthenticatedAppCursosRoute
+  AuthenticatedAppIaRoute: typeof AuthenticatedAppIaRoute
   AuthenticatedAppNotasRoute: typeof AuthenticatedAppNotasRoute
   AuthenticatedAppPerfilRoute: typeof AuthenticatedAppPerfilRoute
   AuthenticatedAppPortalRoute: typeof AuthenticatedAppPortalRoute
@@ -376,9 +459,13 @@ interface AuthenticatedAppRouteChildren {
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAlunosRoute: AuthenticatedAppAlunosRoute,
   AuthenticatedAppAtividadesRoute: AuthenticatedAppAtividadesRoute,
+  AuthenticatedAppBibliotecaRoute: AuthenticatedAppBibliotecaRoute,
   AuthenticatedAppChamadaRoute: AuthenticatedAppChamadaRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
+  AuthenticatedAppCobrancaRoute: AuthenticatedAppCobrancaRoute,
+  AuthenticatedAppComunidadeRoute: AuthenticatedAppComunidadeRoute,
   AuthenticatedAppCursosRoute: AuthenticatedAppCursosRoute,
+  AuthenticatedAppIaRoute: AuthenticatedAppIaRoute,
   AuthenticatedAppNotasRoute: AuthenticatedAppNotasRoute,
   AuthenticatedAppPerfilRoute: AuthenticatedAppPerfilRoute,
   AuthenticatedAppPortalRoute: AuthenticatedAppPortalRoute,

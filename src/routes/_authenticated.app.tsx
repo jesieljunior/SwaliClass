@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { MobileNav } from "@/components/mobile-nav";
-import { ViewModeProvider } from "@/lib/view-mode";
+import { ViewModeProvider, useViewMode } from "@/lib/view-mode";
 import { ViewModeToggle } from "@/components/view-mode-toggle";
 import { useSession } from "@/hooks/use-session";
 import { Loader2 } from "lucide-react";
@@ -15,21 +15,22 @@ export const Route = createFileRoute("/_authenticated/app")({
   component: AppLayout,
 });
 
+// Routes an aluno (ou estudante autônomo) can access
+const ALUNO_ALLOWED =
+  /^\/app(\/(portal|atividades|notas|perfil|ia|biblioteca|comunidade|cobranca))?\/?$/;
+
 function AppLayout() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
   const session = useSession();
   const isAluno = !!session.data?.isAluno && !session.data?.isStaff;
 
-  // Routes an aluno can actually access
-  const alunoAllowed = /^\/app(\/(portal|atividades|notas|perfil))?\/?$/;
-
   useEffect(() => {
     if (!session.data) return;
-    if (isAluno && !alunoAllowed.test(pathname)) {
-      navigate({ to: "/app/portal", replace: true });
+    if (isAluno && !ALUNO_ALLOWED.test(pathname)) {
+      navigate({ to: "/app", replace: true });
     }
-  }, [isAluno, pathname, session.data]);
+  }, [isAluno, pathname, session.data, navigate]);
 
   if (session.isLoading) {
     return (
@@ -42,7 +43,7 @@ function AppLayout() {
   return (
     <ViewModeProvider>
       <div className="min-h-screen flex bg-surface text-navy-900">
-        {!isAluno && <AppSidebar />}
+        <AppSidebar />
         <div className="flex-1 min-w-0 flex flex-col">
           <Topbar pathname={pathname} isAluno={isAluno} />
           <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
@@ -65,32 +66,39 @@ function initialsFrom(name?: string | null, email?: string | null) {
 
 function Topbar({ pathname, isAluno }: { pathname: string; isAluno: boolean }) {
   const session = useSession();
+  const { mode } = useViewMode();
+  const isStudentView = isAluno || mode === "student";
   const initials = initialsFrom(session.data?.fullName, session.data?.email);
+
   return (
     <header className="h-16 border-b border-border-subtle bg-white/80 backdrop-blur-md px-4 lg:px-8 flex items-center gap-4">
-      <Link to="/" className={`${isAluno ? "" : "lg:hidden"} flex items-center gap-2 shrink-0`}>
+      <Link to="/" className="lg:hidden flex items-center gap-2 shrink-0">
         <div className="size-8 bg-navy-900 rounded-sm flex items-center justify-center text-paper font-display font-extrabold">
           S
         </div>
         <span className="font-display font-bold">SwaliClass</span>
       </Link>
-      {!isAluno && (
-        <div className="flex-1 min-w-0 hidden sm:flex items-center gap-2 max-w-md">
-          <div className="flex-1 flex items-center gap-2 px-3 h-9 bg-surface border border-border-subtle rounded-md">
-            <Search className="size-4 text-navy-800/40 shrink-0" />
-            <input
-              placeholder="Buscar alunos, turmas, cursos…"
-              className="bg-transparent flex-1 min-w-0 text-sm outline-none placeholder:text-navy-800/40"
-            />
-            <span className="text-[10px] font-mono uppercase tracking-widest text-navy-800/30 shrink-0">
-              ⌘K
-            </span>
-          </div>
+
+      <div className="flex-1 min-w-0 hidden sm:flex items-center gap-2 max-w-md">
+        <div className="flex-1 flex items-center gap-2 px-3 h-9 bg-surface border border-border-subtle rounded-md">
+          <Search className="size-4 text-navy-800/40 shrink-0" />
+          <input
+            placeholder={
+              isStudentView
+                ? "Buscar resumos, flashcards, temas de estudo…"
+                : "Buscar alunos, turmas, cursos…"
+            }
+            className="bg-transparent flex-1 min-w-0 text-sm outline-none placeholder:text-navy-800/40"
+          />
+          <span className="text-[10px] font-mono uppercase tracking-widest text-navy-800/30 shrink-0">
+            ⌘K
+          </span>
         </div>
-      )}
+      </div>
+
       <div className="ml-auto flex items-center gap-3 shrink-0">
-        {!isAluno && <ViewModeToggle />}
-        <button className="size-9 rounded-md border border-border-subtle bg-white grid place-items-center text-navy-800/60 hover:text-navy-900">
+        <ViewModeToggle />
+        <button className="size-9 rounded-md border border-border-subtle bg-white grid place-items-center text-navy-800/60 hover:text-navy-900 cursor-pointer">
           <Bell className="size-4" />
         </button>
         <div

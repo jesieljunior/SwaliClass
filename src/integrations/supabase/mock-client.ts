@@ -5,6 +5,15 @@ import {
   tenants as rawTenants,
 } from "@/lib/mock-data";
 
+export const DEMO_STUDENT_USER = {
+  id: "student-solo-456",
+  email: "estudante@swaliclass.com",
+  user_metadata: { full_name: "Lucas Silva (Estudante Autônomo)" },
+  app_metadata: {},
+  aud: "authenticated",
+  created_at: new Date().toISOString(),
+};
+
 export const DEMO_USER = {
   id: "demo-user-123",
   email: "admin@swaliclass.com",
@@ -68,20 +77,32 @@ class MockDatabase {
       created_at: new Date(Date.now() - 20 * 86400000).toISOString(),
     }));
 
-    this.students = rawStudents.map((s) => ({
-      id: s.id,
-      tenant_id: "ten1",
-      full_name: s.name,
-      email: s.email,
-      phone: s.phone,
-      document: "123.456.789-00",
-      birth_date: s.birthDate,
-      guardian_name: "Responsável Legal",
-      guardian_phone: s.phone,
-      notes: "Aluno matriculado normalmente.",
-      user_id: s.id === "s1" ? "student-user-1" : null,
-      created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
-    }));
+    this.students = [
+      {
+        id: "st-solo-1",
+        tenant_id: "ten1",
+        user_id: "student-solo-456",
+        full_name: "Lucas Silva (Estudante Autônomo)",
+        email: "estudante@swaliclass.com",
+        enrollment_number: "SOLO-2026-001",
+        status: "active",
+        created_at: new Date().toISOString(),
+      },
+      ...rawStudents.map((s) => ({
+        id: s.id,
+        tenant_id: "ten1",
+        full_name: s.name,
+        email: s.email,
+        phone: s.phone,
+        document: "123.456.789-00",
+        birth_date: s.birthDate,
+        guardian_name: "Responsável Legal",
+        guardian_phone: s.phone,
+        notes: "Aluno matriculado normalmente.",
+        user_id: s.id === "s1" ? "student-user-1" : null,
+        created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
+      })),
+    ];
 
     // Enrollments
     this.enrollments = [
@@ -222,6 +243,13 @@ class MockDatabase {
     // User Roles
     this.user_roles = [
       {
+        id: "ur_student_solo",
+        tenant_id: "ten1",
+        user_id: "student-solo-456",
+        role: "aluno",
+        created_at: new Date().toISOString(),
+      },
+      {
         id: "ur1",
         tenant_id: "ten1",
         user_id: DEMO_USER.id,
@@ -247,9 +275,16 @@ class MockDatabase {
     // Profiles
     this.profiles = [
       {
+        id: "student-solo-456",
+        tenant_id: "ten1",
+        email: "estudante@swaliclass.com",
+        full_name: "Lucas Silva (Estudante Autônomo)",
+        created_at: new Date().toISOString(),
+      },
+      {
         id: DEMO_USER.id,
         tenant_id: "ten1",
-        email: DEMO_USER.email,
+        email: getEffectiveUser().email,
         full_name: DEMO_USER.user_metadata.full_name,
         created_at: new Date().toISOString(),
       },
@@ -553,42 +588,66 @@ class MockQueryBuilder {
   }
 }
 
+export function getEffectiveUser() {
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("swali_current_user");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.id) return parsed;
+      }
+    } catch {}
+
+    const isStudent =
+      localStorage.getItem("bitrahub:view-mode") === "student" ||
+      localStorage.getItem("swali_active_role") === "student";
+    if (isStudent) return DEMO_STUDENT_USER;
+  }
+  return DEMO_USER;
+}
+
 export function createMockSupabaseClient() {
   const listeners = new Set<(event: string, session: any) => void>();
 
   return {
     auth: {
       getUser: async () => ({
-        data: { user: DEMO_USER },
+        data: { user: getEffectiveUser() },
         error: null,
       }),
-      getSession: async () => ({
-        data: {
-          session: {
-            access_token: "mock-demo-token",
-            token_type: "bearer",
-            user: DEMO_USER,
-            expires_in: 3600,
+      getSession: async () => {
+        const user = getEffectiveUser();
+        return {
+          data: {
+            session: {
+              access_token: "mock-demo-token",
+              token_type: "bearer",
+              user,
+              expires_in: 3600,
+            },
           },
-        },
-        error: null,
-      }),
-      getClaims: async (_token: string) => ({
-        data: {
-          claims: {
-            sub: DEMO_USER.id,
-            email: DEMO_USER.email,
-            user_metadata: DEMO_USER.user_metadata,
+          error: null,
+        };
+      },
+      getClaims: async (_token: string) => {
+        const user = getEffectiveUser();
+        return {
+          data: {
+            claims: {
+              sub: user.id,
+              email: user.email,
+              user_metadata: user.user_metadata,
+            },
           },
-        },
-        error: null,
-      }),
+          error: null,
+        };
+      },
       onAuthStateChange: (cb: (event: string, session: any) => void) => {
         listeners.add(cb);
         setTimeout(() => {
           cb("SIGNED_IN", {
             access_token: "mock-demo-token",
-            user: DEMO_USER,
+            user: getEffectiveUser(),
           });
         }, 0);
         return {
@@ -599,20 +658,169 @@ export function createMockSupabaseClient() {
           },
         };
       },
-      signInWithPassword: async () => ({
-        data: {
-          user: DEMO_USER,
-          session: { access_token: "mock-demo-token", user: DEMO_USER },
-        },
-        error: null,
-      }),
-      signUp: async () => ({
-        data: { user: DEMO_USER },
-        error: null,
-      }),
-      signOut: async () => ({
-        error: null,
-      }),
+      signInWithPassword: async (credentials?: { email?: string; password?: string }) => {
+        const email = credentials?.email?.trim().toLowerCase() || "";
+        let matchedUser: any = null;
+        let isStudent = false;
+
+        if (typeof window !== "undefined") {
+          try {
+            const raw = localStorage.getItem("swali_registered_users");
+            const registered = raw ? JSON.parse(raw) : [];
+            const found = registered.find((u: any) => u.email?.toLowerCase() === email);
+            if (found) {
+              matchedUser = found.user;
+              isStudent = found.isStudent;
+            }
+          } catch {}
+        }
+
+        if (!matchedUser) {
+          isStudent =
+            email.includes("estudante") ||
+            email.includes("aluno") ||
+            (typeof window !== "undefined" &&
+              localStorage.getItem("bitrahub:view-mode") === "student");
+          matchedUser = isStudent ? DEMO_STUDENT_USER : DEMO_USER;
+        }
+
+        if (typeof window !== "undefined") {
+          localStorage.setItem("swali_active_role", isStudent ? "student" : "staff");
+          localStorage.setItem("bitrahub:view-mode", isStudent ? "student" : "teacher");
+          localStorage.setItem("swali_current_user", JSON.stringify(matchedUser));
+        }
+
+        // Ensure user is in profiles and user_roles
+        const roleName = isStudent ? "aluno" : "professor";
+        const hasRole = mockDb.user_roles.some(
+          (r) => r.user_id === matchedUser.id && r.role === roleName,
+        );
+        if (!hasRole) {
+          mockDb.user_roles.push({
+            id: `ur-${matchedUser.id}`,
+            tenant_id: "ten1",
+            user_id: matchedUser.id,
+            role: roleName,
+            created_at: new Date().toISOString(),
+          });
+        }
+
+        listeners.forEach((fn) =>
+          fn("SIGNED_IN", { access_token: "mock-demo-token", user: matchedUser }),
+        );
+
+        return {
+          data: {
+            user: matchedUser,
+            session: { access_token: "mock-demo-token", user: matchedUser },
+          },
+          error: null,
+        };
+      },
+      signUp: async (options?: { email?: string; password?: string; options?: { data?: any } }) => {
+        const email = options?.email?.trim().toLowerCase() || "usuario@swaliclass.com";
+        const meta = options?.options?.data || {};
+        const profileType = meta.profile_type || "student";
+        const isStudent = profileType === "student" || profileType === "student_solo";
+        const fullName =
+          meta.full_name || (isStudent ? "Estudante Autônomo" : "Professor SwaliClass");
+        const userId = isStudent
+          ? `student-solo-${Math.random().toString(36).slice(2, 8)}`
+          : `staff-${Math.random().toString(36).slice(2, 8)}`;
+
+        const newUser = {
+          id: userId,
+          email,
+          user_metadata: {
+            full_name: fullName,
+            profile_type: profileType,
+            has_teacher: meta.has_teacher ?? false,
+            study_focus: meta.study_focus ?? "ENEM",
+            institution_name: meta.institution_name,
+            subject: meta.subject,
+          },
+          app_metadata: {},
+          aud: "authenticated",
+          created_at: new Date().toISOString(),
+        };
+
+        // Add to mock DB profiles
+        mockDb.profiles.push({
+          id: userId,
+          tenant_id: "ten1",
+          email,
+          full_name: fullName,
+          created_at: new Date().toISOString(),
+        });
+
+        // Add to user_roles
+        const role = isStudent
+          ? "aluno"
+          : profileType === "school"
+            ? "admin_instituicao"
+            : "professor";
+        mockDb.user_roles.push({
+          id: `ur-${userId}`,
+          tenant_id: "ten1",
+          user_id: userId,
+          role,
+          created_at: new Date().toISOString(),
+        });
+
+        // If student, register in students table
+        if (isStudent) {
+          mockDb.students.push({
+            id: `st-${userId}`,
+            tenant_id: "ten1",
+            user_id: userId,
+            full_name: fullName,
+            email,
+            enrollment_number: `SOLO-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+            status: "active",
+            created_at: new Date().toISOString(),
+          });
+        }
+
+        if (typeof window !== "undefined") {
+          try {
+            const raw = localStorage.getItem("swali_registered_users");
+            const registered = raw ? JSON.parse(raw) : [];
+            registered.push({
+              email,
+              password: options?.password || "password123",
+              isStudent,
+              profileType,
+              user: newUser,
+            });
+            localStorage.setItem("swali_registered_users", JSON.stringify(registered));
+          } catch {}
+
+          localStorage.setItem("swali_active_role", isStudent ? "student" : "staff");
+          localStorage.setItem("bitrahub:view-mode", isStudent ? "student" : "teacher");
+          localStorage.setItem("swali_current_user", JSON.stringify(newUser));
+        }
+
+        listeners.forEach((fn) =>
+          fn("SIGNED_IN", { access_token: "mock-demo-token", user: newUser }),
+        );
+
+        return {
+          data: {
+            user: newUser,
+            session: { access_token: "mock-demo-token", user: newUser },
+          },
+          error: null,
+        };
+      },
+      signOut: async () => {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("swali_current_user");
+          localStorage.removeItem("swali_active_role");
+        }
+        return {
+          error: null,
+        };
+      },
       resetPasswordForEmail: async () => ({
         data: {},
         error: null,
@@ -643,7 +851,10 @@ export function createMockSupabaseClient() {
       if (fnName === "current_tenant_id") return { data: "ten1", error: null };
       if (fnName === "is_super_admin") return { data: true, error: null };
       if (fnName === "is_tenant_admin") return { data: true, error: null };
-      if (fnName === "is_tenant_staff") return { data: true, error: null };
+      if (fnName === "is_tenant_staff")
+        return { data: getEffectiveUser().id !== DEMO_STUDENT_USER.id, error: null };
+      if (fnName === "is_tenant_admin")
+        return { data: getEffectiveUser().id !== DEMO_STUDENT_USER.id, error: null };
       return { data: true, error: null };
     },
     storage: {

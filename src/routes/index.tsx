@@ -280,90 +280,116 @@ function Features() {
 function Pricing() {
   const plans = [
     {
-      name: "Starter",
+      name: "Estudante Free",
       price: "Grátis",
-      desc: "Até 100 alunos. Ideal para professores particulares.",
-      features: ["1 instituição", "Chamada e frequência", "Relatórios básicos"],
+      desc: "Para quem estuda sozinho e quer testar a Swali AI.",
+      features: ["50 créditos IA/mês", "Resumos de PDFs", "Flashcards", "Comunidade"],
     },
     {
-      name: "Professional",
-      price: "R$ 299",
+      name: "Estudante PRO",
+      price: "R$ 29,90",
       suffix: "/mês",
-      desc: "Até 500 alunos. Para escolas em crescimento.",
-      features: ["Multi-professores", "Relatórios PDF/Excel", "Suporte por email"],
+      desc: "ENEM, Concursos e OAB com IA ilimitada e simulados.",
+      features: [
+        "1.000 créditos IA/mês",
+        "Simulados diagnósticos",
+        "Correção de redação",
+        "Sem limites de PDFs",
+      ],
       highlight: true,
     },
     {
-      name: "Business",
-      price: "R$ 599",
+      name: "Professor PRO",
+      price: "R$ 99,90",
       suffix: "/mês",
-      desc: "Até 2.000 alunos. Para redes consolidadas.",
-      features: ["API de integração", "Auditoria completa", "Suporte prioritário"],
+      desc: "Para docentes e aulas particulares com cobrança de alunos.",
+      features: [
+        "Turmas ilimitadas",
+        "Chamada digital",
+        "Cobrança automática de mensalidades",
+        "Provas com IA",
+      ],
     },
     {
-      name: "Enterprise",
-      price: "Custom",
-      desc: "Volume ilimitado e SLA dedicado.",
-      features: ["SSO e SAML", "Sucesso do cliente", "Consultoria Swali"],
+      name: "Escola Starter",
+      price: "R$ 249",
+      suffix: "/mês",
+      desc: "Gestão completa de secretária, múltiplos docentes e MEC.",
+      features: [
+        "Até 500 alunos",
+        "Diário de classe oficial",
+        "Relatórios auditoria",
+        "Suporte VIP",
+      ],
     },
   ];
   return (
     <section id="precos" className="max-w-7xl mx-auto px-6 py-24 border-t border-border-subtle">
       <div className="text-center max-w-2xl mx-auto mb-14">
-        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-navy-600">
-          Planos
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300">
+          <span className="size-1.5 rounded-full bg-emerald-600 animate-pulse" />
+          Pagamento Seguro · Pix & Cartão até 12x
         </span>
         <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight mt-3">
-          Preços diretos. Sem letras miúdas.
+          Preços diretos. Baixa imediata e transparência.
         </h2>
+        <p className="text-xs text-navy-800/60 mt-2">
+          Cobranças seguras com ativação automática de planos e créditos.
+        </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {plans.map((p) => (
           <div
             key={p.name}
-            className={`p-7 rounded-lg border flex flex-col ${
+            className={`p-7 rounded-lg border flex flex-col justify-between ${
               p.highlight
-                ? "bg-navy-900 text-paper border-navy-900"
+                ? "bg-navy-900 text-paper border-navy-900 shadow-md ring-2 ring-emerald-400/40"
                 : "bg-white border-border-subtle"
             }`}
           >
-            <h4
-              className={`text-xs font-mono font-bold uppercase tracking-widest ${p.highlight ? "text-paper/70" : "text-navy-600"}`}
-            >
-              {p.name}
-            </h4>
-            <p className="mt-4 font-display font-extrabold text-3xl">
-              {p.price}
-              {p.suffix && (
-                <span
-                  className={`text-xs font-normal ${p.highlight ? "text-paper/50" : "text-navy-800/40"}`}
-                >
-                  {p.suffix}
-                </span>
-              )}
-            </p>
-            <p className={`mt-2 text-sm ${p.highlight ? "text-paper/70" : "text-navy-800/60"}`}>
-              {p.desc}
-            </p>
-            <ul className="mt-6 space-y-2 flex-1">
-              {p.features.map((f) => (
-                <li
-                  key={f}
-                  className={`flex gap-2 text-sm ${p.highlight ? "text-paper/85" : "text-navy-800/75"}`}
-                >
-                  <Check className="size-4 shrink-0 mt-0.5" /> {f}
-                </li>
-              ))}
-            </ul>
-            <button
-              className={`mt-6 py-2.5 rounded-sm text-sm font-bold transition-colors ${
+            <div>
+              <h4
+                className={`text-xs font-mono font-bold uppercase tracking-widest ${p.highlight ? "text-emerald-400" : "text-navy-600"}`}
+              >
+                {p.name}
+              </h4>
+              <p className="mt-4 font-display font-extrabold text-3xl">
+                {p.price}
+                {p.suffix && (
+                  <span
+                    className={`text-xs font-normal ${p.highlight ? "text-paper/50" : "text-navy-800/40"}`}
+                  >
+                    {p.suffix}
+                  </span>
+                )}
+              </p>
+              <p className={`mt-2 text-sm ${p.highlight ? "text-paper/70" : "text-navy-800/60"}`}>
+                {p.desc}
+              </p>
+              <ul className="mt-6 space-y-2">
+                {p.features.map((f) => (
+                  <li
+                    key={f}
+                    className={`flex gap-2 text-sm ${p.highlight ? "text-paper/85" : "text-navy-800/75"}`}
+                  >
+                    <Check
+                      className={`size-4 shrink-0 mt-0.5 ${p.highlight ? "text-emerald-400" : "text-emerald-600"}`}
+                    />{" "}
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <Link
+              to="/app/cobranca"
+              className={`mt-6 py-2.5 rounded-sm text-sm font-bold transition-colors text-center block ${
                 p.highlight
-                  ? "bg-paper text-navy-900 hover:bg-white"
+                  ? "bg-emerald-400 text-navy-950 hover:bg-emerald-300 shadow-sm"
                   : "bg-navy-900 text-paper hover:bg-navy-800"
               }`}
             >
-              Começar
-            </button>
+              Assinar Plano
+            </Link>
           </div>
         ))}
       </div>

@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+  envPrefix: ["VITE_", "SUPABASE_"],
   server: {
     host: "0.0.0.0",
     port: 3000,

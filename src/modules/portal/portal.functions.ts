@@ -113,3 +113,41 @@ export const getMyPortalOverview = createServerFn({ method: "GET" })
       })),
     };
   });
+
+export const getMyAllGrades = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+
+    const { data: student } = await supabase
+      .from("students")
+      .select("id, full_name, email")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!student) return [];
+
+    const { data: submissions, error } = await supabase
+      .from("submissions")
+      .select(
+        "id, grade, feedback, graded_at, status, submitted_at, activity_id, activities:activity_id (id, title, max_score, weight, due_at, class_id, classes:class_id (name, courses:course_id(name)))",
+      )
+      .eq("student_id", student.id)
+      .order("submitted_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    return (submissions ?? []).map((s: any) => ({
+      id: s.id,
+      activity_title: s.activities?.title ?? "Atividade",
+      class_name: s.activities?.classes?.name ?? "Turma",
+      course_name: s.activities?.classes?.courses?.name ?? "Curso",
+      max_score: s.activities?.max_score ?? 10,
+      weight: s.activities?.weight ?? 1,
+      grade: s.grade,
+      status: s.status,
+      feedback: s.feedback,
+      due_at: s.activities?.due_at,
+      graded_at: s.graded_at,
+    }));
+  });

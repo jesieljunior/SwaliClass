@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { z } from "zod";
 import { Check, X, Clock3, FileText, Loader2, Save } from "lucide-react";
 import { listClasses, getAttendanceRoster, saveAttendance } from "@/lib/tenant.functions";
@@ -47,7 +47,7 @@ function ChamadaPage() {
   const qc = useQueryClient();
 
   const classesQ = useQuery({ queryKey: ["classes"], queryFn: () => fetchClasses() });
-  const classes = classesQ.data ?? [];
+  const classes = useMemo(() => classesQ.data ?? [], [classesQ.data]);
 
   const [classId, setClassId] = useState<string | undefined>(initialClassId);
   useEffect(() => {

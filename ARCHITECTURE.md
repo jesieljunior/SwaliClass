@@ -51,6 +51,7 @@ O **SwaliClass** é uma plataforma SaaS corporativa **multi-tenant** desenhada s
 ## 2. As Quatro Camadas do Backend (.NET 9)
 
 ### 2.1. Domain (Núcleo Puro)
+
 - **Localização:** `backend/csharp/BitraHub.Domain/`
 - **Responsabilidade:** Define as entidades do domínio, interfaces fundamentais e contratos que independem de qualquer framework ou banco de dados.
 - **Entidades Centrais:**
@@ -63,16 +64,19 @@ O **SwaliClass** é uma plataforma SaaS corporativa **multi-tenant** desenhada s
 - **Regra:** Não referencia nenhum outro projeto ou pacote externo.
 
 ### 2.2. Application (Contratos e Casos de Uso)
+
 - **Localização:** `backend/csharp/BitraHub.Application/`
 - **Responsabilidade:** Contém as interfaces de serviços de infraestrutura (`ICurrentUserService`, `IJwtTokenGenerator`) e os DTOs para tráfego seguro de dados.
 - **Dependências:** Referencia apenas o `Domain`.
 
 ### 2.3. Infrastructure (Implementações Técnicas)
+
 - **Localização:** `backend/csharp/BitraHub.Infrastructure/`
 - **Responsabilidade:** Implementa a persistência via **Entity Framework Core 9**, provedor **Npgsql**, hashing criptográfico com **BCrypt.Net** e emissão de tokens JWT.
 - **Destaque:** `BitraHubDbContext.cs` centraliza a aplicação dos filtros multi-tenant e o ciclo de vida de persistência.
 
 ### 2.4. WebApi (Camada de Entrega)
+
 - **Localização:** `backend/csharp/BitraHub.WebApi/`
 - **Responsabilidade:** Ponto de entrada HTTP (`Program.cs`), injeção de dependências, configuração de CORS, autenticação JWT Bearer, documentação interativa Swagger e Controllers RESTful.
 
@@ -100,6 +104,7 @@ Requisição HTTP (com Header Authorization: Bearer <JWT>)
 ```
 
 ### Mecanismos de Proteção:
+
 1. **Global Query Filters no EF Core:**
    Todas as entidades que herdam de `TenantEntity` possuem o filtro configurado no `OnModelCreating`:
    ```csharp
@@ -141,19 +146,19 @@ Requisição HTTP (com Header Authorization: Bearer <JWT>)
 
 ## 5. De ClassCheck para SwaliClass: A Evolução Arquitetural
 
-O **ClassCheck** foi desenvolvido e validado em ambiente de produção real no **Instituto da Oportunidade Social (IOS) / Percorre**, atendendo 5 estados brasileiros (SP, MG, RS, RJ, PE). 
+O **ClassCheck** foi desenvolvido e validado em ambiente de produção real no **Instituto da Oportunidade Social (IOS) / Percorre**, atendendo 5 estados brasileiros (SP, MG, RS, RJ, PE).
 
 O **SwaliClass** surge como a próxima geração arquitetural dessa plataforma, escalando o aprendizado prático para um padrão corporativo enterprise:
 
-| Dimensão Técnica | ClassCheck (1ª Geração) | SwaliClass (Geração Atual) | Por que a Mudança? |
-| :--- | :--- | :--- | :--- |
-| **Linguagem Backend** | Python 3.11 | **C# (.NET 9)** | Maior throughput, compilação fortemente tipada e memory safety em cenários concorrentes. |
-| **Framework API** | FastAPI + Motor (Async) | **ASP.NET Core WebApi** | Ecossistema maduro para governança corporativa, injeção de dependências nativa e Clean Architecture. |
-| **Banco de Dados** | MongoDB (NoSQL) | **PostgreSQL 16 (Relacional)** | Integridade referencial estrita e transações ACID. Histórico de faltas e notas acadêmicas exigem consistência forte, não tolerando anomalias de agregação eventual. |
-| **ORM / Persistência** | Queries customizadas em Motor / PyMongo | **Entity Framework Core 9 (EF Core)** | Migrations declarativas com versionamento de schema e **Global Query Filters** nativos para multi-tenancy. |
-| **Multi-Tenancy** | Filtros manuais aplicados endpoint a endpoint | **Filtros Globais em tempo de execução** | Eliminação completa de erro humano de vazamento de dados entre polos e escolas parceiras. |
-| **Frontend** | React SPA | **React 19 + TypeScript + TanStack** | Componentes desacoplados por módulos de domínio, tipagem rigorosa alinhada aos DTOs do backend. |
-| **Cobertura de Testes** | Validações manuais e testes de rota | **xUnit + FluentAssertions + Moq** | Testes automatizados cobrindo isolamento de tenants, validação de JWT e cálculo do limiar crítico de evasão (< 75%). |
+| Dimensão Técnica        | ClassCheck (1ª Geração)                       | SwaliClass (Geração Atual)               | Por que a Mudança?                                                                                                                                                  |
+| :---------------------- | :-------------------------------------------- | :--------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Linguagem Backend**   | Python 3.11                                   | **C# (.NET 9)**                          | Maior throughput, compilação fortemente tipada e memory safety em cenários concorrentes.                                                                            |
+| **Framework API**       | FastAPI + Motor (Async)                       | **ASP.NET Core WebApi**                  | Ecossistema maduro para governança corporativa, injeção de dependências nativa e Clean Architecture.                                                                |
+| **Banco de Dados**      | MongoDB (NoSQL)                               | **PostgreSQL 16 (Relacional)**           | Integridade referencial estrita e transações ACID. Histórico de faltas e notas acadêmicas exigem consistência forte, não tolerando anomalias de agregação eventual. |
+| **ORM / Persistência**  | Queries customizadas em Motor / PyMongo       | **Entity Framework Core 9 (EF Core)**    | Migrations declarativas com versionamento de schema e **Global Query Filters** nativos para multi-tenancy.                                                          |
+| **Multi-Tenancy**       | Filtros manuais aplicados endpoint a endpoint | **Filtros Globais em tempo de execução** | Eliminação completa de erro humano de vazamento de dados entre polos e escolas parceiras.                                                                           |
+| **Frontend**            | React SPA                                     | **React 19 + TypeScript + TanStack**     | Componentes desacoplados por módulos de domínio, tipagem rigorosa alinhada aos DTOs do backend.                                                                     |
+| **Cobertura de Testes** | Validações manuais e testes de rota           | **xUnit + FluentAssertions + Moq**       | Testes automatizados cobrindo isolamento de tenants, validação de JWT e cálculo do limiar crítico de evasão (< 75%).                                                |
 
 ---
 
@@ -175,6 +180,7 @@ O projeto `SwaliClass.Tests` possui suítes focadas nos componentes mais crític
    - Cálculo de médias ponderadas de atividades e notas.
 
 Para executar todos os testes localmente:
+
 ```bash
 dotnet test backend/csharp/SwaliClass.sln
 ```

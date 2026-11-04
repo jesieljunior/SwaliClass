@@ -4,7 +4,7 @@ import { getRequest } from "@tanstack/react-start/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
-import { mockSupabase, DEMO_USER } from "./mock-client";
+import { mockSupabase, DEMO_USER, getEffectiveUser } from "./mock-client";
 
 export const requireSupabaseAuth = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
@@ -12,13 +12,14 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
     const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+      const effUser = getEffectiveUser();
       return next({
         context: {
           supabase: mockSupabase,
-          userId: DEMO_USER.id,
+          userId: effUser.id,
           claims: {
-            sub: DEMO_USER.id,
-            email: DEMO_USER.email,
+            sub: effUser.id,
+            email: effUser.email,
           },
         },
       });

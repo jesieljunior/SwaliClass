@@ -4,8 +4,12 @@ import { motion } from "framer-motion";
 
 export function ViewModeToggle() {
   const { mode, setMode } = useViewMode();
+
   return (
-    <div className="relative inline-flex items-center bg-surface border border-border-subtle rounded-full p-1 text-xs font-mono uppercase tracking-wider">
+    <div
+      className="relative inline-flex items-center bg-surface border border-border-subtle rounded-full p-1 text-xs font-mono uppercase tracking-wider"
+      title="Alterne entre visão de Gestão/Professor e visão do Estudante Autônomo (sem professor)"
+    >
       <motion.span
         layout
         transition={{ type: "spring", stiffness: 500, damping: 40 }}
@@ -14,17 +18,21 @@ export function ViewModeToggle() {
       />
       <button
         onClick={() => setMode("teacher")}
-        className={`relative z-10 px-3 sm:px-4 h-7 rounded-full flex items-center gap-1.5 transition-colors ${mode === "teacher" ? "text-paper" : "text-navy-800/60"}`}
+        className={`relative z-10 px-3 sm:px-4 h-7 rounded-full flex items-center gap-1.5 transition-colors cursor-pointer ${
+          mode === "teacher" ? "text-paper font-semibold" : "text-navy-800/60 hover:text-navy-900"
+        }`}
       >
         <GraduationCap className="size-3.5" />
         <span className="hidden sm:inline">Professor</span>
       </button>
       <button
         onClick={() => setMode("student")}
-        className={`relative z-10 px-3 sm:px-4 h-7 rounded-full flex items-center gap-1.5 transition-colors ${mode === "student" ? "text-paper" : "text-navy-800/60"}`}
+        className={`relative z-10 px-3 sm:px-4 h-7 rounded-full flex items-center gap-1.5 transition-colors cursor-pointer ${
+          mode === "student" ? "text-paper font-semibold" : "text-navy-800/60 hover:text-navy-900"
+        }`}
       >
         <UserRound className="size-3.5" />
-        <span className="hidden sm:inline">Aluno</span>
+        <span className="hidden sm:inline">Estudante</span>
       </button>
     </div>
   );

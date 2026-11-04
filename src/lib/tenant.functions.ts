@@ -77,7 +77,7 @@ export const listClasses = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("classes")
       .select(
-        "id, name, schedule, start_date, end_date, room, course_id, courses(name), enrollments(id)",
+        "id, name, schedule, start_date, end_date, room, course_id, courses(name), enrollments(id), class_teachers(teacher_id)",
       )
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -85,6 +85,7 @@ export const listClasses = createServerFn({ method: "GET" })
       ...c,
       course_name: c.courses?.name ?? "—",
       enrolled: c.enrollments?.length ?? 0,
+      teacher_ids: (c.class_teachers ?? []).map((ct: any) => ct.teacher_id),
     }));
   });
 
@@ -128,13 +129,14 @@ export const listStudents = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("students")
       .select(
-        "id, full_name, email, phone, document, birth_date, guardian_name, guardian_phone, notes, enrollments(class_id, classes(name))",
+        "id, full_name, email, phone, document, birth_date, guardian_name, guardian_phone, notes, enrollments(class_id, active, classes(name))",
       )
       .order("full_name");
     if (error) throw new Error(error.message);
     return (data ?? []).map((s: any) => ({
       ...s,
       class_names: (s.enrollments ?? [])
+        .filter((e: any) => e.active !== false)
         .map((e: any) => e.classes?.name)
         .filter(Boolean)
         .join(", "),

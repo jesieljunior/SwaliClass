@@ -24,6 +24,8 @@ import {
   assignTeacher,
   unassignTeacher,
   inviteProfessor,
+  listTenantInvites,
+  revokeTenantInvite,
 } from "@/lib/teachers.functions";
 import { useSession } from "@/hooks/use-session";
 import { Modal, Field, FormFooter, inputCls } from "./_authenticated.app.cursos";
@@ -51,6 +53,9 @@ function TurmasPage() {
 
   const session = useSession();
   const isAdmin = !!session.data?.isAdmin;
+  const isTeacherOnly = !!session.data?.isProfessor && !isAdmin;
+  const currentUserId = session.data?.userId;
+
   const allClasses = q.data ?? [];
   const courses = cQ.data ?? [];
   const professors = profsQ.data ?? [];
@@ -64,7 +69,11 @@ function TurmasPage() {
       (c.schedule && c.schedule.toLowerCase().includes(search.toLowerCase()));
 
     const matchesCourse = courseFilter === "all" || c.course_id === courseFilter;
-    return matchesSearch && matchesCourse;
+    const matchesProf = isTeacherOnly
+      ? (c.teacher_ids ?? []).includes(currentUserId)
+      : selectedProf === "all" || (c.teacher_ids ?? []).includes(selectedProf);
+
+    return matchesSearch && matchesCourse && matchesProf;
   });
 
   return (
@@ -116,7 +125,7 @@ function TurmasPage() {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 px-3 h-10 bg-white border border-border-subtle rounded-md text-sm">
             <Filter className="size-3.5 text-navy-800/40 shrink-0" />
             <select
@@ -132,8 +141,38 @@ function TurmasPage() {
               ))}
             </select>
           </div>
+
+          {!isTeacherOnly && (
+            <div className="flex items-center gap-1.5 px-3 h-10 bg-white border border-border-subtle rounded-md text-sm">
+              <Users className="size-3.5 text-navy-800/40 shrink-0" />
+              <select
+                value={selectedProf}
+                onChange={(e) => setSelectedProf(e.target.value)}
+                className="bg-transparent text-sm outline-none text-navy-900 cursor-pointer"
+              >
+                <option value="all">Todos os professores</option>
+                {professors.map((p: any) => (
+                  <option key={p.id} value={p.id}>
+                    {p.full_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
+
+      {isTeacherOnly && (
+        <div className="bg-navy-900/5 border border-navy-900/10 rounded-md p-3 text-xs text-navy-800/80 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Users className="size-4 text-navy-700 shrink-0" />
+            <span>Exibindo exclusivamente as turmas atribuídas ao seu usuário.</span>
+          </div>
+          <span className="font-mono font-bold text-navy-900">
+            {filteredClasses.length} turma(s)
+          </span>
+        </div>
+      )}
 
       {q.isLoading && (
         <p className="text-sm text-navy-800/40">
@@ -457,70 +496,234 @@ function TeachersDialog({ classItem, onClose }: { classItem: any; onClose: () =>
 
 function InviteProfessorDialog({ onClose }: { onClose: () => void }) {
   const invite = useServerFn(inviteProfessor);
+  const fetchInvites = useServerFn(listTenantInvites);
+  const revoke = useServerFn(revokeTenantInvite);
+  const qc = useQueryClient();
+
+  const [tab, setTab] = useState<"new" | "history">("new");
   const [email, setEmail] = useState("");
   const [link, setLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const invitesQ = useQuery({
+    queryKey: ["tenant-invites"],
+    queryFn: () => fetchInvites(),
+  });
+
   const m = useMutation({
     mutationFn: () => invite({ data: { email } }),
     onSuccess: (res: any) => {
       const origin = typeof window !== "undefined" ? window.location.origin : "";
       setLink(`${origin}/accept-invite?token=${res.token}`);
+      qc.invalidateQueries({ queryKey: ["tenant-invites"] });
     },
   });
+
+  const revokeM = useMutation({
+    mutationFn: (id: string) => revoke({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tenant-invites"] });
+    },
+  });
+
+  const invitesList = invitesQ.data ?? [];
+  const pendingCount = invitesList.filter((i: any) => i.status === "pending").length;
+
+  const getStatusBadge = (status: string, expiresAt: string) => {
+    const isExpired = new Date(expiresAt) < new Date();
+    if (status === "accepted") {
+      return (
+        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700">
+          Aceito
+        </span>
+      );
+    }
+    if (status === "revoked") {
+      return (
+        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-zinc-100 text-zinc-600">
+          Revogado
+        </span>
+      );
+    }
+    if (isExpired || status === "expired") {
+      return (
+        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-rose-100 text-rose-700">
+          Expirado
+        </span>
+      );
+    }
+    return (
+      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-100 text-amber-700">
+        Pendente
+      </span>
+    );
+  };
+
   return (
-    <Modal onClose={onClose} title="Convidar professor">
-      {!link ? (
-        <form
-          className="space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            m.mutate();
-          }}
+    <Modal onClose={onClose} title="Gestão de Convites para Professores">
+      <div className="flex border-b border-border-subtle mb-4">
+        <button
+          onClick={() => setTab("new")}
+          className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors ${
+            tab === "new"
+              ? "border-navy-900 text-navy-900"
+              : "border-transparent text-navy-800/50 hover:text-navy-900"
+          }`}
         >
-          <Field label="E-mail do professor">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={inputCls}
-            />
-          </Field>
-          {m.error && <p className="text-xs text-rose-700">{(m.error as Error).message}</p>}
-          <FormFooter onCancel={onClose} loading={m.isPending} />
-        </form>
+          Novo convite
+        </button>
+        <button
+          onClick={() => setTab("history")}
+          className={`px-4 py-2 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 ${
+            tab === "history"
+              ? "border-navy-900 text-navy-900"
+              : "border-transparent text-navy-800/50 hover:text-navy-900"
+          }`}
+        >
+          Histórico ({invitesList.length})
+          {pendingCount > 0 && <span className="size-2 rounded-full bg-amber-500 inline-block" />}
+        </button>
+      </div>
+
+      {tab === "new" ? (
+        !link ? (
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              m.mutate();
+            }}
+          >
+            <p className="text-xs text-navy-800/60">
+              Digite o e-mail do professor. Ele receberá um link seguro para definir sua senha e
+              acessar a plataforma da sua instituição.
+            </p>
+            <Field label="E-mail do professor">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="professor@escola.com.br"
+                className={inputCls}
+              />
+            </Field>
+            {m.error && <p className="text-xs text-rose-700">{(m.error as Error).message}</p>}
+            <FormFooter onCancel={onClose} loading={m.isPending} />
+          </form>
+        ) : (
+          <div className="space-y-4">
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-md text-xs text-emerald-800">
+              Convite gerado para <strong>{email}</strong>! O link expira em 7 dias.
+            </div>
+            <div className="flex gap-2">
+              <input readOnly value={link} className={inputCls + " flex-1 text-xs font-mono"} />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(link);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+                className="px-3 h-10 bg-navy-900 text-paper rounded-sm font-bold text-xs hover:bg-navy-800 inline-flex items-center gap-1.5 shrink-0"
+              >
+                {copied ? (
+                  <>
+                    <Check className="size-3.5" /> Copiado
+                  </>
+                ) : (
+                  <>
+                    <Copy className="size-3.5" /> Copiar link
+                  </>
+                )}
+              </button>
+            </div>
+            <div className="flex justify-between gap-2 pt-2">
+              <button
+                onClick={() => {
+                  setLink(null);
+                  setEmail("");
+                }}
+                className="px-3 h-9 text-xs border border-border-subtle rounded-sm font-medium hover:bg-surface"
+              >
+                Convidar outro professor
+              </button>
+              <button
+                onClick={onClose}
+                className="px-4 h-9 bg-navy-900 text-paper rounded-sm text-xs font-bold hover:bg-navy-800"
+              >
+                Concluir
+              </button>
+            </div>
+          </div>
+        )
       ) : (
         <div className="space-y-3">
-          <p className="text-sm text-navy-800/70">
-            Compartilhe este link com o professor para criar a senha e acessar o painel.
-          </p>
-          <div className="flex gap-2">
-            <input readOnly value={link} className={inputCls + " flex-1 text-xs"} />
+          {invitesQ.isLoading ? (
+            <p className="text-xs text-navy-800/40 p-6 text-center">
+              <Loader2 className="inline size-4 animate-spin mr-1" /> Carregando convites…
+            </p>
+          ) : invitesList.length === 0 ? (
+            <p className="text-xs text-navy-800/50 p-6 text-center border border-dashed rounded-md">
+              Nenhum convite emitido até o momento.
+            </p>
+          ) : (
+            <div className="max-h-72 overflow-y-auto divide-y divide-border-subtle border border-border-subtle rounded-md">
+              {invitesList.map((inv: any) => {
+                const inviteUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/accept-invite?token=${inv.token}`;
+                const isPending =
+                  inv.status === "pending" && new Date(inv.expires_at) >= new Date();
+                return (
+                  <div key={inv.id} className="p-3 text-xs flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-navy-900 truncate">{inv.email}</p>
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-navy-800/50">
+                        {getStatusBadge(inv.status, inv.expires_at)}
+                        <span>
+                          Expira em: {new Date(inv.expires_at).toLocaleDateString("pt-BR")}
+                        </span>
+                      </div>
+                    </div>
+                    {isPending && (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(inviteUrl);
+                            setCopiedId(inv.id);
+                            setTimeout(() => setCopiedId(null), 1500);
+                          }}
+                          className="px-2 h-7 border border-border-subtle rounded text-[11px] font-medium hover:bg-surface inline-flex items-center gap-1"
+                          title="Copiar link do convite"
+                        >
+                          {copiedId === inv.id ? (
+                            <Check className="size-3 text-emerald-600" />
+                          ) : (
+                            <Copy className="size-3" />
+                          )}
+                          {copiedId === inv.id ? "Copiado" : "Copiar"}
+                        </button>
+                        <button
+                          onClick={() => revokeM.mutate(inv.id)}
+                          disabled={revokeM.isPending}
+                          className="px-2 h-7 border border-rose-200 text-rose-700 rounded text-[11px] font-medium hover:bg-rose-50 inline-flex items-center gap-1"
+                        >
+                          Revogar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div className="pt-2 text-right">
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(link);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 1500);
-              }}
-              className="px-3 h-10 bg-navy-900 text-paper rounded-sm font-bold text-xs hover:bg-navy-800 inline-flex items-center gap-1.5"
+              onClick={onClose}
+              className="px-4 h-9 border border-border-subtle rounded-sm font-semibold text-xs hover:bg-surface"
             >
-              {copied ? (
-                <>
-                  <Check className="size-3.5" /> Copiado
-                </>
-              ) : (
-                <>
-                  <Copy className="size-3.5" /> Copiar
-                </>
-              )}
+              Fechar
             </button>
           </div>
-          <button
-            onClick={onClose}
-            className="w-full h-10 border border-border-subtle rounded-sm font-semibold text-sm hover:bg-surface"
-          >
-            Fechar
-          </button>
         </div>
       )}
     </Modal>
